@@ -5,297 +5,233 @@
 This document defines the blend production yield philosophy and operational yield behavior used inside the Blend Engine of Roastery OS.
 
 The purpose of Blend Yield Logic is to:
-- preserve deterministic quantity transformation,
+- preserve deterministic physical quantity transformation across input and output `InventoryLot` instances,
 - maintain composition continuity,
-- support operational inventory accuracy,
+- support operational inventory ledger accuracy,
 - provide production visibility,
 - and standardize blend output calculations.
 
 Blend production may introduce:
-- operational loss,
-- purge,
-- handling residue,
+- operational handling loss,
+- grinder/mixer purge,
+- container residue,
 - and transformation shrinkage.
 
-Blend yield behavior is one of the operational intelligence layers inside blend production workflows.
+Blend yield behavior is one of the operational measurement layers inside blend production workflows.
 
 ---
 
 # Core Philosophy
 
 Roastery OS treats blend yield as:
-- operational transformation behavior,
-- not inventory discrepancy.
+- physical operational transformation behavior,
+- not arbitrary inventory discrepancy.
 
-Blend yield should remain:
-- explicit,
+Blend yield remains:
+- explicit and measurable,
 - traceable,
 - deterministic,
 - and operationally meaningful.
 
-The system should preserve:
-- quantity continuity,
+The system preserves:
+- physical quantity continuity,
 - transformation visibility,
-- and production integrity.
+- and production ledger integrity.
 
 ---
 
 # Yield Philosophy
 
-Blend production transforms:
-- multiple roasted inventories,
-- into a newly defined blend inventory quantity.
+Blend production physically transforms:
+- multiple source `InventoryLot` instances (typically `INTERMEDIATE` roasted coffee),
+- into newly defined output `InventoryLot` instances (typically `INTERMEDIATE` or `DERIVATIVE` blend coffee).
 
 Example:
 
-```text id="x5m8tw"
-10kg Roasted Inventory Input
-↓ BlendBatch
-9.8kg BlendInventory Output
+```text
+10.0 kg Total Consumed Inputs (InventoryLots)
+↓ BlendBatch (Transformation)
+9.8 kg Produced Output Stock (InventoryLot)
+```
+
 The resulting difference represents:
-	•	expected operational transformation behavior,
-	•	not inventory error.
+- expected physical operational transformation behavior (handling loss / purge),
+- not inventory accounting error.
+
 Blend yield is treated as:
-	•	operational production intelligence.
+- operational production telemetry.
 
-Yield Awareness Principle
-Every BlendBatch should preserve:
-	•	total input quantity,
-	•	total output quantity,
-	•	yield percentage,
-	•	and operational loss percentage.
+---
+
+# Yield Awareness Principle
+
+Every `BlendBatch` record preserves:
+- total input quantity ($Q_{\text{in}} = \sum Q_{\text{consumed}, i}$),
+- total output quantity ($Q_{\text{out}}$),
+- physical yield percentage ($Y_{\%}$),
+- and operational loss percentage ($L_{\%}$).
+
 Example:
-Input:
-10kg
+- Total Consumed Input: $10.0\text{ kg}$
+- Produced Output: $9.8\text{ kg}$
+- Yield: $98.0\%$
+- Operational Loss: $2.0\%$
 
-Output:
-9.8kg
+Yield behavior remains:
+- readable,
+- auditable,
+- and operationally understandable.
 
-Yield:
-98%
+---
 
-Operational Loss:
-2%
-Yield behavior should remain:
-	•	readable,
-	•	auditable,
-	•	and operationally understandable.
+# Core Physical Yield Mathematics
 
-Core Yield Formula
-Blend yield uses deterministic quantity calculations.
-Yield percentage calculation:
-Yield Percentage=Output QuantityInput Quantity×100\text{Yield Percentage} = \frac{\text{Output Quantity}}{\text{Input Quantity}} \times 100Yield Percentage=Input QuantityOutput Quantity​×100
+Blend yield uses deterministic physical quantity calculations.
 
-Operational Loss Formula
-Operational loss calculation:
-Operational Loss Percentage=100−Yield Percentage\text{Operational Loss Percentage} = 100 - \text{Yield Percentage}Operational Loss Percentage=100−Yield Percentage
+### Physical Yield Formula
 
-Example Calculation
-Example blend transformation:
-Input:
-10kg
+$$Y_{\%} = \left( \frac{Q_{\text{out}}}{Q_{\text{in}}} \right) \times 100$$
 
-Output:
-9.8kg
-Yield calculation:
-Yield=9.810×100=98%\text{Yield} = \frac{9.8}{10} \times 100 = 98\%Yield=109.8​×100=98%
-Operational loss calculation:
-100−98=2%100 - 98 = 2\%100−98=2%
+Where:
+- $Q_{\text{in}} = \sum_{i=1}^{n} Q_{\text{consumed}, i}$ (Total physical mass of all consumed `InventoryLot` inputs)
+- $Q_{\text{out}} =$ Total physical mass of produced `InventoryLot` output
 
-Operational Loss Philosophy
+### Operational Handling Loss Formula
+
+$$L_{\%} = 100 - Y_{\%} = \left( \frac{Q_{\text{in}} - Q_{\text{out}}}{Q_{\text{in}}} \right) \times 100$$
+
+### Example Calculation
+
+- Input $Q_{\text{in}} = 10.0\text{ kg}$
+- Output $Q_{\text{out}} = 9.8\text{ kg}$
+- $Y_{\%} = \frac{9.8}{10.0} \times 100 = 98.0\%$
+- $L_{\%} = 100 - 98.0 = 2.0\%$
+
+---
+
+# Operational Loss Philosophy
+
 Blend production may naturally create:
-	•	purge,
-	•	residue,
-	•	handling loss,
-	•	or packaging adjustment.
+- mixer residue,
+- container clinging,
+- handling spillage,
+- purge during quality verification.
+
 Examples:
-Grinder Purge
-Container Residue
-Handling Spillage
-Packaging Preparation Loss
-These behaviors should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally visible.
+- Mixer Residue
+- Container Transfer Loss
+- Handling Spillage
+- Packaging Preparation Purge
+
+These behaviors remain:
+- explicit and measurable,
+- traceable on the `BlendBatch` record,
+- and operationally visible.
+
 Operational loss is considered:
-	•	production behavior,
-	•	not inventory anomaly.
+- physical production behavior,
+- not an inventory anomaly.
 
-Composition Relationship Principle
-Yield behavior should preserve:
-	•	composition continuity.
+---
+
+# Composition Relationship Principle
+
+Yield behavior preserves:
+- composition ratio continuity.
+
 Example:
-Brazil Natural → 60%
-Ethiopia Washed → 40%
-↓ BlendBatch
-BlendInventory
-Even after transformation, the system should preserve:
-	•	ratio continuity,
-	•	source lineage,
-	•	and operational composition integrity.
+- Brazil Natural (`MaterialMaster`) → 60%
+- Ethiopia Washed (`MaterialMaster`) → 40%
+- $\downarrow$ `BlendBatch` Execution
+- Output `InventoryLot` (Espresso Blend)
 
-Inventory Relationship Principle
-Blend yield directly affects:
-	•	BlendInventory quantity,
-	•	inventory valuation,
-	•	and operational costing continuity.
-Example:
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-The system should preserve:
-	•	transformation continuity,
-	•	yield visibility,
-	•	and deterministic quantity relationships.
+Even after physical handling shrinkage, the relative component ratios defined in the recipe are preserved across the output stock.
 
-Costing Relationship Principle
-Yield behavior directly affects:
-	•	blend valuation,
-	•	operational profitability,
-	•	and production economics.
-Example:
-Input Cost
-↓ operational loss
-Higher Final Cost Per Kg
-Blend yield should preserve:
-	•	yield-adjusted valuation continuity,
-	•	not static inventory costing.
+---
 
-Expected Yield Philosophy
-Different blend workflows may produce:
-	•	different operational loss behavior.
+# Ledger & Inventory Relationship Principle
+
+Blend yield directly determines:
+- the exact physical quantity registered on the newly created output `InventoryLot` via `TRANSFORMATION_PRODUCE`,
+- and the physical ledger depletion recorded on source `InventoryLot` instances via `TRANSFORMATION_CONSUME`.
+
+The system preserves:
+- ledger transformation continuity,
+- yield visibility,
+- and deterministic quantity relationships.
+
+---
+
+# Costing Engine Relationship Principle
+
+Physical yield directly affects economic valuation, but valuation mathematics are owned strictly by the Costing Engine (`07_COSTING_ENGINE`).
+
+Blend Engine owns:
+- physical measurement of $Q_{\text{in}}$, $Q_{\text{out}}$, and $L_{\%}$.
+
+Costing Engine owns:
+- absorption of handling loss cost into the produced output stock unit cost via Canonical Equation 1:
+  $$U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$$
+
+Because handling loss reduces the physical denominator $Q_{\text{out}}$ while the total economic pool $(V_{\text{consumed}} + C_{\text{direct}})$ is fully conserved, the resulting unit cost per kg $U_{\text{out}}$ naturally absorbs the cost of handling loss without secondary loss adjustments.
+
+---
+
+# Yield Validation Principle
+
+Yield behavior remains operationally validated against expected tolerance ranges.
+
+The system helps operators identify:
+- abnormal handling loss (e.g., spillage or machine malfunction),
+- unexpected scale tare errors (e.g., $Q_{\text{out}} > Q_{\text{in}}$ which is physically invalid in standard blending).
+
 Examples:
-Small Batch Blend
-→ lower loss possibility
+- $Y_{\%} < 95.0\% \implies$ Warning: Abnormal handling loss.
+- $Y_{\%} > 100.0\% \implies$ Error: Physically impossible output gain for unhydrated dry blending; check scale tare.
 
-Large Batch Blend
-→ higher handling loss possibility
-Yield behavior may vary based on:
-	•	operational method,
-	•	handling process,
-	•	packaging workflow,
-	•	and production scale.
-The MVP should preserve:
-	•	actual yield recording,
-	•	not predictive manufacturing analytics.
+Yield validation supports:
+- operational awareness and data hygiene,
+- not silent automated tampering.
 
-Yield Validation Principle
-Yield behavior should remain operationally validated.
-The system should help operators identify:
-	•	abnormal production loss,
-	•	unusual quantity discrepancies,
-	•	and possible operational issues.
-Examples:
-Unexpectedly Low Yield
-→ possible operational issue
+---
 
-Unexpectedly High Yield
-→ possible measurement error
-Yield validation should support:
-	•	operational awareness,
-	•	not automated correction.
+# Deterministic Yield Principle
 
-Transformation Visibility Principle
-Blend yield should preserve:
-	•	transformation transparency.
-Example:
-Input Inventory
-↓ BlendBatch
-Output Inventory
-↓
-Yield Visibility
-Transformation visibility should remain:
-	•	explicit,
-	•	readable,
-	•	and operationally meaningful.
-The system should avoid:
-	•	hidden quantity mutation,
-	•	ambiguous production behavior,
-	•	and disconnected transformation history.
+Critical blend yield behavior must remain deterministic:
+- mass balance calculations,
+- operational loss percentages,
+- ledger quantity postings,
+- and lineage graphs.
 
-Deterministic Yield Principle
-Critical blend yield behavior must remain deterministic.
-Examples:
-	•	quantity calculation,
-	•	operational loss visibility,
-	•	costing continuity,
-	•	and inventory quantity transformation.
-Yield workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden yield mutation,
-	•	ambiguous quantity behavior,
-	•	and disconnected inventory continuity.
+The system avoids:
+- hidden yield mutations,
+- arbitrary discrepancy write-offs during transformation,
+- and disconnected inventory records.
 
-Human-Centered Philosophy
-Blend yield systems should remain understandable for operational users.
-Operators should be able to:
-	•	understand production quantity evolution,
-	•	validate blend output,
-	•	and trace operational loss behavior  without manufacturing ERP complexity.
-Operational clarity should take priority over industrial production abstraction.
+---
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze yield consistency,
-	•	identify operational anomalies,
-	•	recommend workflow optimization,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic yield calculations.
-Critical yield behavior must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+# MVP Scope
 
-MVP Scope
-The MVP Blend Yield system should prioritize:
-	•	deterministic quantity calculation,
-	•	operational loss visibility,
-	•	transformation continuity,
-	•	and production readability.
+The MVP Blend Yield system prioritizes:
+- deterministic mass calculations ($Q_{\text{in}}, Q_{\text{out}}, Y_{\%}, L_{\%}$),
+- operational loss recording,
+- transformation ledger continuity,
+- and operator tolerance alerts.
+
 The MVP intentionally excludes:
-	•	predictive manufacturing analytics,
-	•	automated production optimization,
-	•	industrial telemetry systems,
-	•	and advanced production AI.
+- predictive statistical yield regression,
+- automated IoT scale sync,
+- and complex humidity/moisture equalization models.
 
-Architectural Notes
-Blend Yield Logic is one of the operational intelligence layers inside the Blend Engine.
-Yield systems influence:
-	•	inventory quantity,
-	•	profitability visibility,
-	•	production continuity,
-	•	and operational analytics.
-Blend yield logic should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend yield behavior without redesigning the operational foundation.
+---
 
-Long-Term Direction
-The Blend Yield system is designed to support future evolution toward:
-	•	production analytics,
-	•	operational optimization,
-	•	AI-assisted production intelligence,
-	•	forecasting systems,
-	•	and advanced transformation visibility.
-However, yield behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+# Summary
 
-Philosophy Summary
-Blend yield is not:
-	•	inventory discrepancy,
-	•	or operational anomaly.
 Blend yield is:
-	•	measurable production transformation behavior,
-	•	operational inventory evolution,
-	•	and production intelligence visibility.
-Blend yield tells the system how composition transformation physically behaves inside Roastery OS.
+- measurable physical production transformation behavior,
+- physical mass evolution across `InventoryLot` instances,
+- and production intelligence visibility.
+
+Blend yield provides the exact physical denominator that allows the Costing Engine to deterministically value blended coffee inside Roastery OS.
+
 

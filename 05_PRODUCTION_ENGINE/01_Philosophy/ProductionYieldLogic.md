@@ -43,279 +43,156 @@ The system should preserve:
 
 ---
 
-# Yield Philosophy
+# # Yield Philosophy
 
-Production workflows transform:
-- production-ready inventory,
-into:
-- commercially sellable finished goods.
+Production workflows transform physical input inventory lots into commercially sellable finished goods or intermediate outputs.
 
 Example:
+```text
+Inputs: 10.0 kg Roasted Coffee Lot + 40 Units 250g Retail Bags
+       ↓ ProductionBatch (Grinding & Portioning Transformation)
+Outputs: 39 Units Packaged Coffee Lot (9.75 kg equivalent)
+Scrap: 0.15 kg Grinding Residue + 1 Damaged Bag
+Shrinkage/Loss: 0.10 kg (Moisture loss / unrecoverable fines)
+```
 
-```text id="x5m8tw"
-10kg BlendInventory
-↓ ProductionBatch
-9.7kg FinishedGoodsInventory
-The resulting difference represents:
-	•	expected operational production behavior,  not:
-	•	inventory error.
+The resulting difference represents expected physical manufacturing behavior, not inventory error.
 Production yield is treated as:
-	•	operational manufacturing intelligence.
+- operational manufacturing intelligence,
+- mass and unit balance conservation,
+- and input to unit cost determination.
 
-Yield Awareness Principle
-Every ProductionBatch should preserve:
-	•	total input quantity,
-	•	total output quantity,
-	•	yield percentage,
-	•	and operational loss percentage.
-Example:
-Input:
-10kg
+---
 
-Output:
-9.7kg
+# Yield Awareness Principle
 
-Yield:
-97%
+Every `ProductionBatch` preserves:
+- total input quantities per material ($Q_{\text{consumed}, i}$),
+- total output quantities per produced lot ($Q_{\text{produced}, j}$),
+- scrap quantities per material ($Q_{\text{scrap}, k}$),
+- physical yield percentage,
+- and operational loss/scrap percentage.
 
-Operational Loss:
-3%
-Yield behavior should remain:
-	•	readable,
-	•	auditable,
-	•	and operationally understandable.
+---
 
-Core Yield Formula
-Production yield uses deterministic quantity calculations.
-Yield percentage calculation:
-Yield Percentage=Output QuantityInput Quantity×100\text{Yield Percentage} = \frac{\text{Output Quantity}}{\text{Input Quantity}} \times 100Yield Percentage=Input QuantityOutput Quantity​×100
+# Core Yield Formulas
 
-Operational Loss Formula
-Operational loss calculation:
-Operational Loss Percentage=100−Yield Percentage\text{Operational Loss Percentage} = 100 - \text{Yield Percentage}Operational Loss Percentage=100−Yield Percentage
+### 1. Mass-Based Yield (Coffee Material Conversion)
+For transformations where physical mass is conserved or converted (e.g., Grinding, Extraction, Portioning):
 
-Example Calculation
-Example production workflow:
-Input:
-10kg
+$$\text{Mass Yield } (\%) = \left( \frac{\sum Q_{\text{output\_mass}}}{\sum Q_{\text{input\_coffee\_mass}}} \right) \times 100$$
 
-Output:
-9.7kg
-Yield calculation:
-Yield=9.710×100=97%\text{Yield} = \frac{9.7}{10} \times 100 = 97\%Yield=109.7​×100=97%
-Operational loss calculation:
-100−97=3%100 - 97 = 3\%100−97=3%
+$$\text{Mass Loss } (\%) = 100\% - \text{Mass Yield } (\%)$$
 
-Operational Loss Philosophy
-Production workflows may naturally create:
-	•	packaging residue,
-	•	grinder purge,
-	•	brewing absorption,
-	•	bottling loss,
-	•	filling discrepancy,
-	•	and handling spillage.
-Examples:
-Drip Bag Residue
-Cold Brew Absorption Loss
-Bottle Filling Loss
-Grinding Retention
-Packaging Spillage
-These behaviors should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally visible.
-Operational loss is considered:
-	•	manufacturing behavior,  not:
-	•	inventory anomaly.
+### 2. Unit/Packaging Yield (Portioning / Packaging / Assembly)
+For discrete packaging conversion (e.g., Target Units vs Actual Units):
 
-Derivative Product Yield Principle
-Different production workflows may create:
-	•	different yield behaviors.
-Examples:
-Ground Coffee
-→ minimal loss
+$$\text{Packaging Yield } (\%) = \left( \frac{Q_{\text{actual\_units}}}{Q_{\text{target\_units}}} \right) \times 100$$
 
-Cold Brew
-→ extraction loss
+$$\text{Defect Rate } (\%) = \left( \frac{Q_{\text{damaged\_pkg\_units}}}{Q_{\text{total\_pkg\_units\_consumed}}} \right) \times 100$$
 
-RTD
-→ filling + transfer loss
+---
 
-Drip Bag
-→ portioning residue
-The architecture should support:
-	•	workflow-specific yield behavior,  without redesigning the yield foundation.
+# Operational Loss & Scrap Philosophy
 
-Inventory Relationship Principle
-Production yield directly affects:
-	•	FinishedGoodsInventory quantity,
-	•	inventory valuation,
-	•	and operational profitability continuity.
-Example:
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-The system should preserve:
-	•	transformation continuity,
-	•	yield visibility,
-	•	and deterministic quantity relationships.
+Production workflows naturally generate operational losses:
+- **Grinder Retention & Fines:** Coffee grounds trapped in chute and burr chamber ($0.5\% - 2.0\%$).
+- **Cold Brew Absorption:** Liquid retained in spent coffee grounds cake ($1.5 - 2.2 \times \text{dry coffee weight}$).
+- **Bottling / Purge Loss:** Liquid lost during line priming, foaming, and filtration purge.
+- **Packaging Defects:** Damaged pouches, failed heat seals, or defective degassing valves.
 
-Costing Relationship Principle
-Yield behavior directly affects:
-	•	finished goods valuation,
-	•	operational profitability,
-	•	and commercial production economics.
-Example:
-Input Cost
-↓ operational loss
-Higher Final Cost Per Unit
-Production yield should preserve:
-	•	yield-adjusted valuation continuity,  not:
-	•	static inventory costing.
+Operational loss behavior remains:
+- explicit and measurable,
+- categorized as either **Scrap** (physically measured and written off) or **Process Shrinkage** (unrecoverable loss),
+- and recorded via double-entry ledger transactions (`TRANSFORMATION_CONSUME` / `SCRAP`).
 
-Packaging Yield Principle
-Packaging workflows may introduce:
-	•	quantity adjustment,
-	•	packaging variance,
-	•	and operational residue.
-Examples:
-250g Bag Filling
-Bottle Filling
-Drip Bag Portioning
-Bulk Espresso Transfer
-Packaging-related yield behavior should remain:
-	•	measurable,
-	•	traceable,
-	•	and operationally understandable.
+---
 
-Yield Validation Principle
-Production yield should remain operationally validated.
-The system should help operators identify:
-	•	abnormal production loss,
-	•	unusual packaging discrepancy,
-	•	and possible operational workflow issues.
-Examples:
-Unexpectedly Low Yield
-→ possible operational issue
+# Derivative Product Yield Principle
 
-Unexpectedly High Yield
-→ possible measurement error
-Yield validation should support:
-	•	operational awareness,  not:
-	•	automated correction.
+Different transformation archetypes introduce distinct yield dynamics:
+- **Ground Coffee:** Near $100\%$ mass yield ($98.5\% - 99.5\%$, loss is pure grinder retention).
+- **Cold Brew Extraction:** Liquid yield typically $65\% - 85\%$ based on brew ratio and press efficiency.
+- **RTD Bottling:** Liquid transfer yield $97\% - 99\%$; bottle packaging yield $98\% - 99.5\%$.
+- **Drip Bag Portioning:** Dosing yield $98\% - 99.5\%$; sachet material yield $97\% - 99\%$.
 
-Transformation Visibility Principle
-Production yield should preserve:
-	•	transformation transparency.
-Example:
-Source Inventory
-↓ ProductionBatch
-FinishedGoodsInventory
-↓
-Yield Visibility
-Transformation visibility should remain:
-	•	explicit,
-	•	readable,
-	•	and operationally meaningful.
-The system should avoid:
-	•	hidden quantity mutation,
-	•	ambiguous production behavior,
-	•	and disconnected transformation history.
+---
 
-Finished Goods Yield Principle
-FinishedGoodsInventory quantity should preserve:
-	•	deterministic production continuity.
-Examples:
-250g Coffee Bags
-12-Pack Drip Bags
-1L Cold Brew Bottles
-Finished goods quantity should remain:
-	•	measurable,
-	•	traceable,
-	•	and commercially understandable.
+# Inventory Relationship Principle
 
-Deterministic Yield Principle
-Critical production yield behavior must remain deterministic.
-Examples:
-	•	quantity calculation,
-	•	operational loss visibility,
-	•	packaging quantity continuity,
-	•	and inventory transformation relationships.
-Yield workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden yield mutation,
-	•	ambiguous quantity behavior,
-	•	and disconnected inventory continuity.
+Production yield directly determines:
+- exact physical quantities credited to output `InventoryLots`,
+- exact quantities written off as scrap,
+- and ledger mass balance integrity.
 
-Human-Centered Philosophy
-Production yield systems should remain understandable for operational users.
-Operators should be able to:
-	•	understand production quantity evolution,
-	•	validate finished goods output,
-	•	and trace operational loss behavior  without manufacturing ERP complexity.
-Operational clarity should take priority over industrial production abstraction.
+---
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze yield consistency,
-	•	identify operational anomalies,
-	•	recommend production optimization,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic yield calculations.
-Critical yield behavior must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+# Costing Relationship Principle (07_COSTING_ENGINE Integration)
 
-MVP Scope
-The MVP Production Yield system should prioritize:
-	•	deterministic quantity calculation,
-	•	operational loss visibility,
-	•	finished goods continuity,
-	•	and production readability.
-The MVP intentionally excludes:
-	•	industrial manufacturing telemetry,
-	•	predictive manufacturing analytics,
-	•	autonomous production optimization,
-	•	and advanced factory AI systems.
+Physical yield directly impacts unit cost valuation. Under `07_COSTING_ENGINE` Canonical Equation 1:
 
-Architectural Notes
-Production Yield Logic is one of the operational intelligence layers inside the Production Engine.
-Yield systems influence:
-	•	inventory quantity,
-	•	profitability visibility,
-	•	production continuity,
-	•	and commercial manufacturing analytics.
-Production yield logic should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend yield behavior without redesigning the operational foundation.
+$$U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$$
 
-Long-Term Direction
-The Production Yield system is designed to support future evolution toward:
-	•	manufacturing analytics,
-	•	AI-assisted production intelligence,
-	•	operational forecasting,
-	•	automated workflow optimization,
-	•	and advanced transformation visibility.
-However, yield behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+- **Lower Yield ($Q_{\text{out}}$ decreases):** Unrecoverable process shrinkage naturally inflates the unit cost of the surviving good units ($U_{\text{out}}$).
+- **Physical Scrap ($Q_{\text{scrap}}$):** Explicitly tracked and costed according to scrap allocation policies in the Costing Engine.
 
-Philosophy Summary
-Production yield is not:
-	•	inventory discrepancy,
-	•	or manufacturing anomaly.
+Production Engine measures physical quantities; Costing Engine derives financial valuations.
+
+---
+
+# Yield Validation Principle
+
+The system helps operators validate production results against standard recipe yields:
+- **Unexpectedly Low Yield:** Alerts operator to possible machine misalignment, excessive grinder retention, or spillage.
+- **Unexpectedly High Yield ($>100\%$ on dry coffee):** Alerts operator to tare calibration error or unrecorded input additions.
+
+Yield validation supports operational quality assurance without blocking ledger finalization.
+
+---
+
+# Deterministic Yield Principle
+
+Critical production yield behavior remains deterministic:
+- double-entry mass conservation,
+- immutable ledger recording,
+- and cost provenance preservation.
+
+---
+
+# Human-Centered Philosophy
+
+Yield tracking provides clear operational feedback for roasters and packaging staff without requiring manual spreadsheet calculations.
+
+---
+
+# AI Boundary Philosophy
+
+AI systems may analyze historical yield trends, identify machine degradation patterns, and recommend recipe ratio refinements. AI systems must **never** mutate yield records or alter ledger transactions.
+
+---
+
+# MVP Scope
+
+The MVP Production Yield system prioritizes:
+- deterministic mass and unit yield calculations,
+- physical scrap recording via `SCRAP` movements,
+- yield variance reporting against recipe targets,
+- and seamless input quantity handoff to `07_COSTING_ENGINE`.
+
+---
+
+# Architectural Notes
+
+Production Yield Logic provides the physical telemetry and mass balance enforcement required for accurate operational accounting.
+
+---
+
+# Philosophy Summary
+
+Production yield is not an inventory discrepancy.
 Production yield is:
-	•	measurable operational manufacturing behavior,
-	•	commercial inventory evolution,
-	•	and production intelligence visibility.
-Production yield tells the system how inventory physically evolves during commercial manufacturing workflows inside Roastery OS.
+- **measurable physical transformation behavior**,
+- **mass balance accounting**,
+- and **the physical foundation of unit cost determination**.
+
+Production yield tells the system exactly how physical coffee transforms into finished goods inside Roastery OS.

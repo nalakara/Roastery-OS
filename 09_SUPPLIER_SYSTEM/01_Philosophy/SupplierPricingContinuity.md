@@ -68,15 +68,15 @@ Core Pricing Principle
 Every supplier relationship may influence:
 	•	downstream operational economics.
 Example:
-Green Coffee Price
+Supplier Material Price (e.g. Green Coffee / Packaging)
 ↓
-Roasting Cost
+PURCHASE_RECEIPT (Initial Acquisition Cost Basis on InventoryLot)
 ↓
-Blend Cost
+Transformation Consumption & Cost Propagation (07_COSTING_ENGINE)
 ↓
-Finished Product Cost
+Downstream InventoryLot Unit Cost
 ↓
-Selling Price
+Commercial Pricing & Profitability Visibility (06_POS_ENGINE)
 
 Supplier pricing continuity should remain:
 	•	operationally connected,
@@ -87,13 +87,13 @@ Procurement Pricing Principle
 Supplier pricing interacts directly with:
 	•	procurement continuity systems.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
-Purchase Order
+Purchase Order / Invoice
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Inventory Valuation
+InventoryLot Initial Cost Basis (02_INVENTORY_ENGINE)
 
 Procurement continuity preserves:
 	•	sourcing explainability,
@@ -101,19 +101,21 @@ Procurement continuity preserves:
 	•	and operational trust.
 
 Inventory Valuation Principle
-Supplier pricing directly affects:
-	•	inventory valuation continuity.
+Supplier pricing establishes:
+	•	initial acquisition cost basis for InventoryLots.
 Example:
-Supplier Material Price
+Supplier Material Invoice Price + Landed Costs
 ↓
-Inventory Valuation
+InventoryLot Acquisition Cost Basis (02_INVENTORY_ENGINE)
 ↓
-Operational Costing
+Costing Engine Lot Valuation Policy (07_COSTING_ENGINE)
+↓
+Operational Realized COGS
 
 Inventory valuation continuity preserves:
 	•	operational economic explainability.
 The system should preserve:
-	•	sourcing-to-cost continuity.
+	•	sourcing-to-cost continuity without duplicating costing calculations.
 
 Pricing Evolution Principle
 Supplier pricing may evolve over time.
@@ -180,11 +182,11 @@ Yield Relationship Principle
 Supplier pricing continuity may interact with:
 	•	operational yield continuity.
 Example:
-Green Coffee Cost
+Green Coffee Raw Cost
 ↓
-Roasting Yield
+Roasting Physical Yield (measured by Roasting Engine)
 ↓
-Cost Per Usable Kilogram
+Effective Unit Cost (calculated by 07_COSTING_ENGINE)
 ↓
 Operational Profitability
 
@@ -223,15 +225,15 @@ Pricing Traceability Principle
 Supplier pricing should remain:
 	•	operationally traceable.
 Example:
-Supplier Price
+Supplier Invoice Price
 ↓
-Inventory Intake
+PURCHASE_RECEIPT (InventoryLot Cost Basis)
 ↓
-Operational Costing
+07_COSTING_ENGINE Propagation
 ↓
-Finished Product Cost
+Finished Product Lot Valuation
 ↓
-Selling Price
+Selling Price & Gross Margin (06_POS_ENGINE)
 
 Pricing continuity preserves:
 	•	sourcing-to-profitability genealogy visibility.
@@ -260,11 +262,11 @@ Supplier System
 ↓
 Procurement Engine
 ↓
-Inventory Engine
+Inventory Engine (PURCHASE_RECEIPT → InventoryLot)
 ↓
-Costing Engine
+Costing Engine (07_COSTING_ENGINE Lot Valuation & COGS)
 ↓
-Pricing Engine
+POS Engine (Commercial Pricing & Revenue)
 
 Supplier pricing continuity acts as:
 	•	operational economic infrastructure between systems.

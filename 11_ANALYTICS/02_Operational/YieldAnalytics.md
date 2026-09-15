@@ -67,28 +67,40 @@ Yield analytics should preserve:
 
 Core Yield Principle
 Every operational yield metric should preserve:
-	•	transformation continuity context.
-Example:
-10kg Green Coffee
-↓ roasting shrinkage
-8.5kg Roasted Coffee
+	•	transformation continuity context across appropriate units of measure (mass, volume, count, discrete units).
+Example (Roasting Mass Yield):
+10kg Green Coffee (InventoryLot)
+↓ roasting shrinkage (Transformation)
+8.5kg Roasted Coffee (InventoryLot)
 ↓ blending
-8.3kg Blend Output
+8.3kg Blend Output (InventoryLot)
+
+Example (RTD Volume Yield):
+5kg Roasted Coffee + 50L Water
+↓ extraction & filtration (Transformation)
+42L Cold Brew Concentrate (InventoryLot)
+
+Example (Drip Bag Count Yield):
+10kg Ground Coffee + 1000 Empty Filters
+↓ packaging & nitrogen flushing (Transformation)
+980 Finished Drip Bags (InventoryLot)
 
 Yield continuity should remain:
 	•	operationally connected,
+	•	unit-aware (e.g. mass, volume, count),
 	•	explainable,
 	•	and traceable.
 
 Transformation Visibility Principle
 Yield analytics should preserve:
 	•	operational transformation visibility.
-Examples:
-Roasting Shrinkage
-Blend Loss
-Packaging Yield
-Production Reduction
-Operational Waste
+Analytical dimensions include:
+Roasting Mass Shrinkage
+Blend Mass Loss
+Cold Brew Extraction Volume Yield
+Drip Bag Unit Count Yield
+Packaging Output Yield
+Operational Residue / Waste
 
 Transformation visibility supports:
 	•	operational explainability,
@@ -114,18 +126,18 @@ Context continuity preserves:
 
 Workflow Yield Principle
 Yield analytics should preserve:
-	•	workflow continuity visibility.
-Examples:
+	•	workflow continuity visibility across generic N:M transformations.
+Analytical Views:
 Inventory Intake Yield
-Roasting Yield
-Blend Yield
-Production Yield
-Packaging Yield
+Roasting Transformation Yield
+Blend Transformation Yield
+Derivative Production Yield (RTD / Cold Brew)
+Assembly & Packaging Yield
 
 Workflow continuity preserves:
 	•	operational transformation explainability.
 Operators should be able to:
-	•	understand quantity evolution,
+	•	understand quantity evolution across distinct physical units,
 	•	identify operational loss,
 	•	and evaluate transformation stability.
 
@@ -133,13 +145,13 @@ Quantity Evolution Principle
 Yield analytics should preserve:
 	•	quantity continuity visibility.
 Example:
-Raw Material
+Input Material (InventoryLot)
 ↓
 Operational Transformation
 ↓
-Usable Output
+Usable Output Material (InventoryLot)
 ↓
-Finished Goods
+Commercial SKU Packaging (InventoryLot)
 
 Quantity continuity preserves:
 	•	operational explainability,
@@ -148,15 +160,13 @@ Quantity continuity preserves:
 
 Yield Traceability Principle
 Yield analytics should preserve:
-	•	genealogy continuity visibility.
+	•	genealogy continuity visibility via 08_BATCH_TRACEABILITY.
 Example:
-GreenBeanInventory
-↓ roasting
-RoastBatch
-↓ blending
-BlendBatch
-↓ production
-FinishedGoodsInventory
+Input InventoryLot(s)
+↓ Transformation
+Execution Batch
+↓ Transformation
+Output InventoryLot(s)
 
 Yield continuity preserves:
 	•	operational ancestry explainability.

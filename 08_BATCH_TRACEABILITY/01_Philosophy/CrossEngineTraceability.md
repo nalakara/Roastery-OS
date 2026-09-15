@@ -60,30 +60,33 @@ Sales
 Analytics
 
 Cross-engine traceability should preserve:
-	•	operational continuity across systems, not merely:
-	•	data synchronization.
-
-Core Continuity Principle
+	•	operational continuity across systems,not merely:
+	•	data syCore Continuity Principle
 Every operational transformation should remain:
 	•	traceable across engines.
 Example:
-GreenBeanInventory
-↓ Inventory Engine
+InventoryLot (Green Coffee)
+↓ Inbound Receiving (Supplier System)
 
-RoastBatch
-↓ Roasting Engine
+Roasting Transformation (executed in Roasting Engine context)
+↓ output
 
-BlendBatch
-↓ Blend Engine
+InventoryLot (Roasted Coffee)
+↓ input
 
-ProductionBatch
-↓ Production Engine
+Blend Transformation (executed in Blend Engine context)
+↓ output
 
-FinishedGoodsInventory
-↓ Inventory Engine
+InventoryLot (Blend)
+↓ input
 
-Sales Order
-↓ Sales Engine
+Packaging Transformation (executed in Production Engine context)
+↓ output
+
+InventoryLot (Packaged SKU Lot)
+↓ POS Fulfillment (POS Engine)
+
+Sales Order & Fulfillment Dispatch
 
 Each engine should preserve:
 	•	downstream operational continuity.
@@ -92,11 +95,11 @@ Operational Continuity Principle
 Operational workflows naturally span:
 	•	multiple systems.
 Examples:
-Inventory Intake
-Roasting Workflow
-Blend Workflow
-Production Workflow
-Sales Workflow
+Inventory Intake & Lot Creation (Supplier / Inventory Engine)
+Roasting Transformation (Roasting Engine)
+Blend Transformation (Blend Engine)
+Production & Packaging Transformation (Production Engine)
+Sales Fulfillment & Order Dispatch (POS Engine)
 
 Cross-engine traceability preserves:
 	•	how operational reality evolves between domains.
@@ -107,6 +110,8 @@ Engine Relationship Principle
 Operational engines should behave as:
 	•	continuity-connected systems.
 Example:
+Supplier System
+↕
 Inventory Engine
 ↕
 Roasting Engine
@@ -114,6 +119,8 @@ Roasting Engine
 Blend Engine
 ↕
 Production Engine
+↕
+POS Engine
 ↕
 Costing Engine
 
@@ -124,29 +131,31 @@ Shared Lineage Principle
 Operational lineage should remain:
 	•	portable across engines.
 Example:
-RoastBatch
+Transformation Event & Batch Context
 → visible inside:
-- Inventory Engine
-- Blend Engine
-- Costing Engine
-- Traceability Engine
+- Inventory Engine (material balances and lot state)
+- Roasting / Blend / Production Engine (process parameters)
+- Costing Engine (cost allocation and valuation reference)
+- Traceability Engine (lineage graph and audit trail)
 
 Shared lineage preserves:
 	•	ecosystem-wide operational visibility.
 
 Identity Continuity Principle
-Batch identity should remain:
+Batch and lot identity should remain:
 	•	consistent across systems.
 Example:
-RB-20260521-001
+Transformation / Batch: RB-20260521-001
+Output Lot: LOT-ROAST-20260521-001
 
 The same identity should preserve:
-	•	operational continuity throughout:
+	•	operational continuity
+throughout:
 	•	roasting,
 	•	blending,
 	•	production,
 	•	costing,
-	•	and sales workflows.
+	•	and sales fulfillment workflows.
 The system should avoid:
 	•	engine-specific identity fragmentation.
 
@@ -154,39 +163,40 @@ Inventory Continuity Principle
 Inventory should remain:
 	•	operationally connected across engines.
 Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
+InventoryLot (Green Coffee)
+↓ Roasting Transformation (RoastBatch context)
+InventoryLot (Roasted Coffee)
+↓ Blending Transformation (BlendBatch context)
+InventoryLot (Blend)
 
 Inventory evolution should preserve:
 	•	ecosystem-wide genealogy continuity.
 
 Costing Continuity Principle
-Cost relationships should remain:
+Cost provenance relationships should remain:
 	•	traceable across engines.
 Example:
-GreenBean Cost
-↓ Roasting Engine
-Roasted Coffee Cost
-↓ Blend Engine
-Blend Cost
-↓ Production Engine
-Finished Goods Cost
+Green Coffee Inbound Cost
+↓ Roasting Transformation (Costing Engine valuation)
+Roasted Coffee Unit Cost
+↓ Blend Transformation (Costing Engine valuation)
+Blend Unit Cost
+↓ Packaging Transformation (Costing Engine valuation)
+Finished Goods SKU Unit Cost
 
 Cross-engine costing continuity preserves:
 	•	operational profitability visibility.
+Economic calculations and valuation policies remain owned by Costing Engine.
 
 Yield Continuity Principle
 Yield behavior should remain:
 	•	traceable across systems.
 Example:
-10kg Green Bean
+10kg Green Coffee Input Lot
 ↓ roasting shrinkage
-8.5kg Roasted Coffee
-↓ production loss
-8.2kg Finished Goods
+8.5kg Roasted Coffee Lot
+↓ packaging residue & portioning
+8.2kg Packaged Goods SKU Lot
 
 Yield continuity preserves:
 	•	where quantity evolved,
@@ -199,11 +209,11 @@ Packaging Continuity Principle
 Packaging workflows create:
 	•	commercially transformed continuity states.
 Example:
-BlendInventory
-↓ Production Engine
-FinishedGoodsInventory
-↓ Sales Engine
-Commercial Product
+Bulk Roasted/Blend InventoryLot + Packaging Material InventoryLot
+↓ Packaging Transformation (Production Engine)
+Packaged Goods InventoryLot
+↓ Sales Fulfillment (POS Engine)
+Commercial Product Sold
 
 Packaging continuity preserves:
 	•	operational-commercial lineage continuity.
@@ -212,17 +222,17 @@ Sales Continuity Principle
 Sales workflows should preserve:
 	•	upstream operational ancestry.
 Example:
-Customer Purchase
+Customer Order & POS Line Item
 ↓
-Finished Goods
+Fulfilled InventoryLot(s)
 ↓
-ProductionBatch
+Packaging Transformation (ProductionBatch context)
 ↓
-BlendBatch
+Blend Transformation (BlendBatch context)
 ↓
-RoastBatch
+Roasting Transformation (RoastBatch context)
 ↓
-GreenBeanInventory
+Inbound Receiving & Green Coffee InventoryLot (SupplierMaster origin)
 
 Sales traceability should preserve:
 	•	customer-to-origin continuity.
@@ -252,14 +262,14 @@ Operators should understand:
 	•	how transformations evolved,
 	•	and how systems interacted operationally.
 Cross-engine systems should support:
-	•	operational trust, not merely:
+	•	operational trust,not merely:
 	•	inter-system synchronization.
 
 Operational Truth Principle
 Cross-engine traceability represents:
 	•	ecosystem-wide operational truth continuity.
 The system should preserve:
-	•	what operationally occurred across systems, not merely:
+	•	what operationally occurred across systems,not merely:
 	•	isolated system records.
 This distinction is critical for:
 	•	operational trust,
@@ -306,7 +316,7 @@ Cross-engine traceability systems should remain understandable for:
 Operators should be able to:
 	•	follow operational continuity,
 	•	understand system relationships,
-	•	and trace inventory evolution without enterprise ERP complexity.
+	•	and trace inventory evolutionwithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Continuity Philosophy
@@ -322,7 +332,7 @@ RTD Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the continuity foundation.
 
 AI Boundary Philosophy
@@ -331,7 +341,7 @@ AI systems may:
 	•	identify operational anomalies,
 	•	recommend workflow optimization,
 	•	and support recall analytics.
-However: AI must not autonomously manipulate deterministic continuity relationships.
+However:AI must not autonomously manipulate deterministic continuity relationships.
 Critical operational continuity must remain:
 	•	explicit,
 	•	traceable,
@@ -353,7 +363,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Cross Engine Traceability acts as:
-	•	the ecosystem continuity infrastructure inside Roastery OS.
+	•	the ecosystem continuity infrastructureinside Roastery OS.
 This system influences:
 	•	inventory genealogy,
 	•	costing continuity,

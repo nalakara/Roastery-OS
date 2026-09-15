@@ -2,347 +2,115 @@
 
 ## Purpose
 
-This document defines the costing philosophy and operational costing behavior used within the Production Engine of Roastery OS.
+This document defines the interface and operational boundary between the Production Engine and the Costing Engine (`07_COSTING_ENGINE`) inside Roastery OS.
 
 The purpose of Production Costing Logic is to:
-- preserve transformation-aware valuation,
-- maintain deterministic costing continuity,
-- support operational profitability visibility,
-- and standardize finished goods production economics.
-
-Production workflows directly affect:
-- inventory valuation,
-- finished goods economics,
-- and commercial profitability.
-
-Production costing is one of the operational intelligence layers inside the Production Engine.
+- define the physical production inputs and outputs that feed the economic valuation engine,
+- enforce strict ownership boundaries between physical manufacturing execution and financial cost accounting,
+- ensure accurate capitalization of packaging, additives, and direct conversion costs,
+- and preserve end-to-end cost provenance and traceability.
 
 ---
 
 # Core Philosophy
 
-Roastery OS treats production costing as:
-- transformation-aware operational valuation,
-- commercial inventory economics,
-- and manufacturing-oriented cost evolution.
+Roastery OS strictly separates **physical production execution** from **economic valuation**:
 
-Production costing is not merely:
-- static retail pricing,
-- or inventory repricing.
+```text
+[ Production Engine ]
+  • Physical recipe mass / counts (Q_consumed, i)
+  • Physical output quantity / unit counts (Q_out)
+  • Physical scrap / handling loss
+  • Direct cost event capture (C_direct)
+            │
+            ▼ (Physical Quantities & Direct Events)
+[ 07_COSTING_ENGINE ]
+  • Consumed value calculation: V_consumed = ∑ (Q_consumed, i × U_consumed, i)
+  • Direct cost capitalization: C_direct
+  • Canonical Equation 1 (Unit Cost Derivation): U_out = (V_consumed + C_direct) / Q_out
+  • Canonical Equation 7 (Provenance Decomposition)
+            │
+            ▼ (Valuation Postings)
+[ Inventory Lot Asset Value ] (U_out assigned to target InventoryLot)
+```
 
-Production workflows create:
-- new inventory value,
-- new commercial cost structures,
-- and new profitability behavior.
-
-The system should preserve:
-- costing continuity,
-- transformation visibility,
-- and deterministic operational calculations.
+The Production Engine **does not perform valuation arithmetic or mutate inventory values**. It provides deterministic physical measurements to the Costing Engine.
 
 ---
 
-# Costing Philosophy
+# Transformation Cost Boundary
 
-Traditional inventory systems commonly interpret production as:
+In the Production Engine, every `ProductionBatch` represents a physical `Transformation`.
 
-```text id="x5m8tw"
-Inventory
-+
-Packaging
-=
-Retail Price
-Roastery OS uses a transformation-oriented costing model:
-Source Inventory Cost
-+
-Packaging Cost
-+
-Production Overhead
-+
-Yield Impact
-↓
-FinishedGoodsInventory Cost
-Production valuation evolves together with:
-	•	inventory transformation,
-	•	packaging workflows,
-	•	production behavior,
-	•	and operational yield.
+### 1. Consumed Materials Valuation ($V_{\text{consumed}}$)
+Production transformations consume multiple physical `InventoryLot` inputs:
+- **Base Coffee Lots:** (e.g. Roasted Whole Bean or Cold Brew Liquid).
+- **Packaging Material Lots:** (e.g. 250g Valve Bags, Glass Bottles, Tin Cans, Drip Filter Pouches).
+- **Additives / Formulation Ingredients:** (e.g. Water, Syrups, Nitrogen).
 
-Core Costing Principle
-Every ProductionBatch should preserve:
-	•	source inventory valuation,
-	•	packaging cost continuity,
-	•	production overhead visibility,
-	•	yield-adjusted costing,
-	•	and resulting finished goods valuation.
+Each consumed lot $i$ has a known, immutable unit cost $U_{\text{consumed}, i}$ established at the moment of depletion. The Costing Engine aggregates total consumed value:
+$$V_{\text{consumed}} = \sum_{i=1}^{n} \left( Q_{\text{consumed}, i} \times U_{\text{consumed}, i} \right)$$
+
+### 2. Direct Capitalizable Added Costs ($C_{\text{direct}}$)
+Specific, direct, batch-traceable cash expenditures may be attached directly to the production transformation via `CostEvent` records:
+- Outsourced contract canning/bottling fees,
+- Machine hourly capitalizable run costs,
+- Direct piece-rate packaging labor.
+
+*Note: General administrative overhead and indirect fixed labor are NOT capitalized into inventory lots unless explicitly configured via the Costing Engine.*
+
+### 3. Output Unit Cost Derivation (Canonical Equation 1)
+The Costing Engine calculates the unit cost for the produced output `InventoryLot` ($U_{\text{out}}$) by dividing the total transformation economic pool by the actual physical produced quantity ($Q_{\text{out}}$):
+
+$$U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$$
+
+Where:
+- $V_{\text{consumed}} =$ Total economic value of all consumed coffee, packaging, and additive lots.
+- $C_{\text{direct}} =$ Total direct capitalizable added costs.
+- $Q_{\text{out}} =$ Actual measured physical output units or mass (e.g. 39 units of 250g bags, or 18.5 L of cold brew).
+
+---
+
+# Yield & Handling Loss Absorption
+
+Production workflows naturally experience physical handling loss, grinding retention, brewing absorption, and packaging scrap.
+
+Because Canonical Equation 1 divides the full economic pool $(V_{\text{consumed}} + C_{\text{direct}})$ by the actual produced quantity $Q_{\text{out}}$, **the financial cost of physical shrinkage and scrap is automatically and mathematically absorbed into the remaining output units**.
+
 Example:
-BlendInventory Cost
-+
-Packaging Cost
-+
-Operational Cost
-↓
-FinishedGoodsInventory Cost
-Production costing should remain:
-	•	traceable,
-	•	deterministic,
-	•	and operationally understandable.
+- Consumed Coffee: $10.0\text{ kg} \times \$15.00/\text{kg} = \$150.00$
+- Consumed Bags: $40\text{ units} \times \$0.50/\text{unit} = \$20.00$
+- Direct Boxing Fee: $\$10.00$
+- Total Economic Pool: $\$150.00 + \$20.00 + \$10.00 = \$180.00$
+- Actual Produced Output ($Q_{\text{out}}$): $39\text{ bags}$ (1 bag lost during machine sealing / purge)
+- Output Unit Cost ($U_{\text{out}}$):
+  $$U_{\text{out}} = \frac{\$180.00}{39\text{ bags}} = \$4.6154/\text{bag}$$
 
-Source Inventory Cost Principle
-Production valuation originates from:
-	•	production-ready inventory valuation.
-Examples:
-BlendInventory
-RoastedCoffeeInventory
-Source valuation should preserve:
-	•	upstream costing continuity,
-	•	roasting economics,
-	•	blend economics,
-	•	and operational profitability lineage.
+No manual write-off or secondary cost adjustment is required during standard production.
 
-Packaging Cost Principle
-Packaging is treated as:
-	•	operational production cost.
-Examples:
-Coffee Bag
-Bottle
-Label
-Cap
-Drip Bag Filter
-Box Packaging
-Packaging costs should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally meaningful.
-Packaging should not become:
-	•	hidden valuation mutation.
+---
 
-Production Overhead Philosophy
-Production workflows may introduce:
-	•	labor cost,
-	•	preparation cost,
-	•	equipment usage,
-	•	utility cost,
-	•	and operational handling cost.
-Examples:
-Grinding Labor
-Cold Brew Preparation
-RTD Filling
-Packaging Preparation
-Machine Usage
-The MVP should keep overhead handling:
-	•	lightweight,
-	•	operationally understandable,
-	•	and optionally configurable.
-The MVP should avoid:
-	•	enterprise manufacturing accounting complexity.
+# Analytical Cost Provenance Decomposition (Canonical Equation 7)
 
-Core Cost Formula
-Production costing uses transformation-aware valuation logic.
-Finished Goods Cost=Source Inventory Cost+Packaging Cost+Production Overhead\text{Finished Goods Cost} = \text{Source Inventory Cost} + \text{Packaging Cost} + \text{Production Overhead}Finished Goods Cost=Source Inventory Cost+Packaging Cost+Production Overhead
+To ensure full commercial transparency, the Costing Engine maintains analytical provenance breakdown for every produced lot via Canonical Equation 7:
 
-Yield-Aware Costing Principle
-Production workflows may introduce:
-	•	handling loss,
-	•	packaging loss,
-	•	purge,
-	•	residue,
-	•	and operational shrinkage.
-Example:
-10kg BlendInventory
-↓ Production
-9.7kg FinishedGoodsInventory
-Yield behavior directly affects:
-	•	resulting finished goods valuation.
-The system should preserve:
-	•	yield-adjusted costing continuity.
+$$U_{\text{out}} = U_{\text{raw\_coffee}} + U_{\text{roast\_direct}} + U_{\text{packaging}} + U_{\text{production\_direct}} + U_{\text{yield\_drag}}$$
 
-Yield-Adjusted Cost Formula
-Basic yield-adjusted production valuation:
-Adjusted Cost Per Unit=Total Production CostFinal Output Quantity\text{Adjusted Cost Per Unit} = \frac{\text{Total Production Cost}}{\text{Final Output Quantity}}Adjusted Cost Per Unit=Final Output QuantityTotal Production Cost​
+This enables the roastery to see exactly how much of a \$4.62 retail bag's cost comes from green coffee sourcing, roasting labor/energy, packaging materials, and manufacturing shrinkage.
 
-Example Calculation
-Example workflow:
-BlendInventory Cost:
-$14/kg
+---
 
-Packaging Cost:
-$2/kg
+# Summary of Engine Responsibilities
 
-Production Overhead:
-$1/kg
-Final valuation:
-14+2+1=1714 + 2 + 1 = 1714+2+1=17
-Result:
-FinishedGoodsInventory Cost:
-$17/kg
-This represents:
-	•	operational production valuation,  not:
-	•	retail pricing.
+| Responsibility | Production Engine | Costing Engine (`07_COSTING_ENGINE`) |
+| :--- | :---: | :---: |
+| Recipe Formulation & Ratios | **OWNS** | Read-Only |
+| Physical Input Depletion ($Q_{\text{consumed}, i}$) | **OWNS** | Read-Only |
+| Physical Output Quantity ($Q_{\text{out}}$) | **OWNS** | Read-Only |
+| Physical Scrap / Purge Tracking | **OWNS** | Read-Only |
+| Input Lot Valuation Lookup ($U_{\text{consumed}, i}$) | External | **OWNS** |
+| Total Consumed Value ($V_{\text{consumed}}$) | External | **OWNS** |
+| Output Unit Cost Derivation ($U_{\text{out}}$) | External | **OWNS** |
+| Cost Provenance Decomposition (Eq 7) | External | **OWNS** |
 
-Finished Goods Valuation Philosophy
-FinishedGoodsInventory represents:
-	•	newly transformed commercial inventory value.
-Finished goods valuation should preserve:
-	•	production continuity,
-	•	packaging transformation behavior,
-	•	and operational production economics.
-Finished goods become:
-	•	standalone commercial valuation entities.
-
-Costing Continuity Principle
-Production costing should preserve continuity across downstream workflows.
-Example:
-BlendInventory Cost
-↓ ProductionBatch
-FinishedGoodsInventory Cost
-↓ Sales
-COGS
-Each transformation stage should preserve:
-	•	valuation lineage,
-	•	operational continuity,
-	•	and profitability visibility.
-
-Profitability Visibility Principle
-Production costing should support:
-	•	operational pricing understanding,
-	•	profitability awareness,
-	•	and commercial production intelligence.
-Operators should understand:
-	•	packaging impact,
-	•	derivative product economics,
-	•	yield impact,
-	•	and production profitability behavior.
-Costing systems should support:
-	•	operational visibility,  not merely:
-	•	accounting reporting.
-
-Costing vs Accounting Principle
-Roastery OS distinguishes between:
-	•	operational production costing,  and:
-	•	enterprise accounting systems.
-Example:
-Operational Production Costing
-≠
-Accounting Ledger
-The MVP prioritizes:
-	•	operational profitability visibility,  not:
-	•	accounting compliance infrastructure.
-Formal accounting integration may evolve later without redesigning the production architecture.
-
-Derivative Product Costing Principle
-Different production workflows may create:
-	•	different costing behaviors.
-Examples:
-Ground Coffee
-→ grinding cost
-
-Cold Brew
-→ brewing + storage cost
-
-RTD
-→ filling + packaging cost
-The architecture should support:
-	•	workflow-specific costing behavior,
-	•	without redesigning the costing foundation.
-
-Deterministic Costing Principle
-Critical production costing behavior must remain deterministic.
-Examples:
-	•	inventory valuation continuity,
-	•	packaging cost allocation,
-	•	yield-adjusted valuation,
-	•	and finished goods costing.
-Costing workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden valuation mutation,
-	•	ambiguous costing behavior,
-	•	and disconnected production economics.
-
-Traceability Principle
-Production costing should preserve valuation lineage.
-Example:
-RoastedCoffeeInventory Cost
-↓ BlendBatch
-BlendInventory Cost
-↓ ProductionBatch
-FinishedGoodsInventory Cost
-Valuation continuity should remain:
-	•	traceable,
-	•	deterministic,
-	•	and operationally understandable.
-
-Human-Centered Philosophy
-Production costing should remain understandable for operational users.
-Operators should be able to:
-	•	understand finished goods economics,
-	•	evaluate profitability,
-	•	and trace costing continuity  without accounting-level complexity.
-Operational clarity should take priority over financial abstraction.
-
-AI Boundary Philosophy
-AI systems may:
-	•	analyze profitability behavior,
-	•	recommend production optimization,
-	•	identify costing anomalies,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic costing relationships.
-Critical costing behavior must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
-
-MVP Scope
-The MVP Production Costing system should prioritize:
-	•	source inventory valuation continuity,
-	•	packaging cost visibility,
-	•	yield-adjusted valuation,
-	•	profitability visibility,
-	•	and deterministic costing continuity.
-The MVP intentionally excludes:
-	•	enterprise accounting systems,
-	•	industrial ERP finance modules,
-	•	predictive pricing AI,
-	•	and advanced manufacturing accounting.
-
-Architectural Notes
-Production Costing Logic is one of the operational intelligence layers inside the Production Engine.
-Costing systems influence:
-	•	pricing,
-	•	profitability,
-	•	inventory valuation,
-	•	production planning,
-	•	and commercial analytics.
-Production costing should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend costing behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The Production Costing system is designed to support future evolution toward:
-	•	profitability analytics,
-	•	AI-assisted production optimization,
-	•	predictive operational economics,
-	•	commercial forecasting,
-	•	and advanced manufacturing intelligence.
-However, production costing behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
-
-Philosophy Summary
-Production costing is not merely:
-	•	retail pricing,
-	•	or inventory repricing.
-Production costing is:
-	•	transformation-aware valuation,
-	•	operational manufacturing economics,
-	•	and commercial inventory cost evolution.
-Production workflows change not only inventory identity,  but also operational inventory value.
+The Production Engine maintains strict adherence to physical execution and delegates 100% of economic math to `07_COSTING_ENGINE`.

@@ -5,15 +5,15 @@
 This document defines the foundational blending philosophy used across Roastery OS.
 
 The purpose of this philosophy is to establish:
-- how blending is interpreted operationally,
-- how blends behave as production entities,
-- how blend transformation preserves inventory lineage,
-- and how blend workflows remain deterministic and traceable.
+- how blending is interpreted operationally as an $N \to M$ / $N \to 1$ material transformation,
+- how blends behave as production entities distinct from commercial SKUs,
+- how blend transformation preserves multi-parent inventory lineage across `InventoryLot` instances,
+- and how blend workflows remain deterministic, physically measurable, and traceable.
 
-Blending is one of the core transformation systems inside Roastery OS.
+Blending is one of the core physical transformation systems inside Roastery OS.
 
 Blend production represents:
-- composition-based inventory transformation.
+- composition-based physical inventory transformation.
 
 ---
 
@@ -30,15 +30,14 @@ Blending is not merely:
 - or creating retail products.
 
 Blending creates:
-- new inventory identity,
-- new operational lineage,
-- new costing structures,
-- and new production behavior.
+- new physical inventory identity (`InventoryLot`),
+- new operational lineage (multi-parent DAG node),
+- and new physical production behavior.
 
-The system should preserve:
-- blend composition,
+The system preserves:
+- blend composition ratios,
 - transformation continuity,
-- operational traceability,
+- physical operational traceability,
 - and production readability.
 
 ---
@@ -47,287 +46,302 @@ The system should preserve:
 
 Traditional POS systems commonly interpret blends as:
 
-```text id="u7m4tw"
+```text
 Product Label
 +
 Coffee Name
+```
+
 Roastery OS uses a production-oriented operational model:
-RoastedCoffeeInventory
+
+```text
+Input InventoryLot (Material: Roasted Coffee A, INTERMEDIATE)
 +
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
+Input InventoryLot (Material: Roasted Coffee B, INTERMEDIATE)
+↓ BlendBatch (Transformation Execution)
+Output InventoryLot (Material: Espresso Blend, INTERMEDIATE / DERIVATIVE)
+```
+
 Blending is treated as:
-	•	operational transformation,
-	•	not commercial categorization.
+- operational transformation,
+- not commercial categorization.
+
 Blend production creates:
-	•	a new operational inventory state.
+- a new physical `InventoryLot` with intermediate or derivative material state.
 
-Composition Philosophy
-Every blend should preserve:
-	•	measurable composition structure.
+---
+
+# Composition Philosophy
+
+Every blend preserves:
+- measurable composition structure based on `MaterialMaster` specifications.
+
 Example:
-Brazil Natural → 60%
-Ethiopia Washed → 40%
-Blend composition should remain:
-	•	traceable,
-	•	reproducible,
-	•	operationally meaningful,
-	•	and human-readable.
-The system should preserve:
-	•	source ratio continuity,
-	•	and composition visibility.
+- Brazil Natural (`MaterialMaster`) → 60%
+- Ethiopia Washed (`MaterialMaster`) → 40%
 
-BlendRecipe Philosophy
-BlendRecipe represents:
-	•	reusable formulation intention.
-BlendRecipe is not:
-	•	actual inventory,
-	•	or production execution.
-BlendRecipe defines:
-	•	intended composition structure.
+Blend composition remains:
+- traceable,
+- reproducible,
+- operationally meaningful,
+- and human-readable.
+
+The system preserves:
+- source ratio continuity ($\sum \text{ratio} = 100\%$),
+- and component composition visibility.
+
+---
+
+# BlendRecipe Philosophy
+
+`BlendRecipe` represents:
+- reusable formulation intention and physical specification template.
+
+`BlendRecipe` is not:
+- actual stock or inventory instance,
+- or production execution.
+
+`BlendRecipe` defines:
+- intended material composition structure and ratios across `MaterialMaster` definitions.
+
 Example:
-House Espresso Blend
-60% Brazil
-40% Ethiopia
-Blend recipes should remain:
-	•	reusable,
-	•	flexible,
-	•	and production-oriented.
+- House Espresso Blend Recipe:
+  - 60% Brazil Cerrado (Material)
+  - 40% Ethiopia Guji (Material)
 
-BlendBatch Philosophy
-BlendBatch represents:
-	•	actual blend production execution.
-BlendBatch:
-	•	consumes roasted inventory,
-	•	creates blend inventory,
-	•	and preserves transformation lineage.
+Blend recipes remain:
+- reusable,
+- versionable,
+- flexible,
+- and production-oriented.
+
+---
+
+# BlendBatch Philosophy
+
+`BlendBatch` represents:
+- actual blend production execution (`Transformation`).
+
+`BlendBatch`:
+- consumes source physical stock (`TRANSFORMATION_CONSUME` on source `InventoryLot` instances),
+- creates transformed output stock (`TRANSFORMATION_PRODUCE` on target `InventoryLot`),
+- and preserves transformation lineage.
+
 Example:
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-BlendBatch acts as:
-	•	transformation event,
-	•	production execution record,
-	•	and operational traceability anchor.
+```text
+Source InventoryLots (Consumed)
+↓ BlendBatch (Execution)
+Target InventoryLot (Produced)
+```
 
-BlendInventory Philosophy
-BlendInventory represents:
-	•	newly transformed blend stock.
-BlendInventory acts as:
-	•	operational inventory identity,
-	•	production-ready inventory,
-	•	and future workflow input.
+`BlendBatch` acts as:
+- transformation event,
+- production execution record,
+- and operational traceability anchor.
+
+---
+
+# Transformed Blend Stock Philosophy
+
+Produced blend stock represents:
+- newly transformed physical stock (`InventoryLot` with state `AVAILABLE` / `DEPLETED`).
+
+Produced blend stock acts as:
+- operational inventory identity,
+- production-ready inventory,
+- and future workflow input.
+
 Blend inventory may later:
-	•	be sold directly,
-	•	be packaged,
-	•	be ground,
-	•	or enter derivative production workflows.
-Example:
-BlendInventory
-↓ Packaging
-FinishedGoodsInventory
+- enter packaging workflows (`InventoryLot` + `PackagingTypeMaster` $\to$ Finished Goods `InventoryLot`),
+- be ground/processed,
+- or enter derivative production workflows.
 
-Blend Identity Philosophy
-A blend should behave as:
-	•	an operational production entity.
-Example:
-Blend
-≠
-Retail SKU
-A single blend may later produce:
-	•	multiple packaging formats,
-	•	multiple retail SKUs,
-	•	and multiple derivative products.
+```text
+Blend InventoryLot (INTERMEDIATE)
+↓ Packaging Transformation
+Packaged Coffee InventoryLot (FINISHED_GOODS)
+```
+
+---
+
+# Blend Identity vs Retail SKU Philosophy
+
+A blend behaves as:
+- an operational production entity and physical `MaterialMaster`.
+
+```text
+Blend (MaterialMaster) ≠ Retail SKU (Sales / Commercial Unit)
+```
+
+A single blend material may later produce:
+- multiple packaging formats (e.g., 250g bag, 1kg bag, bulk tote),
+- multiple retail SKUs,
+- and multiple derivative products.
+
 This separation preserves:
-	•	modular architecture,
-	•	production scalability,
-	•	and operational flexibility.
+- modular architecture,
+- production scalability,
+- and operational flexibility.
 
-Blend Types Philosophy
-The system should support flexible blend structures.
+---
+
+# Blend Types Philosophy
+
+The system supports flexible blend structures.
+
 Examples:
-Espresso Blend
-House Blend
-Filter Blend
-Omni Blend
-Seasonal Blend
-Milk Blend
-Signature Blend
-The architecture should not assume:
-	•	all blends behave identically,
-	•	or follow rigid commercial taxonomy.
-Blend structures should remain:
-	•	operationally adaptable,
-	•	and production-oriented.
+- Espresso Blend
+- House Blend
+- Filter Blend
+- Omni Blend
+- Seasonal Blend
+- Milk Blend
+- Signature Blend
 
-Production-First Philosophy
-Blending should prioritize:
-	•	production behavior,
-	•	inventory continuity,
-	•	and operational transformation.
-Blend workflows should adapt to:
-	•	production logic,  not:
-	•	retail abstraction.
+The architecture does not assume:
+- all blends behave identically,
+- or follow rigid commercial taxonomy.
+
+Blend structures remain:
+- operationally adaptable,
+- and production-oriented.
+
+---
+
+# Production-First Philosophy
+
+Blending prioritizes:
+- physical production behavior,
+- inventory ledger continuity,
+- and operational transformation.
+
+Blend workflows adapt to:
+- production logic, not retail abstraction.
+
 This philosophy differentiates Roastery OS from:
-	•	cafe POS systems,
-	•	generic inventory systems,
-	•	and retail-first operational software.
+- cafe POS systems,
+- generic inventory systems,
+- and retail-first operational software.
 
-Costing Philosophy
-Blend production directly affects:
-	•	inventory valuation,
-	•	operational profitability,
-	•	and production economics.
-Example:
-Brazil Cost
-+
-Ethiopia Cost
-↓
-BlendInventory Cost
-Blend costing should preserve:
-	•	source valuation continuity,
-	•	ratio-weighted costing,
-	•	and deterministic operational calculations.
-Blend valuation should remain:
-	•	traceable,
-	•	operationally understandable,
-	•	and auditable.
+---
 
-Yield Philosophy
+# Costing & Economic Boundary Philosophy
+
+Blend production alters inventory valuation, but economic valuation is governed strictly by the Costing Engine (`07_COSTING_ENGINE`).
+
+Blend Engine owns:
+- physical recipe formulation,
+- physical lot consumption quantities ($Q_{\text{consumed}, i}$),
+- physical output quantity ($Q_{\text{out}}$),
+- and physical handling loss / purge.
+
+Costing Engine owns:
+- economic valuation of consumed inputs ($V_{\text{consumed}} = \sum Q_{\text{consumed}, i} \times U_{\text{consumed}, i}$),
+- aggregation of direct capitalizable costs ($C_{\text{direct}}$),
+- output unit cost calculation via Canonical Equation 1 ($U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$),
+- and analytical provenance decomposition (Canonical Equation 7).
+
+Blend costing preserves:
+- source valuation continuity,
+- ratio-weighted costing,
+- and auditable economic flow.
+
+---
+
+# Yield & Handling Loss Philosophy
+
 Blend production may introduce:
-	•	operational handling loss,
-	•	purge,
-	•	residue,
-	•	and packaging adjustment.
-Example:
-10kg Blend Input
-↓
-9.8kg Blend Output
-Yield behavior should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally meaningful.
-The MVP should preserve:
-	•	simple yield visibility,
-	•	without industrial manufacturing complexity.
+- operational handling loss,
+- purge,
+- container residue,
+- and measurement shrinkage.
 
-Traceability Philosophy
-Blend production should preserve:
-	•	upstream roasting lineage.
 Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
+```text
+10.0 kg Total Consumed Inputs
 ↓ BlendBatch
-BlendInventory
-The system should preserve:
-	•	roasting continuity,
-	•	composition visibility,
-	•	and production transformation history.
-Blend traceability should remain:
-	•	readable,
-	•	deterministic,
-	•	and operationally meaningful.
+9.8 kg Produced Output Stock (0.2 kg Handling Loss / 2.0%)
+```
 
-Deterministic Blend Principle
-Critical blend workflows must remain deterministic.
-Examples:
-	•	roasted inventory deduction,
-	•	composition ratio calculation,
-	•	blend inventory creation,
-	•	costing continuity,
-	•	and traceability relationships.
-Blend operations should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden composition mutation,
-	•	ambiguous blend relationships,
-	•	and disconnected production lineage.
+Yield behavior remains:
+- explicit and measurable,
+- traceable,
+- and recorded on the physical transformation record.
 
-Human-Centered Philosophy
-Blend workflows should remain understandable for real operators.
-Operators should be able to:
-	•	formulate blends,
-	•	execute blend production,
-	•	and understand composition behavior  without manufacturing ERP complexity.
-Operational clarity should take priority over industrial production abstraction.
+Handling loss affects final output unit cost strictly through the physical denominator $Q_{\text{out}}$ in Canonical Equation 1.
 
-Operational Simplicity Principle
-The MVP blend system should remain:
-	•	lightweight,
-	•	operationally practical,
-	•	and production-oriented.
+---
+
+# Traceability Philosophy
+
+Blend production preserves upstream roasting and green coffee lineage via a Directed Acyclic Graph (DAG).
+
+Example:
+```text
+Green Coffee Lot A → RoastBatch A → Roasted Coffee Lot A ↘
+                                                            BlendBatch → Blend Lot AB
+Green Coffee Lot B → RoastBatch B → Roasted Coffee Lot B ↗
+```
+
+The system preserves:
+- multi-parent roasting continuity,
+- component composition visibility,
+- and full production transformation history.
+
+---
+
+# Deterministic Blend Principle
+
+Critical blend workflows must remain deterministic:
+- physical inventory deduction (`TRANSFORMATION_CONSUME`),
+- composition ratio verification ($\sum \% = 100\%$),
+- output lot creation (`TRANSFORMATION_PRODUCE`),
+- costing ledger alignment,
+- and traceability relationships.
+
+The system avoids:
+- hidden composition mutation,
+- ambiguous blend relationships,
+- and disconnected production lineage.
+
+---
+
+# Human-Centered & Operational Simplicity Principle
+
+Blend workflows remain understandable for real operators:
+- formulation is intuitive,
+- batch execution is straightforward,
+- and physical behavior is clear without ERP bureaucracy.
+
 The MVP intentionally avoids:
-	•	industrial formulation systems,
-	•	automated manufacturing orchestration,
-	•	advanced sensory simulation,
-	•	and enterprise production routing.
-Blend workflows should remain:
-	•	understandable,
-	•	traceable,
-	•	and useful for real specialty coffee operations.
+- industrial continuous formulation systems,
+- automated robotic orchestration,
+- and black-box AI optimization.
 
-AI Boundary Philosophy
+---
+
+# AI Boundary Philosophy
+
 AI systems may:
-	•	recommend blend ratios,
-	•	analyze blend consistency,
-	•	simulate flavor balance,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic blend production workflows.
-Critical blend operations must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+- recommend blend component ratios,
+- analyze sensory balance,
+- and support production analytics.
 
-Modular Blend Philosophy
-Different blend workflows may behave differently.
-Examples:
-Espresso Blend
-Filter Blend
-Seasonal Blend
-Experimental Blend
-Milk Blend
-The architecture should support:
-	•	operational flexibility,
-	•	production diversity,
-	•	and future workflow expansion  without redesigning the blend foundation.
+However:
+- AI must NOT autonomously execute inventory mutations or alter deterministic recipes.
+- Critical blend operations remain explicit, deterministic, and human-auditable.
 
-MVP Blend Philosophy
-The MVP Blend Engine should prioritize:
-	•	BlendRecipe structures,
-	•	BlendBatch execution,
-	•	BlendInventory creation,
-	•	costing continuity,
-	•	and blend traceability.
-The MVP should already preserve:
-	•	deterministic blend behavior,
-	•	production lineage,
-	•	and operational continuity  without industrial manufacturing complexity.
+---
 
-Long-Term Direction
-The Blend Philosophy is designed to support future evolution toward:
-	•	flavor simulation systems,
-	•	AI-assisted blend formulation,
-	•	predictive production analytics,
-	•	operational optimization,
-	•	and ecosystem-wide production intelligence.
-However, blend workflows should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+# Philosophy Summary
 
-Philosophy Summary
-Blending is not merely:
-	•	coffee mixing,
-	•	or commercial product labeling.
+Blending is not merely coffee mixing or commercial product labeling.
+
 Blending is:
-	•	recipe-based inventory transformation,
-	•	operational composition engineering,
-	•	and production identity creation.
-Blending is where multiple roasted inventories operationally evolve into a newly traceable production entity inside Roastery OS.
+- recipe-based physical material transformation,
+- operational composition engineering,
+- and production identity creation.
+
+Blending is where multiple source `InventoryLot` instances operationally evolve into a newly traceable, valued production entity inside Roastery OS.
+
 

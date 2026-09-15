@@ -129,13 +129,15 @@ Procurement Communication Principle
 Supplier communication interacts directly with:
 	•	procurement continuity systems.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
-Communication
+Communication & Purchase Order
 ↓
 Procurement Workflow
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
+↓
+InventoryLot (02_INVENTORY_ENGINE)
 
 Procurement continuity preserves:
 	•	sourcing explainability,
@@ -249,9 +251,9 @@ Supplier System
 ↓
 Procurement Engine
 ↓
-Inventory Engine
+Inventory Engine (PURCHASE_RECEIPT → InventoryLot)
 ↓
-Costing Engine
+Costing Engine (Lot Valuation & COGS)
 ↓
 Traceability Engine
 
@@ -263,18 +265,14 @@ This creates:
 Upstream Traceability Principle
 Supplier communication supports:
 	•	sourcing continuity explainability.
-Example:
-Customer Product
+Generic Model:
+Downstream Finished Lot (InventoryLot)
+↓ Transformations / Execution Batches
+Precursor Intermediate Lots
+↓ Originating Receiving (PURCHASE_RECEIPT)
+Purchased InventoryLot
 ↓
-ProductionBatch
-↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBeanInventory
-↓
-Supplier Communication Continuity
+Supplier Communication Continuity (SupplierMaster)
 
 Supplier continuity preserves:
 	•	operational relationship visibility.

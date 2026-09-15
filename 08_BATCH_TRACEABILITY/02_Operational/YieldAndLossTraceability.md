@@ -58,19 +58,17 @@ Yield Evolution
 Output Quantity
 
 Yield traceability should preserve:
-	•	operational quantity evolution, not merely:
-	•	stock difference reporting.
-
-Core Yield Principle
+	•	operational quantity evolution,not merely:
+	•	stock difference Core Yield Principle
 Every operational transformation should preserve:
 	•	input quantity,
 	•	output quantity,
 	•	yield continuity,
 	•	and operational loss explainability.
 Example:
-10kg Green Bean
-↓ roasting shrinkage
-8.5kg Roasted Coffee
+10kg Green Coffee Input Lot
+↓ roasting shrinkage (Transformation)
+8.5kg Roasted Coffee Output Lot
 
 Yield behavior should remain:
 	•	measurable,
@@ -82,39 +80,40 @@ Yield Continuity Principle
 Operational quantity evolution should remain:
 	•	genealogically connected.
 Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
+InventoryLot (Green Coffee)
+↓ Roasting Transformation (RoastBatch context)
+InventoryLot (Roasted Coffee)
+↓ Blending Transformation (BlendBatch context)
+InventoryLot (Blend)
 
 Yield continuity preserves:
 	•	how inventory evolved operationally over time.
 
 Operational Loss Principle
 Operational loss represents:
-	•	transformation reality.
+	•	physical transformation reality.
 Examples:
-Roasting Shrinkage
-Grinding Retention
-Packaging Residue
-Transfer Loss
-Cold Brew Extraction Loss
-RTD Filling Variance
+- Roasting Shrinkage (moisture loss & chaff release)
+- Grinding Retention (burr chamber residue)
+- Packaging Residue & Purge
+- Transfer Loss
+- Cold Brew Extraction Loss
+- RTD Bottling Filling Variance
 
 Loss behavior should remain:
-	•	operationally explainable, not:
+	•	operationally explainable,
+not:
 	•	hidden inventory mutation.
 
 Yield Formula Principle
 Basic operational yield behavior:
-\text{Yield Percentage} = \frac{\text{Output Quantity}}{\text{Input Quantity}} \times 100
+$$\text{Yield Percentage} = \frac{\text{Output Quantity}}{\text{Input Quantity}} \times 100$$
 Yield visibility should preserve:
 	•	operational realism continuity.
 
 Operational Loss Formula
 Basic operational loss behavior:
-\text{Operational Loss Percentage} = 100 - \text{Yield Percentage}
+$$\text{Operational Loss Percentage} = 100 - \text{Yield Percentage}$$
 
 Roasting Yield Principle
 Roasting workflows naturally introduce:
@@ -122,9 +121,9 @@ Roasting workflows naturally introduce:
 	•	chaff removal,
 	•	and roasting shrinkage.
 Example:
-10kg Green Bean
-↓ RoastBatch
-8.5kg Roasted Coffee
+10kg Green Coffee Input Lot
+↓ Roasting Transformation (RoastBatch context)
+8.5kg Roasted Coffee Output Lot
 
 Roasting yield traceability preserves:
 	•	operational roasting reality.
@@ -137,9 +136,9 @@ Blend workflows may introduce:
 	•	residue,
 	•	and operational handling loss.
 Example:
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
+Roasted Coffee Input Lots
+↓ Blending Transformation (BlendBatch context)
+Blend Output Lot
 
 Blend yield traceability preserves:
 	•	quantity continuity across composition workflows.
@@ -176,16 +175,17 @@ Ground Coffee
 → grinder retention
 
 The architecture should support:
-	•	workflow-specific yield continuity, without redesigning:
+	•	workflow-specific yield continuity,
+without redesigning:
 	•	the traceability foundation.
 
 Yield Genealogy Principle
 Operational yield directly affects:
-	•	downstream inventory genealogy.
+	•	downstream inventory genealogy and physical mass balance.
 Example:
-10kg Parent Batch
-↓ operational shrinkage
-8.5kg Child Batch
+10kg Parent Input Lot
+↓ operational shrinkage (Transformation)
+8.5kg Child Output Lot
 
 Yield genealogy preserves:
 	•	where quantity evolved,
@@ -196,24 +196,28 @@ Cross-Engine Yield Principle
 Yield traceability spans across:
 	•	multiple operational engines.
 Example:
-Inventory Engine
+Inventory Engine (Lot Ledger & Balance Deductions)
 ↓
-Roasting Engine
+Roasting Engine (Shrinkage & Roasting Telemetry)
 ↓
-Blend Engine
+Blend Engine (Purge & Blending Mass Balance)
 ↓
-Production Engine
+Production Engine (Assembly & Filling Yield)
 ↓
-Costing Engine
+Costing Engine (Valuation, HPP Adjustment, and Loss Absorption)
 
 Yield continuity acts as:
 	•	ecosystem-wide operational quantity infrastructure.
 This creates:
 	•	interconnected operational realism visibility.
 
+> [!NOTE]
+> **Costing Boundary Delegation:** `08_BATCH_TRACEABILITY` owns physical mass balance, quantity reconciliation, and yield metrics. Economic evaluation, scrap valuation, HPP recalculation, and loss absorption policies remain strictly governed by `07_COSTING_ENGINE`.
+
 Yield vs Waste Principle
 Roastery OS distinguishes between:
-	•	operational yield behavior, and:
+	•	operational yield behavior,
+and:
 	•	abnormal inventory waste events.
 
 Yield Behavior
@@ -263,14 +267,14 @@ Operators should understand:
 	•	how operational loss evolved,
 	•	and why downstream inventory differs.
 Yield systems should support:
-	•	operational trust, not merely:
+	•	operational trust,not merely:
 	•	inventory reporting.
 
 Operational Truth Principle
 Yield traceability represents:
 	•	operational truth continuity.
 The system should preserve:
-	•	what operationally occurred, not merely:
+	•	what operationally occurred,not merely:
 	•	what was administratively recorded.
 This distinction is critical for:
 	•	operational trust,
@@ -302,7 +306,7 @@ Yield traceability systems should remain understandable for:
 Operators should be able to:
 	•	understand quantity evolution,
 	•	evaluate operational shrinkage,
-	•	and trace inventory continuity without enterprise ERP complexity.
+	•	and trace inventory continuitywithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Yield Philosophy
@@ -318,7 +322,7 @@ RTD Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the yield continuity foundation.
 
 AI Boundary Philosophy
@@ -327,7 +331,7 @@ AI systems may:
 	•	identify operational anomalies,
 	•	recommend workflow optimization,
 	•	and support forecasting systems.
-However: AI must not autonomously manipulate deterministic quantity continuity.
+However:AI must not autonomously manipulate deterministic quantity continuity.
 Critical operational relationships must remain:
 	•	explicit,
 	•	traceable,
@@ -349,7 +353,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Yield And Loss Traceability acts as:
-	•	the operational quantity continuity infrastructure inside Batch Traceability.
+	•	the operational quantity continuity infrastructureinside Batch Traceability.
 This system influences:
 	•	inventory genealogy,
 	•	costing continuity,

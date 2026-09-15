@@ -44,280 +44,181 @@ The system should preserve production history in:
 
 # Traceability Philosophy
 
-Production workflows are one of the final transformation layers inside Roastery OS before inventory enters sales workflows.
+Production workflows are the bridge where physical intermediate coffee and packaging materials transform into commercially sellable finished goods.
 
 Example:
+```text
+Green Coffee Lot (InventoryLot, RAW_COFFEE)
+       ↓ (ROASTING Transformation)
+Roasted Coffee Lot (InventoryLot, INTERMEDIATE)
+       ↓ (BLENDING Transformation)
+Roasted Blend Lot (InventoryLot, INTERMEDIATE)
+       ↓ (PORTIONING / PACKAGING Transformation)
+Packaged Finished Goods Lot (InventoryLot, FINISHED_GOODS)
+```
 
-```text id="x5m8tw"
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-Production traceability should preserve:
-	•	roasting lineage,
-	•	blend continuity,
-	•	packaging transformation,
-	•	finished goods generation,
-	•	and commercial inventory relationships.
-Traceability should preserve the operational story of product evolution.
+Production traceability preserves:
+- roasting lineage and physical machine telemetry,
+- blend formulation ratios and component lots,
+- packaging material lot numbers (bags, valves, tins, bottles),
+- and commercial inventory relationships.
 
-ProductionBatch Traceability Principle
-Every production execution should generate:
-	•	ProductionBatch identity,
-	•	transformation continuity,
-	•	inventory relationships,
-	•	and operational lineage.
-Example:
-PB-20260521-001
-ProductionBatch acts as:
-	•	transformation anchor,
-	•	operational lineage node,
-	•	and manufacturing execution reference.
-Batch systems should remain:
-	•	readable,
-	•	deterministic,
-	•	traceable,
-	•	and operationally meaningful.
+---
 
-Core Traceability Relationships
-Production traceability should preserve explicit operational relationships.
-Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-↓ Sales
-Customer
-Every relationship should remain:
-	•	connected,
-	•	readable,
-	•	and operationally understandable.
+# ProductionBatch Traceability Principle
 
-Source Continuity Principle
-Finished goods should preserve:
-	•	upstream production relationships.
-Example:
-FinishedGoodsInventory
-├── references → ProductionBatch
-├── references → BlendBatch
-├── references → RoastBatch
-├── references → GreenBean
-├── references → Origin
-└── references → Supplier
-Finished goods should remain traceable to:
-	•	sourcing origin,
-	•	roasting execution,
-	•	blend composition,
-	•	and production transformation history.
+Every production execution generates an explicit `ProductionBatch` context:
+- unique `batchNumber` (e.g., `PB-20260521-001`),
+- transformation archetype reference,
+- links to consumed `InventoryLots` via `TransformationInput[]`,
+- links to produced `InventoryLots` via `TransformationOutput[]`,
+- and explicit links to immutable inventory ledger movements.
 
-Transformation Visibility Principle
-Production transformations should never become operational black boxes.
-The system should preserve:
-	•	what inventory transformed,
-	•	how finished goods were created,
-	•	when production occurred,
-	•	and what workflow generated the finished goods.
-Example:
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-Transformation history should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally meaningful.
+`ProductionBatch` acts as the operational transformation anchor, lineage node, and quality checkpoint container.
 
-Packaging Traceability Principle
-Packaging workflows should preserve:
-	•	packaging transformation lineage.
-Examples:
-250g Bag
-500g Bag
-Drip Bag Box
-Cold Brew Bottle
-Packaging traceability should preserve:
-	•	packaging structure,
-	•	production relationship,
-	•	and commercial inventory continuity.
-Packaging is treated as:
-	•	operational transformation,  not:
-	•	cosmetic presentation.
+---
 
-Yield Traceability Principle
-Production yield should remain traceable.
-Example:
-10kg BlendInventory
-↓ Production
-9.7kg FinishedGoodsInventory
-The system should preserve:
-	•	input quantity,
-	•	output quantity,
-	•	operational loss visibility,
-	•	and transformation continuity.
-Yield behavior is considered:
-	•	operational intelligence,  not:
-	•	hidden inventory mutation.
+# Core Traceability Relationships
 
-Costing Traceability Principle
-Production traceability should preserve:
-	•	valuation continuity.
-Example:
-BlendInventory Cost
-↓ ProductionBatch
-FinishedGoodsInventory Cost
-The system should preserve:
-	•	production costing lineage,
-	•	packaging cost continuity,
-	•	and operational profitability visibility.
-Costing continuity should remain:
-	•	traceable,
-	•	deterministic,
-	•	and operationally understandable.
+Production traceability preserves explicit, graph-based operational relationships:
 
-Commercial Continuity Principle
-Production traceability should support:
-	•	downstream commercial workflows.
-Example:
-FinishedGoodsInventory
-↓ Sales
-Customer
-Production lineage should remain connected to:
-	•	sales workflows,
-	•	customer-facing products,
-	•	and commercial inventory systems.
-Production traceability is one of the foundations of:
-	•	end-to-end operational visibility.
+```text
+InventoryLot (Packaged Coffee #FG-2026-089)
+├── producedBy → ProductionBatch #PB-2026-004
+│     ├── consumedInput → InventoryLot #RC-802 (Roasted Blend)
+│     │     └── producedBy → BlendBatch #BB-2026-015
+│     │           ├── consumedInput → InventoryLot #RC-701 (Roast Batch #RB-2026-041)
+│     │           │     └── consumedInput → InventoryLot #GB-089 (Green Ethiopia)
+│     │           └── consumedInput → InventoryLot #RC-702 (Roast Batch #RB-2026-042)
+│     │                 └── consumedInput → InventoryLot #GB-090 (Green Colombia)
+│     ├── consumedInput → InventoryLot #PKG-BAG-250G (Supplier Lot #SUP-BAG-88)
+│     └── consumedInput → InventoryLot #PKG-VALVE-01 (Supplier Lot #SUP-VLV-12)
+```
 
-Finished Goods vs SKU Principle
-Roastery OS distinguishes between:
-	•	finished goods identity,  and:
-	•	commercial SKU identity.
-Example:
-FinishedGoodsInventory
-≠
-Retail SKU
-A single finished goods inventory may later create:
-	•	multiple retail SKUs,
-	•	multiple sales channels,
-	•	and multiple customer-facing experiences.
-This distinction preserves:
-	•	operational clarity,
-	•	modular scalability,
-	•	and production continuity.
+Every relationship remains connected, auditable, and forward/backward queryable.
 
-Derivative Product Principle
-Different production workflows may generate:
-	•	different derivative product relationships.
-Examples:
-Ground Coffee
-Drip Bag
-Cold Brew
-RTD Coffee
-Bulk Espresso
-Each derivative product preserves:
-	•	unique operational lineage,
-	•	workflow continuity,
-	•	and transformation visibility.
-The architecture should support:
-	•	workflow diversity,
-	•	and future production extensibility.
+---
 
-Deterministic Traceability Principle
-Production traceability relationships must remain deterministic.
-The system should preserve:
-	•	explicit transformation lineage,
-	•	predictable workflow continuity,
-	•	and auditability.
-The architecture should avoid:
-	•	disconnected inventory relationships,
-	•	hidden workflow mutation,
-	•	and ambiguous production lineage.
+# Source Continuity Principle
 
-Human-Readable Traceability Principle
-Production traceability should remain understandable by operational users.
-Operators should be able to answer questions such as:
-Which blend was used?
-Which roast batches were involved?
-Which supplier originated the coffee?
-Which packaging workflow created this product?
-Which customer received this product?
-Traceability should support:
-	•	operational understanding,  not merely:
-	•	technical system logging.
+Commercially ready lots preserve unbroken backward traceability to:
+- sourcing origin, washing station, and green supplier purchase lot,
+- roasting machine, roaster operator, and roast profile curves,
+- blending formulation ratios,
+- and packaging component supplier batches.
 
-Human-Centered Philosophy
-Production traceability systems should support operational readability.
-Operators should:
-	•	understand inventory evolution,
-	•	follow manufacturing relationships,
-	•	and trace commercial continuity  without enterprise manufacturing complexity.
-Operational clarity should take priority over industrial traceability bureaucracy.
+---
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze production consistency,
-	•	identify operational anomalies,
-	•	summarize workflow history,
-	•	and support operational analytics.
-However:  AI must not autonomously alter deterministic production lineage relationships.
-Traceability integrity must remain:
-	•	explicit,
-	•	deterministic,
-	•	traceable,
-	•	and human-auditable.
+# Transformation Visibility Principle
 
-MVP Scope
-The MVP Production Traceability system should prioritize:
-	•	ProductionBatch lineage,
-	•	transformation continuity,
-	•	packaging relationships,
-	•	finished goods visibility,
-	•	and downstream commercial continuity.
-The MVP intentionally excludes:
-	•	industrial genealogy systems,
-	•	enterprise compliance orchestration,
-	•	automated forensic tracing,
-	•	and advanced regulatory infrastructure.
+Production transformations must never become operational black boxes. The system preserves:
+- exact physical quantities and UoMs of all consumed materials ($Q_{\text{consumed}, i}$),
+- exact physical quantities of output goods produced ($Q_{\text{produced}, j}$),
+- scrap quantities and defect classifications ($Q_{\text{scrap}, k}$),
+- process timestamps and operator IDs,
+- and machine parameters (grind size, extraction ratio, seal temperature).
 
-Architectural Notes
-Production Traceability is one of the operational visibility layers inside the Production Engine.
-Traceability systems influence:
-	•	inventory continuity,
-	•	production visibility,
-	•	operational accountability,
-	•	commercial workflows,
-	•	and transformation analytics.
-Production traceability should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend traceability behavior without redesigning the operational foundation.
+---
 
-Long-Term Direction
-The Production Traceability system is designed to support future evolution toward:
-	•	production intelligence,
-	•	AI-assisted operational insight,
-	•	advanced manufacturing analytics,
-	•	ecosystem-wide production visibility,
-	•	and transformation intelligence systems.
-However, production traceability should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+# Packaging Traceability Principle
 
-Philosophy Summary
-Production traceability is not merely:
-	•	packaging history,
-	•	or manufacturing logging.
+Packaging workflows preserve packaging material lot provenance:
+- retail coffee pouches,
+- degassing valves,
+- cold brew glass bottles and crown caps,
+- drip bag filter sachets and outer nitrogen foil wraps.
+
+Packaging is tracked as physical `InventoryLots` consumed via `TRANSFORMATION_CONSUME` ledger entries.
+
+---
+
+# Yield Traceability Principle
+
+Production yield remains fully traceable:
+- mass balance inputs vs outputs vs scrap vs unrecoverable shrinkage,
+- variance against recipe expected yield targets,
+- and transparent feed into `07_COSTING_ENGINE` for unit cost derivation.
+
+---
+
+# Costing Traceability Principle
+
+Production traceability preserves valuation continuity governed by `07_COSTING_ENGINE`:
+- unit valuation of consumed coffee lots ($V_{\text{consumed}}$),
+- unit valuation of consumed packaging materials ($V_{\text{packaging}}$),
+- absorbed direct labor and machine operational costs ($C_{\text{direct}}$),
+- resulting in deterministic, fully auditable output lot unit costs ($U_{\text{out}}$).
+
+---
+
+# Commercial Continuity Principle
+
+Commercially ready inventory links seamlessly into downstream sales:
+- fulfillment of customer orders (POS, E-Commerce, Wholesale),
+- commercial dispatch and shipping records,
+- and customer recall capabilities if an upstream quality issue is identified.
+
+---
+
+# Finished Goods vs SKU Traceability Principle
+
+Roastery OS separates physical inventory lots from commercial catalog SKUs:
+- A customer order references a commercial `SKUMaster`.
+- The fulfillment event allocates specific physical `InventoryLots`.
+- The physical `InventoryLot` preserves the complete manufacturing tree back to green coffee farms.
+
+---
+
+# Derivative Product Traceability
+
+Each derivative product category (Ground Coffee, Drip Bags, Cold Brew, RTD Cans, Kitted Gift Sets) maintains unbroken genealogical continuity through its respective transformation archetype.
+
+---
+
+# Deterministic Traceability Principle
+
+Production traceability relationships remain strictly deterministic:
+- Mass and unit conservation.
+- Immutable double-entry ledger transactions.
+- Fully auditable parent-child graph structures.
+
+---
+
+# Human-Readable Traceability Principle
+
+Traceability data is presented in clean, visual lineage graphs and operator-friendly summary cards, answering key operational questions instantly:
+- *Which green coffee lot was roasted for this cold brew bottle?*
+- *Which packaging supplier lot was used for this batch of drip bags?*
+- *Which customer orders received coffee from Roast Batch #RB-2026-042?*
+
+---
+
+# AI Boundary Philosophy
+
+AI systems may query traceability graphs for anomaly detection, root cause analysis, or recall impact modeling. AI systems must **never** mutate historical lineage links, alter batch records, or rewrite ledger entries.
+
+---
+
+# MVP Scope
+
+The MVP Production Traceability system prioritizes:
+- parent-child `InventoryLot` genealogy via `ProductionBatch`,
+- explicit packaging lot linkage,
+- forward and backward queryability,
+- and seamless integration with `02_INVENTORY_ENGINE` ledger history.
+
+---
+
+# Architectural Notes
+
+Production Traceability provides the operational memory and accountability spine of Roastery OS manufacturing.
+
+---
+
+# Philosophy Summary
+
+Production traceability is not superficial log dumping.
 Production traceability is:
-	•	transformation lineage,
-	•	operational manufacturing visibility,
-	•	and commercial inventory storytelling.
-Production traceability preserves the operational memory of how coffee evolves into commercially sellable finished goods inside Roastery OS.
+- **unbroken genealogical material lineage**,
+- **operational manufacturing accountability**,
+- and **the historical proof of specialty coffee quality and provenance**.

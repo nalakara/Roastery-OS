@@ -214,8 +214,8 @@ Completed means:
 	•	inventory continuity preserved,
 	•	and commerce execution completed.
 Example:
-FinishedGoodsInventory
-↓ Completed Sale
+InventoryLot (materialType = FINISHED_GOODS / INTERMEDIATE)
+↓ Completed Sale (COMMERCIAL_DISPATCH)
 Customer Ownership
 
 Completed workflows should preserve:

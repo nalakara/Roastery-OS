@@ -158,9 +158,9 @@ Payment visibility supports:
 
 Inventory Relationship Principle
 Receipts indirectly preserve:
-	•	inventory continuity visibility.
+	•	InventoryLot fulfillment visibility.
 Example:
-FinishedGoodsInventory
+InventoryLot (dispatched stock)
 ↓ Transaction
 Receipt
 

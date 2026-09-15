@@ -7,13 +7,13 @@ This document defines the transaction entity structure and operational transacti
 The purpose of Transaction Structure is to:
 - standardize commercial transaction architecture,
 - preserve deterministic commerce workflows,
-- maintain inventory continuity,
+- maintain inventory continuity via `02_INVENTORY_ENGINE`,
 - support customer-facing sales operations,
 - and provide operational commerce visibility.
 
 Transactions act as:
 - operational commerce events,
-- inventory deduction triggers,
+- inventory fulfillment triggers,
 - revenue generation events,
 - and customer interaction records.
 
@@ -36,9 +36,9 @@ Transactions are not merely:
 Transactions represent:
 - commercially meaningful operational events.
 
-The system should preserve:
-- inventory continuity,
-- costing continuity,
+The system strictly preserves:
+- inventory continuity (`InventoryLot`),
+- costing continuity (deferring valuation to `07_COSTING_ENGINE`),
 - customer continuity,
 - and transaction traceability.
 
@@ -48,417 +48,212 @@ The system should preserve:
 
 Traditional POS systems commonly interpret transactions as:
 
-```text id="x5m8tw"
-Payment
-=
-Completed Transaction
+```text
+Payment = Completed Transaction
+```
 
 Roastery OS uses a commerce-oriented transaction model:
-Transaction
-↓
-Inventory Event
-↓
-Costing Event
-↓
-Customer Event
-↓
-Operational Intelligence
 
-Transactions should preserve:
-	•	operational meaning,
-	•	inventory continuity,
-	•	and commercial visibility.
+```text
+Commercial Transaction
+       ↓
+Inventory Fulfillment Event (COMMERCIAL_DISPATCH against InventoryLot)
+       ↓
+Cost Realization Event (COGS from 07_COSTING_ENGINE)
+       ↓
+Customer Relationship Record
+       ↓
+Operational Intelligence Signal
+```
 
-Core Transaction Principle
-Every transaction should preserve:
-	•	transaction identity,
-	•	inventory relationships,
-	•	payment continuity,
-	•	customer continuity,
-	•	and profitability visibility.
+Transactions preserve:
+- operational meaning,
+- physical inventory continuity,
+- and commercial revenue visibility.
+
+---
+
+# Core Transaction Principle
+
+Every transaction preserves:
+- unique transaction identity,
+- physical `InventoryLot` fulfillment relationships,
+- payment settlement continuity,
+- customer relationship continuity,
+- and commercial revenue/margin visibility.
+
 Example:
-FinishedGoodsInventory
-↓ Transaction
-Inventory Deduction
-↓
-Revenue Event
-↓
-Customer Relationship
+```text
+InventoryLot (Physical stock instance)
+       ↓ Commercial Sale (SKUMaster checkout)
+Inventory Fulfillment (COMMERCIAL_DISPATCH movement)
+       ↓
+Revenue & Cost Realization (COGS via 07_COSTING_ENGINE)
+       ↓
+Customer Relationship History
+```
 
-Transaction systems should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally understandable.
+Transaction systems remain:
+- deterministic,
+- traceable,
+- and operationally understandable.
 
-Transaction Entity
-Purpose
+---
+
+# Transaction Entity Structure
+
+### Purpose
 Represents a completed or active commercial commerce event.
 Transaction acts as:
-	•	commercial workflow entity,
-	•	operational sales record,
-	•	and inventory-connected commerce structure.
+- commercial workflow entity,
+- operational sales record,
+- and inventory-connected commerce structure.
 
-Core Fields
-Identity Fields
-transactionId
-transactionCode
-transactionType
-salesChannel
+---
 
-Examples of transactionType:
-Retail Sale
-Wholesale Sale
-Online Order
-Subscription Sale
-Marketplace Sale
+### Core Fields
 
-Examples of salesChannel:
-POS Counter
-Mobile POS
-Website
-Marketplace
-Wholesale Portal
+#### 1. Identity Fields
+- `transactionId` (UUID)
+- `transactionCode` (e.g., `TRX-20260521-001`)
+- `transactionType` (`RETAIL_SALE`, `WHOLESALE_SALE`, `ONLINE_ORDER`, `SUBSCRIPTION_SALE`, `MARKETPLACE_SALE`)
+- `salesChannel` (`POS_COUNTER`, `MOBILE_POS`, `WEB_STORE`, `MARKETPLACE`, `WHOLESALE_PORTAL`)
 
-Identity structures should remain:
-	•	operationally meaningful,
-	•	readable,
-	•	and scalable.
+#### 2. Customer Fields
+- `customerId` (UUID, optional for anonymous walk-ins)
+- `customerName` (String)
+- `customerType` (`WALK_IN`, `MEMBER`, `WHOLESALE_CLIENT`, `SUBSCRIBER`, `MARKETPLACE_BUYER`)
+- `customerReference` (External ID / Phone / Email)
 
-Customer Fields
-customerId
-customerName
-customerType
-customerReference
+#### 3. Transaction Item Fields (`transactionItems[]`)
+Each line item represents a commercial product sold and its underlying physical fulfillment:
+- `transactionItemId` (UUID)
+- `skuId` (UUID, references `SKUMaster`)
+- `materialId` (UUID, references `MaterialMaster`)
+- `orderedQuantity` (Decimal)
+- `uom` (UoM code, e.g., `UNIT`, `KG`, `G`, `BOTTLE`)
+- `unitPrice` (Decimal, selling price per unit)
+- `discountAmount` (Decimal)
+- `taxAmount` (Decimal)
+- `lineSubtotal` (Decimal)
+- `fulfillmentAllocations[]`: Array supporting 1:N lot fulfillment:
+  - `inventoryLotId` (UUID, references `InventoryLot`)
+  - `allocatedQuantity` (Decimal)
+  - `inventoryMovementId` (UUID, references `COMMERCIAL_DISPATCH` in `02_INVENTORY_ENGINE`)
+  - `unitCost` (Decimal, historical unit cost resolved from `07_COSTING_ENGINE` at dispatch)
+  - `cogsAmount` (Decimal, $\text{allocatedQuantity} \times \text{unitCost}$)
 
-Examples of customerType:
-Walk-In
-Member
-Wholesale Customer
-Subscriber
-Marketplace Buyer
+#### 4. Pricing & Total Fields
+- `subtotal` (Sum of line subtotals before transaction-level adjustments)
+- `transactionDiscountAmount` (Transaction-level discount)
+- `taxTotal` (Aggregated tax)
+- `serviceCharge` (Optional dine-in or handling charge)
+- `grandTotal` (Final payable amount)
 
-Customer relationships should remain:
-	•	modular,
-	•	operationally useful,
-	•	and privacy-aware.
+#### 5. Costing & Profitability Summary Fields (Integration with `07_COSTING_ENGINE`)
+- `totalCOGS` (Sum of all line item `cogsAmount` derived from `07_COSTING_ENGINE`)
+- `grossProfit` ($\text{grandTotal} - \text{taxTotal} - \text{totalCOGS}$)
+- `grossMarginPercentage` ($\frac{\text{grossProfit}}{\text{grandTotal} - \text{taxTotal}} \times 100$)
 
-Transaction Item Fields
-transactionItemId
-skuReference
-finishedGoodsInventoryReference
-quantity
-unitPrice
-lineSubtotal
+*Note: The POS Engine records commercial transaction values and receives lot unit costs from `07_COSTING_ENGINE`; POS does not calculate inventory valuations independently.*
 
-Each transaction item should preserve:
-	•	inventory continuity,
-	•	SKU relationships,
-	•	and costing visibility.
+#### 6. Payment Fields (`payments[]`)
+- `paymentId` (UUID)
+- `paymentMethod` (`CASH`, `QRIS`, `DEBIT_CARD`, `CREDIT_CARD`, `BANK_TRANSFER`, `STORE_CREDIT`)
+- `paymentStatus` (`PENDING`, `PARTIALLY_PAID`, `PAID`, `REFUNDED`, `FAILED`)
+- `paymentReference` (Gateway ref / approval code / external trace)
+- `paidAmount` (Decimal)
+- `changeAmount` (Decimal, for cash)
+- `settledAt` (Timestamp)
 
-Inventory Relationship Fields
-inventoryDeductionReference
-inventoryMovementReference
-inventoryStatusImpact
+#### 7. Operational & Audit Fields
+- `operatorId` (UUID, cashier / user)
+- `shiftId` (UUID, POS register shift)
+- `transactionStatus` (`DRAFT`, `PENDING_PAYMENT`, `COMPLETED`, `CANCELLED`, `REFUNDED`, `ARCHIVED`)
+- `transactionTimestamp` (Timestamp)
+- `completedAt` (Timestamp)
+- `notes` (String)
+- `createdAt` / `updatedAt` (Timestamps)
 
-Transaction workflows should preserve:
-	•	deterministic inventory continuity.
-Inventory relationships should remain:
-	•	traceable,
-	•	measurable,
-	•	and auditable.
+---
 
-Pricing Fields
-subtotal
-discountAmount
-taxAmount
-serviceCharge
-grandTotal
+# Transaction vs Payment Principle
 
-Pricing structures should preserve:
-	•	commercial readability,
-	•	operational transparency,
-	•	and profitability visibility.
+Roastery OS strictly separates transactions from payments:
 
-Payment Fields
-paymentMethod
-paymentStatus
-paymentReference
-paidAmount
-changeAmount
+$$\text{Transaction} \neq \text{Payment}$$
 
-Examples of paymentMethod:
-Cash
-QRIS
-Debit Card
-Credit Card
-Bank Transfer
-Store Credit
+- **Transaction:** Represents commercial commerce activity, items purchased, and inventory fulfillment obligations.
+- **Payment:** Represents financial settlement mechanism. A single transaction may be settled with split payments or delayed settlement (e.g., wholesale invoices) without corrupting commerce continuity.
 
-Payment workflows should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally understandable.
+---
 
-Operational Fields
-operatorId
-cashierId
-transactionStatus
-transactionTimestamp
-completedAt
+# Transaction vs Inventory Principle
 
-Operational fields preserve:
-	•	workflow visibility,
-	•	accountability,
-	•	and transaction continuity.
+$$\text{Transaction} \neq \text{Inventory}$$
 
-Sales Analytics Fields
-salesChannel
-transactionSource
-promotionReference
-campaignReference
+Transactions trigger physical inventory fulfillment, but inventory continuity and state transitions remain strictly managed by `02_INVENTORY_ENGINE`. The POS Engine issues `COMMERCIAL_DISPATCH` ledger movements against compatible `InventoryLots`.
 
-These relationships support:
-	•	operational commerce intelligence,
-	•	sales analytics,
-	•	and future forecasting systems.
+---
 
-Costing Fields
-inventoryCostReference
-estimatedCOGS
-grossProfitEstimate
+# Transaction vs SKU Principle
 
-Costing relationships should preserve:
-	•	profitability continuity,
-	•	and operational margin visibility.
-The MVP should keep profitability handling:
-	•	lightweight,
-	•	and operationally understandable.
+$$\text{SKUMaster} \neq \text{InventoryLot}$$
 
-Receipt Fields
-receiptNumber
-receiptStatus
-receiptGeneratedAt
+- `SKUMaster` represents commercial catalog presentation and retail pricing.
+- `InventoryLot` represents physical stock on hand.
+- A single transaction line item for an SKU can be fulfilled from multiple physical `InventoryLots` (e.g., fulfilling 10 bags of House Blend from Lot #A [4 bags] and Lot #B [6 bags]).
 
-Receipt relationships should remain:
-	•	modular,
-	•	deterministic,
-	•	and operationally meaningful.
+---
 
-General Fields
-notes
-transactionLogs
-createdAt
-updatedAt
+# Transaction Lifecycle
 
+Transactions evolve through deterministic operational states:
 
-Transaction vs Payment Principle
-Roastery OS distinguishes between:
-	•	transaction, and:
-	•	payment.
-Example:
-Transaction
-≠
-Payment
+```text
+DRAFT
+  ↓
+PENDING_PAYMENT
+  ↓ (Payment settled & Inventory dispatched)
+COMPLETED
+  ↓ (If return occurs)
+REFUNDED / PARTIALLY_REFUNDED
+  ↓
+ARCHIVED
+```
 
+---
 
-Transaction
-Represents:
-	•	operational commerce event.
+# Multi-Channel Transaction Principle
 
-Payment
-Represents:
-	•	financial settlement mechanism.
-This separation preserves:
-	•	modular finance architecture,
-	•	flexible payment workflows,
-	•	and future financial extensibility.
+The same transaction architecture supports all sales channels:
+- Retail café counter checkout
+- Mobile table-side ordering
+- Online e-commerce orders
+- Wholesale client invoicing
+- Recurring subscription shipments
 
-Transaction vs Inventory Principle
-Roastery OS distinguishes between:
-	•	transaction systems, and:
-	•	inventory systems.
-Example:
-Transaction
-≠
-Inventory
+---
 
-Transactions may:
-	•	affect inventory.
-However: inventory continuity remains managed by:
-	•	Inventory Engine.
-This preserves:
-	•	deterministic operational integrity.
+# Costing & Traceability Provenance
 
-Transaction vs SKU Principle
-Transactions primarily interact with:
-	•	SKU abstraction systems.
-Example:
-SKU
-↓
-Transaction
-↓
-FinishedGoodsInventory
+1. **COGS Provenance:** COGS is not estimated or invented by the POS. It is calculated by multiplying the exact fulfilled quantities by the historical unit cost ($U_{\text{lot}}$) of the consumed `InventoryLots` provided by `07_COSTING_ENGINE`.
+2. **Traceability Lineage:** Every line item's `fulfillmentAllocations[]` points back to specific `InventoryLots`, preserving the complete genealogical lineage back through `ProductionBatch`, `BlendBatch`, `RoastBatch`, and green coffee harvest lots.
 
-SKU systems preserve:
-	•	commercial presentation.
-Inventory systems preserve:
-	•	operational continuity.
-This separation preserves:
-	•	modular commerce architecture.
+---
 
-Transaction Lifecycle Principle
-Transactions may evolve through:
-	•	operational commerce states.
-Example:
-Draft
-↓
-Pending Payment
-↓
-Completed
-↓
-Refunded
-↓
-Archived
+# Human-Centered & Deterministic Principles
 
-Transaction states should remain:
-	•	deterministic,
-	•	explicit,
-	•	and operationally understandable.
+- POS operations provide immediate, intuitive workflows for cashiers and baristas.
+- Critical commerce behaviors (deductions, payments, reversals) remain strictly deterministic, double-entry auditable, and immutable once completed.
 
-Multi-Channel Transaction Principle
-The same transaction architecture should support:
-	•	multiple commerce channels.
-Examples:
-Retail POS
-Online Orders
-Wholesale Transactions
-Marketplace Orders
-Subscription Billing
+---
 
-The architecture should preserve:
-	•	unified transaction continuity across:
-	•	multiple commercial ecosystems.
+# Philosophy Summary
 
-Costing Relationship Principle
-Transactions directly affect:
-	•	profitability visibility,
-	•	revenue continuity,
-	•	and operational analytics.
-Example:
-FinishedGoodsInventory Cost
-↓ Transaction
-Revenue
-↓
-Profit Visibility
-
-Transaction costing should preserve:
-	•	operational profitability continuity.
-
-Traceability Principle
-Transactions should preserve:
-	•	downstream commercial continuity.
-Example:
-FinishedGoodsInventory
-↓ Transaction
-Customer
-
-Transaction traceability should remain:
-	•	readable,
-	•	traceable,
-	•	and operationally meaningful.
-
-Deterministic Commerce Principle
-Critical transaction behavior must remain deterministic.
-Examples:
-	•	inventory deduction,
-	•	payment recording,
-	•	transaction completion,
-	•	profitability continuity,
-	•	and customer relationship preservation.
-Transaction workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden inventory mutation,
-	•	ambiguous transaction behavior,
-	•	and disconnected commercial lineage.
-
-Human-Centered Philosophy
-Transaction systems should remain understandable for:
-	•	cashiers,
-	•	café operators,
-	•	roastery operators,
-	•	and growing coffee businesses.
-Commerce workflows should feel:
-	•	lightweight,
-	•	readable,
-	•	and operationally intuitive.
-Operational clarity should take priority over:
-	•	enterprise retail bureaucracy.
-
-AI Boundary Philosophy
-AI systems may:
-	•	analyze transaction behavior,
-	•	identify sales trends,
-	•	recommend pricing optimization,
-	•	and support operational forecasting.
-However: AI must not autonomously manipulate deterministic transaction relationships.
-Critical commerce continuity must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
-
-MVP Scope
-The MVP Transaction system should prioritize:
-	•	deterministic sales transactions,
-	•	inventory-connected commerce,
-	•	customer relationship continuity,
-	•	payment visibility,
-	•	and operational profitability visibility.
-The MVP intentionally excludes:
-	•	enterprise retail orchestration,
-	•	autonomous commerce AI,
-	•	industrial franchise infrastructure,
-	•	and advanced retail automation systems.
-
-Architectural Notes
-Transaction Structure is one of the foundational commerce layers inside the POS Engine.
-Transaction systems influence:
-	•	inventory continuity,
-	•	customer workflows,
-	•	profitability visibility,
-	•	operational analytics,
-	•	and downstream finance systems.
-Transaction architecture should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and commerce-oriented.
-Future systems should extend transaction behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The Transaction system is designed to support future evolution toward:
-	•	omnichannel commerce,
-	•	AI-assisted operational intelligence,
-	•	predictive sales analytics,
-	•	subscription ecosystems,
-	•	and ecosystem-wide commerce orchestration.
-However, transaction behavior should always remain:
-	•	understandable,
-	•	deterministic,
-	•	traceable,
-	•	and human-centered.
-
-Philosophy Summary
-Transactions are not merely:
-	•	payment records,
-	•	cashier entries,
-	•	or receipt events.
+Transactions are not mere receipt records.
 Transactions are:
-	•	operational commerce events,
-	•	inventory-connected business activities,
-	•	and real-world revenue workflows.
-Transactions define how coffee operationally moves from inventory into commercial business activity inside Roastery OS.
+- **operational commerce events**,
+- **inventory fulfillment triggers**,
+- and **the commercial realization of specialty coffee value inside Roastery OS**.
 

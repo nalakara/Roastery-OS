@@ -49,15 +49,14 @@ Sales workflows are one of the final operational continuity layers inside Roaste
 Example:
 
 ```text id="x5m8tw"
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-↓ Transaction
+Input Materials (Green Coffee / Packaging / Additives)
+↓ Transformation (Roast / Blend / Process)
+Intermediate InventoryLot
+↓ Transformation (Production / Assembly / Packaging)
+Finished Goods InventoryLot (materialType = FINISHED_GOODS / INTERMEDIATE)
+↓ Commercial Dispatch (Transaction)
 Customer
+```
 
 Sales traceability should preserve:
 	•	sourcing continuity,
@@ -89,14 +88,14 @@ Transaction relationships should remain:
 Core Traceability Relationships
 Sales traceability should preserve explicit operational relationships.
 Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-↓ Transaction
+Source Materials (Green Bean Lots)
+↓ Roasting Transformation
+Roasted Coffee InventoryLots
+↓ Blending Transformation
+Blend InventoryLots
+↓ Production / Packaging Transformation
+Final InventoryLot
+↓ Commercial Transaction
 Customer
 
 Every relationship should remain:
@@ -104,19 +103,19 @@ Every relationship should remain:
 	•	readable,
 	•	and operationally understandable.
 
-Finished Goods Continuity Principle
-Sales workflows primarily consume:
-	•	FinishedGoodsInventory.
+Physical Inventory Fulfillment Continuity Principle
+Sales workflows consume physical stock instances:
+	•	InventoryLot (materialType = FINISHED_GOODS / INTERMEDIATE / MERCHANDISE).
 Example:
-FinishedGoodsInventory
-↓ Transaction
+InventoryLot (via fulfillmentAllocations[])
+↓ Transaction (COMMERCIAL_DISPATCH)
 Customer
 
 Sales traceability should preserve:
-	•	which finished goods were sold,
+	•	which physical inventory lots were dispatched,
 	•	which transaction consumed them,
 	•	and which customer received them.
-Finished goods continuity should remain:
+Inventory continuity should remain:
 	•	measurable,
 	•	deterministic,
 	•	and traceable.
@@ -129,7 +128,7 @@ Customer
 ↓ Purchase
 Transaction
 ↓
-FinishedGoodsInventory
+InventoryLot (dispatched stock)
 
 Customer continuity may later support:
 	•	purchase history,
@@ -143,19 +142,15 @@ Customer relationships should remain:
 
 Inventory Lineage Principle
 Sales traceability should preserve:
-	•	upstream inventory lineage continuity.
+	•	upstream inventory lineage continuity through transformation history.
 Example:
 Customer Purchase
 ↓
-FinishedGoodsInventory
+Dispatched InventoryLot
 ↓
-ProductionBatch
+ProductionBatch / Transformation
 ↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBean
+Precursor InventoryLots (Blend / Roast / Green Coffee / Packaging)
 
 Inventory lineage should remain:
 	•	readable,
@@ -169,9 +164,9 @@ Sales workflows primarily interact with:
 Example:
 SKU
 ↓ Transaction
-FinishedGoodsInventory
+InventoryLot (via fulfillmentAllocations[])
 ↓
-Production Lineage
+Production / Transformation Lineage
 
 SKU systems preserve:
 	•	commercial presentation.
@@ -262,11 +257,9 @@ Profitability Traceability Principle
 Sales traceability should preserve:
 	•	profitability continuity.
 Example:
-FinishedGoodsInventory Cost
-↓ Transaction
-Revenue
-↓
-Profit Visibility
+InventoryLot Valuation (from 07_COSTING_ENGINE)
+↓ Transaction (Revenue & Pricing from POS Engine)
+Gross Profit Visibility
 
 Profitability relationships should remain:
 	•	deterministic,

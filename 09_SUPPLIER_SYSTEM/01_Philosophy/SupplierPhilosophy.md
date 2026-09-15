@@ -48,18 +48,18 @@ The system should preserve:
 Traditional business systems commonly interpret suppliers as:
 
 ```text id="x5m8tw"
-Vendor Database
-
 Roastery OS uses a continuity-oriented supplier model:
 Supplier Relationship
 ↓
-Procurement Continuity
+Procurement Continuity (Purchase Order / Contract)
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement (02_INVENTORY_ENGINE)
 ↓
-Operational Workflow
+InventoryLot
 ↓
-Finished Product
+Operational Workflow / Transformation
+↓
+Downstream InventoryLot(s)
 
 Supplier systems should preserve:
 	•	upstream operational continuity, not merely:
@@ -68,16 +68,16 @@ Supplier systems should preserve:
 Core Supplier Principle
 Every operational material should preserve:
 	•	upstream sourcing continuity.
-Example:
-Supplier
+Generic Model:
+Supplier (SupplierMaster)
 ↓
-Green Bean Intake
+Supplied Material (MaterialMaster)
+↓ PURCHASE_RECEIPT
+Purchased InventoryLot (02_INVENTORY_ENGINE)
 ↓
-Roasting Workflow
+Transformation / Operational Usage
 ↓
-Blend Workflow
-↓
-Finished Product
+Downstream InventoryLot(s)
 
 Supplier continuity should remain:
 	•	operationally connected,
@@ -93,6 +93,7 @@ Packaging Supplier
 Bottle Supplier
 Ingredient Supplier
 Label Supplier
+Equipment / Consumables Supplier
 
 Supplier relationships should preserve:
 	•	sourcing trust continuity.
@@ -114,7 +115,7 @@ Sourcing continuity should preserve:
 
 Material Relationship Principle
 Suppliers provide:
-	•	operational material continuity.
+	•	operational material continuity (MaterialMaster).
 Examples:
 Green Coffee
 Packaging Materials
@@ -136,11 +137,13 @@ Supplier systems support:
 Example:
 Supplier
 ↓
-Purchase Order
+Purchase Order / Contract
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Workflow
+InventoryLot (02_INVENTORY_ENGINE)
+↓
+Operational Workflow / Transformation
 
 Procurement continuity should preserve:
 	•	sourcing explainability,
@@ -154,6 +157,7 @@ Examples:
 Green Bean Supplier
 Packaging Vendor
 Bottle Manufacturer
+Ingredient Distributor
 
 Supplier identities should preserve:
 	•	sourcing continuity over time.
@@ -165,18 +169,14 @@ The system should avoid:
 Upstream Traceability Principle
 Supplier continuity supports:
 	•	upstream operational traceability.
-Example:
-Customer Product
+Generic Model:
+Downstream Product Lot (InventoryLot)
+↓ Transformation Lineage (Production / Blend / Roast)
+Precursor InventoryLots
+↓ Originating Intake (PURCHASE_RECEIPT)
+Purchased InventoryLot
 ↓
-ProductionBatch
-↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBeanInventory
-↓
-Supplier
+Supplier (SupplierMaster)
 
 Supplier traceability preserves:
 	•	upstream ancestry continuity.
@@ -189,13 +189,13 @@ Costing Relationship Principle
 Suppliers directly influence:
 	•	operational costing continuity.
 Example:
-Supplier Price
+Supplier Invoice Price
 ↓
-Inventory Valuation
+InventoryLot Acquisition Cost Basis (02_INVENTORY_ENGINE)
 ↓
-Operational Costing
+Lot Valuation & Cost Propagation (07_COSTING_ENGINE)
 ↓
-Profitability
+Profitability Visibility
 
 Supplier pricing continuity preserves:
 	•	operational economic explainability.

@@ -74,7 +74,7 @@ Every commerce channel should preserve:
 	•	pricing visibility,
 	•	and operational consistency.
 Example:
-FinishedGoodsInventory
+InventoryLot (materialType = FINISHED_GOODS / INTERMEDIATE)
 ↓
 Retail POS
 Online Store
@@ -103,9 +103,9 @@ Each channel may introduce:
 
 Unified Inventory Principle
 All commerce channels should share:
-	•	centralized FinishedGoodsInventory continuity.
+	•	centralized InventoryLot continuity.
 Example:
-Shared FinishedGoodsInventory
+Shared InventoryLot Pool (AVAILABLE state)
 ↓
 Multiple Sales Channels
 ↓
@@ -175,7 +175,7 @@ SKU
 ↓
 Multiple Sales Channels
 ↓
-FinishedGoodsInventory
+InventoryLot (Fulfillment Allocation)
 
 SKU systems preserve:
 	•	commercial presentation.

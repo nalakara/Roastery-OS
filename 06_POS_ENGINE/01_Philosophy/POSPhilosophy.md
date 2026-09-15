@@ -75,9 +75,9 @@ Every transaction should preserve:
 	•	profitability visibility,
 	•	and customer relationship continuity.
 Example:
-FinishedGoodsInventory
+InventoryLot (materialType = FINISHED_GOODS / INTERMEDIATE)
 ↓ Sale
-Inventory Deduction
+Inventory Deduction (COMMERCIAL_DISPATCH)
 ↓
 Revenue Event
 ↓
@@ -90,11 +90,11 @@ Commerce workflows should remain:
 
 Inventory Continuity Philosophy
 POS Engine directly affects:
-	•	FinishedGoodsInventory continuity.
+	•	InventoryLot continuity.
 Example:
-FinishedGoodsInventory
+InventoryLot
 ↓ Sale
-Inventory Deduction
+Inventory Deduction (COMMERCIAL_DISPATCH)
 
 Sales should preserve:
 	•	inventory integrity,
@@ -182,7 +182,7 @@ SKU
 ↓
 Sales Transaction
 ↓
-FinishedGoodsInventory
+InventoryLot (Fulfillment Allocation)
 
 POS systems should preserve:
 	•	separation between:
@@ -221,7 +221,7 @@ Transaction
 ↓
 Inventory Deduction
 ↓
-Costing Update
+Costing Update (07_COSTING_ENGINE Realized COGS)
 ↓
 Operational Analytics
 
@@ -234,7 +234,7 @@ Costing Philosophy
 POS systems should preserve:
 	•	operational profitability visibility.
 Example:
-FinishedGoodsInventory Cost
+InventoryLot Valuation (from 07_COSTING_ENGINE)
 ↓ Sale
 Revenue
 ↓
@@ -245,8 +245,8 @@ Sales workflows should preserve:
 	•	operational profitability,
 	•	and transaction traceability.
 The system should distinguish between:
-	•	operational cost, and:
-	•	commercial pricing.
+	•	operational cost (owned by 07_COSTING_ENGINE), and:
+	•	commercial pricing (owned by POS Engine).
 
 Operational Intelligence Philosophy
 POS Engine is one of the major operational intelligence sources inside Roastery OS.

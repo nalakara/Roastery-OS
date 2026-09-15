@@ -2,336 +2,141 @@
 
 ## Purpose
 
-This document defines the RoastBatch entity structure and operational roast batch behavior used across Roastery OS.
+This document defines the RoastBatch entity structure and operational roasting execution model used across Roastery OS.
 
-The purpose of RoastBatch is to:
-- represent roasting execution,
-- preserve roasting traceability,
-- anchor inventory transformation,
-- maintain deterministic production workflows,
-- and provide readable roasting history.
-
-RoastBatch is one of the central operational entities within the Roasting Engine.
-
-RoastBatch acts as:
-- production execution record,
-- transformation anchor,
-- and roasted inventory lineage reference.
+In the frozen ontology, a RoastBatch represents the domain-specific execution record of a **Roasting Transformation**:
+- consumes one or more input `InventoryLot` instances of raw green coffee (`Material.category == RAW_COFFEE`),
+- applies a parameterized `RoastProfile` process template,
+- executes machine roasting parameters (charge, crack, development, drop),
+- generates one or more output `InventoryLot` instances of roasted whole bean coffee (`Material.category == INTERMEDIATE`),
+- records physical yield and shrinkage ($Y = Q_{\text{out}} / Q_{\text{in}}$),
+- and maintains complete genealogical lineage ($L_{\text{in}} \rightarrow T \rightarrow L_{\text{out}}$).
 
 ---
 
 # Core Philosophy
 
-RoastBatch represents:
-- actual roasting execution,
-- operational transformation event,
-- and roasted inventory creation process.
+A RoastBatch is the operational execution of a physical roasting transformation.
 
-RoastBatch is not merely:
-- roast notes,
-- roasting logs,
-- or roasting metadata.
+```text
+[ Input InventoryLot(s) (Raw Coffee) ]
+                  │
+                  ▼
+      [ RoastBatch Transformation ] ── (guided by RoastProfile)
+                  │
+                  ▼
+[ Output InventoryLot(s) (Roasted Coffee) ]
+```
 
-RoastBatch represents:
-- the operational moment where inventory evolves.
+RoastBatch links:
+1. **Master Specifications**: The green coffee `MaterialMaster` and `RoastProfileMaster`.
+2. **Physical Inventory**: Input and output `InventoryLot` instances.
+3. **Immutable Ledger**: Appended `InventoryMovement` records (`TRANSFORMATION_CONSUMPTION` and `TRANSFORMATION_OUTPUT`).
+4. **Economic Valuation**: Evaluated strictly by `07_COSTING_ENGINE` (Equation 1).
 
 ---
 
-# Roast Batch Philosophy
+# Entity Relationships
 
-Every roasting execution should create:
-- a RoastBatch identity,
-- a roasting timestamp,
-- inventory transformation lineage,
-- yield information,
-- and operational production history.
+```text
+RoastBatch (Transformation Execution)
+ ├── references → Transformation (underlying system transformation event)
+ ├── applies → RoastProfileMaster (Process Template)
+ ├── consumes → InventoryLot (references input inventoryLotId instances)
+ ├── produces → InventoryLot (creates output inventoryLotId instances)
+ ├── generates → InventoryMovement (Ledger records for inputs and outputs)
+ ├── carries → Roasting Telemetry & Sensory QC Data
+ └── linksTo → Costing Engine (for output unit cost calculation U_out)
+```
 
-Example:
+---
 
-```text id="q7m4tw"
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-RoastBatch should preserve:
-	•	source inventory,
-	•	roasting parameters,
-	•	transformation continuity,
-	•	and resulting roasted inventory identity.
+# Core Fields Specification
 
-RoastBatch as Transformation Anchor
-RoastBatch acts as the primary anchor between:
-	•	raw material inventory,
-	•	and roasted inventory creation.
-Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-This relationship should remain:
-	•	deterministic,
-	•	traceable,
-	•	operationally readable,
-	•	and human-understandable.
-RoastBatch is one of the most important operational lineage entities inside Roastery OS.
+### Identity Fields
+- `roastBatchId`: Unique canonical identifier (UUID / string).
+- `batchCode`: Human-readable batch code (e.g. `RB-2026-042`).
+- `batchName`: Descriptive operational name (e.g. *"Ethiopia Yirgacheffe Filter Run #3"*).
+- `batchType`: Classification (`PRODUCTION_ROAST`, `SAMPLE_ROAST`, `BLEND_COMPONENT_ROAST`, `EXPERIMENTAL_ROAST`).
 
-Core Relationships
-RoastBatch
-├── consumes → GreenBeanInventory
-├── references → GreenBean
-├── references → RoastProfile
-├── creates → RoastedCoffeeInventory
-├── generates → InventoryMovement
-├── affects → InventoryValuation
-└── supports → Traceability
+### Process & Template References
+- `roastProfileId`: Reference to `RoastProfileMaster` (Process Template).
+- `targetRoastLevel`: Descriptive roast degree target (`LIGHT`, `MEDIUM_LIGHT`, `MEDIUM`, `DARK`).
+- `roasterMachineId`: Identifier of the physical roasting machine.
+- `operatorId`: Identifier of the roastmaster / operator.
 
-RoastBatch Entity
-Purpose
-Represents an operational roasting execution event.
-RoastBatch acts as:
-	•	roasting execution record,
-	•	inventory transformation reference,
-	•	and production traceability anchor.
+### Input Material & Lot References
+- `inputLotId`: Canonical identifier of the consumed green coffee `InventoryLot`.
+- `greenBeanMaterialId`: Canonical reference to `MaterialMaster` (`category == RAW_COFFEE`).
+- `inputQuantity`: Measured physical mass loaded into hopper ($Q_{\text{in}}$).
+- `inputUnitId`: UOM from `UnitMaster` (`MASS` dimension, e.g. `kg` or `g`).
 
-Core Fields
-Identity Fields
-roastBatchId
-batchCode
-batchName
-batchType
-Examples of batchType:
-Production Roast
-Sample Roast
-Experimental Roast
-Blend Component Roast
+### Output Material & Lot Generation
+- `outputLotId`: Canonical identifier of the created roasted coffee `InventoryLot`.
+- `roastedMaterialId`: Canonical reference to resulting roasted coffee `MaterialMaster`.
+- `outputQuantity`: Measured physical mass dropped from cooling tray ($Q_{\text{out}}$).
+- `outputUnitId`: UOM matching input dimension (`kg` or `g`).
 
-Source Reference Fields
-greenBeanId
-greenBeanInventoryId
-supplierId
-originId
-processingMethodId
-These references preserve:
-	•	sourcing continuity,
-	•	roasting traceability,
-	•	and operational lineage.
+### Physical Yield & Loss Tracking
+- `yieldPercentage`: Measured physical yield ($Y = \frac{Q_{\text{out}}}{Q_{\text{in}}} \times 100\%$).
+- `shrinkagePercentage`: Measured mass loss ($100\% - Y$).
 
-Roast Profile Fields
-roastProfileId
-targetRoastLevel
-roastIntent
-Examples of roastIntent:
-Filter
-Espresso
-Omni
-Blend Component
-Roast profiles represent:
-	•	roasting references,
-	•	not actual roasting execution.
+### Thermal Telemetry & Roasting Observations
+- `chargeTemperature`: Temperature at bean drop into drum (°C).
+- `turningPointTime`: Time elapsed to turning point (seconds).
+- `turningPointTemperature`: Temperature at turning point (°C).
+- `firstCrackTime`: Time elapsed to start of first crack (seconds).
+- `firstCrackTemperature`: Temperature at first crack (°C).
+- `developmentTime`: Time from first crack to drop (seconds).
+- `developmentTimeRatio`: DTR percentage ($\frac{\text{Development Time}}{\text{Total Roast Time}} \times 100\%$).
+- `dropTime`: Total roast duration (seconds).
+- `dropTemperature`: Temperature at discharge (°C).
+- `colorAgtronWhole`: Measured whole bean Agtron / Colortrack value.
+- `colorAgtronGround`: Measured ground coffee Agtron value.
 
-Quantity Fields
-inputQuantity
-outputQuantity
-unitId
-yieldPercentage
-shrinkagePercentage
-Example:
-100kg input
-↓ roasting
-82kg output
-Yield behavior should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally meaningful.
+### Operational Lifecycle Status
+- `roastStatus`: Operational state:
+  - `PLANNED`: Scheduled in roast queue.
+  - `IN_PROGRESS`: Beans currently in drum / cooling tray.
+  - `COMPLETED`: Roasted lot weighed, QC logged, inventory created.
+  - `CANCELLED`: Batch aborted prior to drum charge.
+  - `REJECTED_QC`: Output roasted lot quarantined / downgraded due to defect.
 
-Operational Fields
-roastDate
-startTime
-endTime
-roasterMachine
-operatorId
-roastStatus
-Examples of roastStatus:
-Planned
-In Progress
-Completed
-Cancelled
-Archived
-The MVP should keep roast status logic lightweight.
+### Timestamps & Audit
+- `roastDate`: Date of roasting execution.
+- `startTime`: ISO 8601 start timestamp.
+- `endTime`: ISO 8601 discharge timestamp.
+- `notes`: Operational remarks.
+- `createdAt`, `updatedAt`: ISO 8601 timestamps.
 
-Roast Observation Fields
-firstCrackTime
-developmentTime
-dropTemperature
-environmentNotes
-operatorNotes
-These fields support:
-	•	roast history,
-	•	production analysis,
-	•	and future roasting intelligence systems.
-Most advanced roasting telemetry should remain optional during MVP stages.
+---
 
-Costing Fields
-greenBeanCost
-productionCost
-yieldAdjustedCost
-costPerKg
-Roasting directly affects:
-	•	inventory valuation,
-	•	and operational profitability.
+# Operational Execution Workflow
 
-Traceability Fields
-sourceBatchReference
-relatedProductionBatchId
-relatedBlendBatchId
-These references preserve:
-	•	operational lineage,
-	•	transformation continuity,
-	•	and inventory relationships.
+```text
+1. Schedule Batch (Status: PLANNED)
+         │
+2. Stage & Weigh Green Coffee
+   (Reserves quantity Q_in on input InventoryLot)
+         │
+3. Charge Roaster & Execute Profile (Status: IN_PROGRESS)
+   (Records roast curve, first crack, DTR, drop temp)
+         │
+4. Discharge & Cool
+         │
+5. Weigh Output Mass (Q_out) & Record Agtron
+         │
+6. Finalize Batch (Status: COMPLETED):
+   ├── Deducts Q_in from green InventoryLot via InventoryMovement [TRANSFORMATION_CONSUMPTION]
+   ├── Creates new roasted InventoryLot with Q_out via InventoryMovement [TRANSFORMATION_OUTPUT]
+   └── Costing Engine assigns U_out = (V_consumed + C_direct) / Q_out to the new lot
+```
 
-General Fields
-notes
-createdAt
-updatedAt
+---
 
-Roast Batch Identity Principle
-RoastBatch represents:
-	•	actual roasting execution.
-Example:
-RoastProfile
-≠
-RoastBatch
+# Architectural Invariants
 
-RoastProfile
-Represents:
-	•	roasting target,
-	•	reusable roasting reference,
-	•	and production intention.
+1. **Physical Transformation:** A RoastBatch consumes physical `InventoryLot` instances and produces physical `InventoryLot` instances.
+2. **Economic Separation:** RoastBatch records physical quantities, machine hours, and fuel/labor events; the Costing Engine evaluates the economic cost pool ($V_{\text{consumed}} + C_{\text{direct}}$) and assigns $U_{\text{out}}$.
+3. **Traceability Guarantee:** The output `InventoryLot` maintains an immutable lineage link back to the `RoastBatch` and its originating green coffee lots.
 
-RoastBatch
-Represents:
-	•	actual production execution,
-	•	operational roasting event,
-	•	and inventory transformation.
-This separation preserves:
-	•	operational flexibility,
-	•	analytical capability,
-	•	and production clarity.
-
-Yield Awareness Principle
-Yield behavior is one of the defining characteristics of RoastBatch.
-Example:
-100kg Green Beans
-↓ RoastBatch
-82kg Roasted Coffee
-RoastBatch should preserve:
-	•	shrinkage visibility,
-	•	yield history,
-	•	roasting efficiency,
-	•	and operational continuity.
-Yield is considered:
-	•	transformation intelligence,
-	•	not inventory error.
-
-Deterministic Roast Principle
-Critical RoastBatch behavior must remain deterministic.
-Examples:
-	•	inventory consumption,
-	•	roasted inventory creation,
-	•	yield calculation,
-	•	costing updates,
-	•	and traceability relationships.
-Roasting workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden roasting mutation,
-	•	ambiguous inventory behavior,
-	•	and non-traceable production states.
-
-Roast Status Philosophy
-RoastBatch may evolve through operational statuses.
-Example:
-Planned
-↓
-In Progress
-↓
-Completed
-↓
-Archived
-Status transitions should remain:
-	•	deterministic,
-	•	explicit,
-	•	and operationally understandable.
-The MVP should prioritize simple workflow visibility.
-
-Human-Centered Philosophy
-RoastBatch workflows should feel natural for real roasting operations.
-Operators should be able to:
-	•	execute roast batches,
-	•	understand inventory evolution,
-	•	and preserve roasting history  without enterprise manufacturing complexity.
-Operational clarity should take priority over industrial production bureaucracy.
-
-AI Boundary Philosophy
-AI systems may:
-	•	analyze roasting consistency,
-	•	compare roast history,
-	•	identify yield anomalies,
-	•	and recommend roast optimization.
-However:  AI must not autonomously manipulate deterministic RoastBatch execution.
-Critical roasting workflows must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
-
-MVP Scope
-The MVP RoastBatch structure should prioritize:
-	•	RoastBatch identity,
-	•	green bean consumption,
-	•	roasted inventory creation,
-	•	yield visibility,
-	•	roast traceability,
-	•	and operational logging.
-The MVP intentionally excludes:
-	•	machine telemetry orchestration,
-	•	automated roast control,
-	•	industrial manufacturing integration,
-	•	and advanced IoT roasting systems.
-
-Architectural Notes
-RoastBatch is one of the most foundational production entities inside Roastery OS.
-Many downstream systems depend on:
-	•	RoastBatch lineage,
-	•	roasted inventory identity,
-	•	and transformation continuity.
-RoastBatch structures should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	production-oriented,
-	•	and operationally meaningful.
-Future systems should extend RoastBatch behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The RoastBatch system is designed to support future evolution toward:
-	•	roast analytics,
-	•	production intelligence,
-	•	AI-assisted roasting systems,
-	•	IoT integration,
-	•	and operational optimization.
-However, RoastBatch behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
-
-Philosophy Summary
-RoastBatch is not merely:
-	•	roast logging,
-	•	or roasting metadata.
-RoastBatch is:
-	•	operational roasting execution,
-	•	inventory transformation anchor,
-	•	and roasted inventory identity creator.
-RoastBatch preserves the operational moment where coffee evolves inside Roastery OS.

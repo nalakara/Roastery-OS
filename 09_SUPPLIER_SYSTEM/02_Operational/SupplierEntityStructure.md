@@ -67,13 +67,15 @@ Core Supplier Entity Principle
 Every supplier entity should preserve:
 	•	deterministic sourcing identity.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
-Green Bean Supply
+Supplied Material (MaterialMaster)
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement (02_INVENTORY_ENGINE)
 ↓
-Operational Workflow
+InventoryLot (Initial acquisition cost basis & quantity)
+↓
+Operational Workflow / Transformation
 
 Supplier entities should remain:
 	•	identifiable,
@@ -139,13 +141,14 @@ Supplier relationships preserve:
 
 Material Relationship Principle
 Supplier entities connect to:
-	•	operational material continuity.
+	•	operational material continuity (MaterialMaster).
 Examples:
 Green Coffee
 Packaging Materials
 Bottle Components
 Labels
 Ingredients
+Consumables
 
 Material relationships preserve:
 	•	upstream operational ancestry continuity.
@@ -160,11 +163,13 @@ Supplier entities interact with:
 Example:
 Supplier
 ↓
-Purchase Order
+Purchase Order / Contract
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Workflow
+InventoryLot (AVAILABLE in 02_INVENTORY_ENGINE)
+↓
+Operational Workflow / Transformation
 
 Procurement continuity preserves:
 	•	sourcing explainability,
@@ -218,13 +223,13 @@ Pricing Relationship Principle
 Supplier entities influence:
 	•	operational costing continuity.
 Example:
-Supplier Price
+Supplier Invoice Price
 ↓
-Inventory Valuation
+InventoryLot Acquisition Cost Basis (02_INVENTORY_ENGINE)
 ↓
-Operational Costing
+Lot Valuation & Cost Propagation (07_COSTING_ENGINE)
 ↓
-Profitability
+Profitability Visibility
 
 Supplier pricing continuity preserves:
 	•	operational economic explainability.
@@ -261,9 +266,9 @@ Supplier System
 ↓
 Procurement Engine
 ↓
-Inventory Engine
+Inventory Engine (PURCHASE_RECEIPT → InventoryLot)
 ↓
-Costing Engine
+Costing Engine (Lot Valuation & COGS)
 ↓
 Traceability Engine
 
@@ -275,18 +280,25 @@ This creates:
 Upstream Traceability Principle
 Supplier entities support:
 	•	upstream operational traceability.
-Example:
-Customer Product
+Generic Model:
+Finished Product / Downstream Lot
 ↓
-ProductionBatch
+Downstream Transformations / Batches
 ↓
-BlendBatch
+Precursor InventoryLots
 ↓
-RoastBatch
+Originating Purchased InventoryLot
 ↓
-GreenBeanInventory
-↓
-Supplier
+Supplier (SupplierMaster)
+
+Example (Coffee Workflow Instance):
+Dispatched Retail Bag (InventoryLot)
+↓ ProductionBatch (Packaging Transformation)
+Roasted Coffee (InventoryLot)
+↓ RoastBatch (Thermal Transformation)
+Green Coffee (InventoryLot)
+↓ PURCHASE_RECEIPT Movement
+Supplier (SupplierMaster)
 
 Supplier continuity preserves:
 	•	upstream sourcing ancestry visibility.

@@ -6,13 +6,11 @@ This document defines the foundational roasting philosophy used across Roastery 
 
 The purpose of this philosophy is to establish:
 - how roasting is interpreted operationally,
-- how roasting affects inventory evolution,
+- how roasting behaves as a canonical `Transformation` workflow using `InventoryLot` and `MaterialMaster`,
 - how roasting preserves production traceability,
-- and how roasting behaves as a deterministic transformation workflow.
+- and how roasting interfaces with `07_COSTING_ENGINE` for unit cost valuation.
 
 Roasting is one of the central operational transformation systems inside Roastery OS.
-
-This philosophy acts as the conceptual foundation for all roasting-related workflows.
 
 ---
 
@@ -20,276 +18,88 @@ This philosophy acts as the conceptual foundation for all roasting-related workf
 
 Roastery OS treats roasting as:
 - inventory transformation,
-- production evolution,
-- and roasted identity generation.
+- physical production evolution,
+- and roasted intermediate lot generation.
 
 Roasting is not merely:
 - heat application,
 - roast logging,
-- or roast note recording.
+- or arbitrary inventory reduction.
 
 Roasting creates:
-- new inventory states,
-- new operational meaning,
-- new costing structures,
-- and new traceability layers.
-
-The system should preserve roasting as a production-first operational workflow.
+- a new physical state and material definition,
+- a new operational identity (`InventoryLot`),
+- new economic unit cost structures (calculated by `07_COSTING_ENGINE`),
+- and comprehensive traceability lineage.
 
 ---
 
 # Transformation Philosophy
 
-Traditional inventory systems often interpret roasting as:
+Traditional inventory systems often interpret roasting as simple stock decrement. Roastery OS treats roasting as a formal Transformation:
 
 ```text
-Raw Inventory
-↓
-Inventory Reduction
-Roastery OS uses a transformation-oriented philosophy:
-Green Beans
-↓ roasting
-Roasted Coffee
-Roasting does not simply reduce inventory.
-Roasting transforms inventory into:
-	•	a new operational state,
-	•	a new inventory identity,
-	•	and a new production entity.
+Input InventoryLot (RAW_COFFEE Material)
+↓ RoastBatch (Transformation Execution)
+Output InventoryLot (INTERMEDIATE Roasted Material)
+```
 
-Roasting as Inventory Evolution
-Roasting represents one of the first major inventory evolution stages inside Roastery OS.
-Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-This transformation should preserve:
-	•	source relationships,
-	•	operational lineage,
-	•	costing continuity,
-	•	and production traceability.
-Roasted inventory should remain connected to:
-	•	origin,
-	•	processing method,
-	•	supplier,
-	•	and roast execution history.
+Roasting transforms raw agricultural inventory into production-ready intermediate inventory.
 
-Roast Batch Philosophy
-Roasting workflows should remain batch-oriented.
-Every roasting execution should generate:
-	•	RoastBatch identity,
-	•	roasting timestamp,
-	•	roast profile reference,
-	•	yield record,
-	•	and transformation lineage.
-Example:
-RB-20260520-001
-Batch systems should remain:
-	•	readable,
-	•	operationally meaningful,
-	•	deterministic,
-	•	and scalable.
-Roast batches act as:
-	•	transformation anchors,
-	•	inventory lineage points,
-	•	and operational history records.
+---
 
-Yield Awareness Philosophy
-Yield behavior is one of the defining operational characteristics of roasting.
-Example:
-100kg Green Beans
-↓ roasting
-82kg Roasted Coffee
-The system should preserve:
-	•	roasting shrinkage,
-	•	yield percentage,
-	•	transformation continuity,
-	•	and operational traceability.
-Yield loss is treated as:
-	•	expected operational transformation,
-	•	not inventory error.
-Yield behavior is considered:
-	•	production intelligence,
-	•	and operational analytics input.
+## Roasting as Inventory Evolution
 
-Roast Profile Philosophy
-Roast profiles represent:
-	•	roasting intention,
-	•	operational targeting,
-	•	and production identity.
-Examples:
-Filter Roast
-Espresso Roast
-Omni Roast
-Roast profiles should:
-	•	remain reusable,
-	•	preserve production consistency,
-	•	and support operational standardization.
-However:  Roast profiles are references.
-RoastBatch represents:
-	•	actual roasting execution.
-Example:
-RoastProfile
-≠
-RoastBatch
-This separation preserves:
-	•	operational clarity,
-	•	production flexibility,
-	•	and future analytical capability.
+Roasting represents the primary physical transformation stage:
+- Consumes green coffee lots (`category: RAW_COFFEE`).
+- Produces roasted coffee intermediate lots (`category: INTERMEDIATE`).
+- Emits immutable `InventoryMovement` entries (`TRANSFORMATION_CONSUME` / `TRANSFORMATION_PRODUCE`).
+- Maintains complete parent-to-child lineage.
 
-Production-First Philosophy
-Roasting behavior should prioritize:
-	•	production workflows,
-	•	inventory evolution,
-	•	and operational continuity.
-Roasting is fundamentally:
-	•	a production transformation process.
-Retail workflows should adapt to roasting logic,  not the reverse.
-This philosophy differentiates Roastery OS from:
-	•	generic POS systems,
-	•	cafe inventory systems,
-	•	and retail-first operational software.
+---
 
-Traceability Philosophy
-Roasting is one of the most important traceability layers inside Roastery OS.
-Example:
-Supplier
-↓
-GreenBean
-↓
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-Roasting traceability should preserve:
-	•	source identity,
-	•	transformation continuity,
-	•	roast execution history,
-	•	and operational lineage.
-Traceability should remain:
-	•	readable,
-	•	operationally meaningful,
-	•	and human-centered.
+## Roast Batch Philosophy
 
-Costing Transformation Philosophy
-Roasting directly affects operational valuation.
-Example:
-100kg Green Beans
-Cost: $1000
-↓ roasting
-82kg Roasted Coffee
-↓
-Higher Cost Per Kg
-Roasting workflows should preserve:
-	•	yield-aware costing,
-	•	transformation continuity,
-	•	and operational profitability visibility.
-Roasting valuation should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally understandable.
+Roasting workflows remain batch-oriented:
+- Every execution creates a `RoastBatch` identity (e.g. `RB-20260520-001`).
+- Captures charge weight, roasted output weight, and roasting telemetry (RoR, First Crack, Drop Temp, DTR%).
+- Binds to a process template (`RoastProfileMaster`).
 
-Deterministic Roasting Principle
-Critical roasting operations must remain deterministic.
-Examples:
-	•	green bean consumption,
-	•	roasted inventory creation,
-	•	yield calculation,
-	•	costing updates,
-	•	and traceability relationships.
-Roasting workflows should:
-	•	generate predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden inventory mutation,
-	•	ambiguous roasting states,
-	•	and non-traceable production behavior.
+---
 
-Human-Centered Philosophy
-Roasting workflows should feel natural for real roasting operations.
-Operators should be able to:
-	•	execute roast batches,
-	•	understand transformation flow,
-	•	trace inventory evolution,
-	•	and preserve roasting history  without enterprise manufacturing complexity.
-Operational clarity should take priority over theoretical manufacturing perfection.
+## Yield Awareness Philosophy
 
-Operational Simplicity Principle
-The MVP roasting system should remain:
-	•	practical,
-	•	understandable,
-	•	and production-oriented.
-The MVP intentionally avoids:
-	•	industrial manufacturing orchestration,
-	•	machine telemetry complexity,
-	•	enterprise production routing,
-	•	and automated roast control systems.
-Roasting workflows should remain:
-	•	lightweight,
-	•	operationally meaningful,
-	•	and suitable for real-world specialty coffee operations.
+Yield behavior is an inherent physical characteristic:
+- Green coffee loses moisture (typically 12%–20%).
+- Mass shrinks, but economic value is preserved and concentrated.
+- Weight loss is recorded as an expected transformation outcome, not inventory shrinkage.
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze roasting consistency,
-	•	recommend roast optimization,
-	•	identify yield anomalies,
-	•	and support production analytics.
-However:  AI must not autonomously manipulate deterministic roasting workflows.
-Critical roasting operations must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+---
 
-Modular Roasting Philosophy
-Different roasting operations may:
-	•	use different roasting styles,
-	•	require different workflows,
-	•	and produce different production behavior.
-Examples:
-Single Origin Roasting
-Blend Component Roasting
-Sample Roasting
-Production Roasting
-Experimental Roasting
-The architecture should support:
-	•	operational diversity,
-	•	workflow flexibility,
-	•	and future roasting expansion  without redesigning the roasting foundation.
+## Costing Transformation Boundary
 
-MVP Roasting Philosophy
-The MVP Roasting Engine should prioritize:
-	•	RoastBatch execution,
-	•	inventory transformation,
-	•	yield visibility,
-	•	roast traceability,
-	•	and operational clarity.
-The MVP should already preserve:
-	•	deterministic roasting behavior,
-	•	transformation lineage,
-	•	and production continuity  without introducing excessive manufacturing complexity.
+- **Roasting Engine owns**: Physical process execution, input mass charged, output mass yielded, and process telemetry.
+- **Costing Engine (`07_COSTING_ENGINE`) owns**: Consumed inventory valuation, direct batch cost absorption, and calculating the output unit cost:
+  $$U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$$
 
-Long-Term Direction
-The Roasting Philosophy is designed to support future evolution toward:
-	•	roast analytics,
-	•	production intelligence,
-	•	IoT roasting integration,
-	•	AI-assisted roasting systems,
-	•	forecasting infrastructure,
-	•	and ecosystem-wide roasting intelligence.
-However, roasting workflows should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+---
 
-Philosophy Summary
-Roasting is not merely:
-	•	inventory reduction,
-	•	roast logging,
-	•	or heat application.
-Roasting is:
-	•	inventory transformation,
-	•	production evolution,
-	•	and roasted identity generation.
-Roasting is where coffee operationally becomes a new entity inside Roastery OS.
+## Traceability Philosophy
+
+Roasting preserves unbroken operational provenance:
+```text
+Agricultural Green Lot → Purchase Order Receipt → Input Lot (RAW_COFFEE) → RoastBatch → Output Lot (INTERMEDIATE) → Packaging / Blending → Finished Goods (SKU)
+```
+
+---
+
+## AI Boundary Philosophy
+
+AI systems may analyze roast profile curves, suggest rate-of-rise adjustments, or detect profile anomalies. However, AI systems must **never** autonomously alter deterministic inventory movements or batch execution records.
+
+---
+
+## Philosophy Summary
+
+Roasting is not stock reduction or simple logging. Roasting is **inventory transformation, physical production evolution, and roasted identity generation**. Roasting is where raw coffee operationally evolves into a production-ready intermediate product inside Roastery OS.
+

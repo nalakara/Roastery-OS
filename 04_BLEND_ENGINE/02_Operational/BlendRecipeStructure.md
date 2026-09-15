@@ -2,359 +2,153 @@
 
 ## Purpose
 
-This document defines the BlendRecipe entity structure and operational recipe behavior used across Roastery OS.
+This document defines the `BlendRecipeMaster` (or `BlendRecipe`) entity structure and operational recipe behavior used across Roastery OS.
 
-The purpose of BlendRecipe is to:
-- preserve reusable blend formulation logic,
-- standardize blend composition references,
-- support deterministic blend production,
+The purpose of `BlendRecipeMaster` is to:
+- define reusable blend formulation templates and material composition ratios,
+- standardize blend composition references based on `MaterialMaster`,
+- decouple formulation definitions from physical inventory stock instances (`InventoryLot`),
+- support deterministic blend production execution (`BlendBatch`),
 - maintain operational consistency,
-- and provide readable composition structures.
+- and provide clean composition structures for both post-roast and intermediate blending.
 
-BlendRecipe acts as:
-- reusable production formulation,
-- composition reference structure,
-- and blend identity definition.
-
-BlendRecipe is one of the foundational operational entities inside the Blend Engine.
+`BlendRecipeMaster` acts as:
+- a reusable recipe / process formulation template,
+- a material composition reference structure,
+- and a blend identity definition.
 
 ---
 
 # Core Philosophy
 
-Roastery OS treats BlendRecipe as:
-- reusable blend formulation reference,
-- operational composition blueprint,
+Roastery OS treats `BlendRecipeMaster` as:
+- a reusable blend formulation reference (`RecipeTemplate` / `ProcessTemplate`),
+- an operational composition blueprint specifying `MaterialMaster` percentages,
 - and production intention structure.
 
-BlendRecipe is not:
-- actual inventory,
+`BlendRecipeMaster` is **NOT**:
+- physical inventory (`InventoryLot`),
+- a specific roast batch instance,
 - or production execution.
 
-BlendRecipe defines:
-- intended blend composition.
+`BlendRecipeMaster` defines:
+- how a blend is intended to be composed in terms of abstract materials and ratios ($\sum \text{ratio}_i = 100\%$).
 
 Actual production execution belongs to:
-- BlendBatch.
+- `BlendBatch` (consuming specific physical `InventoryLot` instances).
 
-This separation is one of the foundational architectural principles inside the Blend Engine.
+This separation is a foundational architectural invariant inside Roastery OS.
 
 ---
 
-# BlendRecipe Philosophy
+# Blend Recipe Philosophy
 
-Every blend should preserve:
-- explicit composition structure,
-- measurable formulation ratios,
-- and operational blend identity.
+Every blend defines an explicit material composition structure:
 
-Example:
+```text
+House Espresso Blend (Blend Material Definition)
+├── Brazil Cerrado Natural (MaterialMaster) → 60%
+└── Ethiopia Yirgacheffe Washed (MaterialMaster) → 40%
+```
 
-```text id="u7m4tw"
-House Espresso Blend
-├── Brazil Natural → 60%
-└── Ethiopia Washed → 40%
-BlendRecipe should preserve:
-	•	composition continuity,
-	•	production readability,
-	•	and operational repeatability.
+`BlendRecipeMaster` preserves:
+- composition consistency,
+- production repeatability,
+- and operational recipe versioning.
 
-Core Relationship Principle
-BlendRecipe acts as:
-	•	reusable production reference.
-Example:
-BlendRecipe
+---
+
+## Core Relationship Principle
+
+```text
+BlendRecipeMaster (Recipe Template: Material % Ratios)
 ↓ applied to
-BlendBatch
-BlendRecipe defines:
-	•	intended blend structure.
-BlendBatch represents:
-	•	actual production execution.
-This separation preserves:
-	•	operational flexibility,
-	•	analytical capability,
-	•	and production continuity.
+BlendBatch (Transformation Execution: Consumes specific InventoryLots)
+↓ produces
+Output InventoryLot (INTERMEDIATE or DERIVATIVE Blend Material)
+```
 
-BlendRecipe Entity
-Purpose
-Represents reusable blend formulation structure.
-BlendRecipe acts as:
-	•	composition blueprint,
-	•	production targeting structure,
-	•	and operational recipe identity.
+This relationship ensures that when bean lots rotate (e.g. from Lot A to Lot B of the same Brazil Cerrado Material), the recipe definition does not need to be rewritten.
 
-Core Relationships
-BlendRecipe
-├── references → RoastedCoffeeInventory
-├── contains → Blend Components
-├── referencedBy → BlendBatch
-├── affects → Costing
-└── supports → Traceability
+---
 
-Core Fields
-Identity Fields
-blendRecipeId
-recipeCode
-recipeName
-recipeType
-Examples of recipeType:
-Espresso Blend
-Filter Blend
-House Blend
-Seasonal Blend
-Signature Blend
-Recipe identity should remain:
-	•	operationally meaningful,
-	•	readable,
-	•	and scalable.
+# BlendRecipe Master Entity Structure
 
-Composition Fields
-componentList
-compositionRatio
-targetPercentage
-Example:
-Brazil Natural → 60%
-Ethiopia Washed → 40%
-Composition structures should remain:
-	•	measurable,
-	•	traceable,
-	•	and deterministic.
+```typescript
+interface BlendRecipeMaster {
+  // Identity
+  recipeId: string;
+  recipeCode: string; // e.g. "REC-ESP-HOUSE"
+  recipeName: string; // e.g. "House Espresso Recipe v2"
+  outputMaterialId: string; // MaterialMaster ID for the resulting blend product
+  version: number; // e.g. 1, 2
+  isActive: boolean;
 
-Component Reference Fields
-roastedCoffeeInventoryId
-roastBatchId
-greenBeanId
-These references preserve:
-	•	roasting lineage,
-	•	sourcing continuity,
-	•	and operational traceability.
+  // Material Formulation (must sum to 100.0%)
+  components: BlendRecipeComponent[];
 
-Operational Fields
-blendIntent
-targetFlavorDirection
-recommendedUsage
-isActive
-Examples of blendIntent:
-Espresso
-Milk Beverage
-Filter
-Omni
-Operational fields should remain:
-	•	lightweight,
-	•	and production-oriented during MVP stages.
+  // Target Parameters
+  blendTiming: 'PRE_ROAST' | 'POST_ROAST';
+  targetRoastStyle?: string;
+  expectedLossPercentage: number; // e.g. 0.5% handling/purge loss
 
-Yield Reference Fields
-expectedYieldPercentage
-expectedLossPercentage
-Blend workflows may include:
-	•	purge,
-	•	handling loss,
-	•	and production residue.
-The MVP should preserve:
-	•	simple operational yield visibility.
+  // Operational Metadata
+  description?: string;
+  targetFlavorProfile?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
-Costing Reference Fields
-estimatedCostPerKg
-targetCostRange
-pricingReference
-These fields support:
-	•	operational costing visibility,
-	•	and profitability planning.
-Advanced costing intelligence should remain optional during MVP stages.
+interface BlendRecipeComponent {
+  materialId: string; // Reference to MaterialMaster (RAW_COFFEE or INTERMEDIATE)
+  targetPercentage: number; // e.g. 60.0 (percentage of total batch weight)
+  tolerancePercentage?: number; // e.g. +/- 1.0% allowable scale variance
+  substituteMaterialIds?: string[]; // Optional allowable substitutes
+}
+```
 
-Traceability Fields
-sourceRoastReference
-sourceInventoryReference
-recipeVersion
-These references preserve:
-	•	operational continuity,
-	•	recipe evolution,
-	•	and production lineage.
+---
 
-General Fields
-description
-notes
-createdAt
-updatedAt
+## Component Separation: Material vs InventoryLot
 
-BlendRecipe vs BlendBatch Principle
-Example:
-BlendRecipe
-≠
-BlendBatch
+- **`BlendRecipeMaster` specifies**: `materialId` (the abstract catalog item, e.g. "Brazil Fazenda Dutra Natural Medium Roast") and `targetPercentage` (e.g. 60%).
+- **`BlendBatch` specifies**: `consumedLots` linking to physical `inventoryLotId` instances (e.g. "LOT-2026-BR-004", 60 kg) satisfying that material requirement.
 
-BlendRecipe
-Represents:
-	•	reusable formulation intention,
-	•	composition structure,
-	•	and operational recipe reference.
+This distinction eliminates coupling between static recipes and transient warehouse stock.
 
-BlendBatch
-Represents:
-	•	actual blend production execution,
-	•	inventory transformation,
-	•	and operational production event.
-This separation preserves:
-	•	production flexibility,
-	•	operational realism,
-	•	and future analytical capability.
+---
 
-Composition Integrity Principle
-BlendRecipe should preserve:
-	•	deterministic composition structure.
-Example:
-Brazil Natural → 60%
-Ethiopia Washed → 40%
-Composition relationships should remain:
-	•	explicit,
-	•	measurable,
-	•	and traceable.
-The system should avoid:
-	•	ambiguous blend composition,
-	•	hidden ratio mutation,
-	•	and disconnected recipe structures.
+## Supported Transformation Topologies
 
-Production-Oriented Philosophy
-BlendRecipe should support:
-	•	real production workflows,
-	•	not merely marketing categorization.
-Blend recipes should remain:
-	•	operationally meaningful,
-	•	inventory-aware,
-	•	and transformation-oriented.
-This philosophy differentiates Roastery OS from:
-	•	cafe POS systems,
-	•	retail-first inventory systems,
-	•	and generic product databases.
+1. **Standard Blending ($N \rightarrow 1$)**:
+   Multiple roasted intermediate coffee lots blended into a single output roasted blend lot.
+2. **Intermediate / Pre-Roast Blending ($N \rightarrow 1$)**:
+   Multiple green raw coffee lots blended before roasting into a single pre-roast green blend lot.
+3. **Compound / Multi-Stage Blending ($N \rightarrow M$)**:
+   Blending multiple intermediate lots and packaging into multiple batch sizes or split intermediate containers simultaneously.
 
-Costing Relationship Principle
-BlendRecipe may influence:
-	•	operational profitability,
-	•	production costing,
-	•	and pricing strategy.
-Example:
-Brazil Cost
-+
-Ethiopia Cost
-↓
-Estimated Blend Cost
-Costing continuity should remain:
-	•	traceable,
-	•	deterministic,
-	•	and operationally understandable.
+Blending does not assume a terminal or finished retail good. The output of a `BlendBatch` is an `InventoryLot` that can be stored, re-blended, ground, extracted, or packaged.
 
-Traceability Principle
-BlendRecipe should preserve:
-	•	upstream roasting lineage.
-Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendRecipe
-Recipe structures should remain:
-	•	connected to roasting origin,
-	•	production continuity,
-	•	and operational traceability.
+---
 
-Recipe Versioning Philosophy
-Blend recipes may evolve operationally over time.
-Examples:
-Version 1
-→ 70/30 Ratio
+## Costing & Valuation Boundary
 
-Version 2
-→ 60/40 Ratio
-Recipe evolution should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally understandable.
-The MVP should keep versioning lightweight.
+`BlendRecipeMaster` does not compute or fix unit costs.
+When `BlendBatch` executes:
+- Roasting/Blend operators measure actual input lot weights and actual blended output weight.
+- `07_COSTING_ENGINE` computes the actual unit cost of the blended output lot:
+  $$U_{\text{out}} = \frac{\sum (Q_{\text{in}, i} \times U_{\text{in}, i}) + \sum C_{\text{direct}}}{Q_{\text{out}}}$$
 
-Deterministic Recipe Principle
-Critical recipe behavior must remain deterministic.
-Examples:
-	•	composition structure,
-	•	ratio continuity,
-	•	costing continuity,
-	•	and inventory relationships.
-Recipe systems should:
-	•	preserve operational integrity,
-	•	produce predictable blend structures,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden recipe mutation,
-	•	ambiguous formulation behavior,
-	•	and disconnected production lineage.
+---
 
-Human-Centered Philosophy
-BlendRecipe systems should remain understandable for real operators.
-Operators should be able to:
-	•	define blend recipes,
-	•	understand composition structures,
-	•	and maintain production consistency  without manufacturing ERP complexity.
-Operational clarity should take priority over industrial production abstraction.
+## AI Boundary Philosophy
 
-AI Boundary Philosophy
-AI systems may:
-	•	recommend blend ratios,
-	•	analyze composition behavior,
-	•	simulate flavor direction,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic recipe structures.
-Critical blend relationships must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+AI systems may simulate blend ratios based on green bean sensory attributes or suggest cost-optimized component percentages. However, AI systems must **never** modify active `BlendRecipeMaster` definitions or alter `BlendBatch` execution lots without explicit roaster authorization.
 
-MVP Scope
-The MVP BlendRecipe system should prioritize:
-	•	reusable blend formulations,
-	•	measurable composition structures,
-	•	deterministic ratio visibility,
-	•	costing continuity,
-	•	and roasting lineage preservation.
-The MVP intentionally excludes:
-	•	flavor simulation systems,
-	•	automated formulation engines,
-	•	predictive sensory analytics,
-	•	and industrial manufacturing orchestration.
+---
 
-Architectural Notes
-BlendRecipe is one of the operational formulation layers inside the Blend Engine.
-Recipe systems influence:
-	•	blend production,
-	•	costing behavior,
-	•	inventory transformation,
-	•	product identity,
-	•	and operational analytics.
-BlendRecipe structures should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend recipe behavior without redesigning the operational foundation.
+## Philosophy Summary
 
-Long-Term Direction
-The BlendRecipe system is designed to support future evolution toward:
-	•	AI-assisted blend formulation,
-	•	flavor modeling,
-	•	predictive production analytics,
-	•	operational optimization,
-	•	and advanced composition intelligence.
-However, recipe behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+`BlendRecipeMaster` is **reusable formulation structure, composition blueprint, and operational blend intention**. `BlendRecipeMaster` defines what materials compose a blend, while `BlendBatch` executes that intention against physical inventory lots.
 
-Philosophy Summary
-BlendRecipe is not:
-	•	inventory,
-	•	or production execution.
-BlendRecipe is:
-	•	reusable formulation structure,
-	•	composition blueprint,
-	•	and operational blend intention.
-BlendRecipe defines how blend production is intended to behave inside Roastery OS.
 

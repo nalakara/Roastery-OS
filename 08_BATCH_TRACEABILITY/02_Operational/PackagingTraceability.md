@@ -53,18 +53,16 @@ Commercial Product State
 Downstream Customer Continuity
 
 Packaging traceability should preserve:
-	•	operational-commercial lineage continuity, not merely:
-	•	packaging execution history.
-
-Core Packaging Principle
+	•	operational-commercial lineage continuity,not merely:
+	•	packaging execution Core Packaging Principle
 Every packaging workflow should preserve:
 	•	upstream operational ancestry,
 	•	downstream commercial continuity,
 	•	and deterministic lineage relationships.
 Example:
-BlendInventory
-↓ Packaging Workflow
-FinishedGoodsInventory
+Bulk Roasted/Blend InventoryLot + Packaging Material InventoryLot
+↓ Packaging Transformation (ProductionBatch context)
+Packaged Goods SKU InventoryLot
 
 Packaging transformations should remain:
 	•	operationally connected,
@@ -75,11 +73,11 @@ Packaging Transformation Principle
 Packaging workflows create:
 	•	commercially transformed inventory states.
 Examples:
-Coffee Bag Packaging
-Bottle Filling
-Drip Bag Packaging
-Retail Box Packaging
-Wholesale Packaging
+- Coffee Bag Packaging (Roasted Whole Bean / Ground)
+- Bottle Filling (Cold Brew / Syrup / RTD)
+- Drip Bag Packaging (Sachet + Outer Box)
+- Retail Box Packaging / Kitting
+- Wholesale Bulk Packaging
 
 Each workflow represents:
 	•	operational-commercial transformation continuity.
@@ -88,26 +86,31 @@ The system should preserve:
 
 Parent Child Packaging Principle
 Packaging workflows create:
-	•	parent-child lineage continuity.
+	•	parent-child lineage continuity between input lots and packaged SKU lots.
 Example:
-Parent:
-BlendBatch
+Parent Lots:
+- InventoryLot (House Blend Roasted Bulk)
+- InventoryLot (Printed Gusset Bag 250g)
+- InventoryLot (Degassing Valve)
 
-Child:
-ProductionBatch
+Transformation (Batch execution context):
+- Packaging Transformation (ProductionBatch)
+
+Child Lot:
+- InventoryLot (Packaged House Blend 250g SKU)
 
 Packaging lineage preserves:
 	•	operational ancestry continuity.
 Operators should be able to:
-	•	trace packaged products back to upstream operational sources.
+	•	trace packaged products back to upstream operational sources and packaging material lots.
 
 Packaging Identity Principle
 Packaged products should preserve:
 	•	deterministic identity continuity.
 Example:
-BlendBatch
-↓ Packaging Workflow
-FinishedGoodsBatch
+Packaging Transformation (ProductionBatch context: PB-20260521-002)
+↓ Output
+Packaged SKU InventoryLot: LOT-PKG-20260521-002
 
 Packaging identity should remain:
 	•	operationally connected to upstream genealogy.
@@ -116,12 +119,12 @@ The system should avoid:
 
 Packaging Quantity Principle
 Packaging workflows may introduce:
-	•	operational quantity evolution.
+	•	operational quantity evolution and mass balance reconciliation.
 Examples:
 Packaging Residue
 Filling Variance
 Transfer Loss
-Damaged Packaging
+Damaged Packaging Material Scrap
 
 Packaging traceability should preserve:
 	•	quantity continuity,
@@ -132,55 +135,60 @@ Packaging Yield Principle
 Packaging workflows naturally affect:
 	•	downstream yield continuity.
 Example:
-10kg BlendInventory
-↓ packaging workflow
-9.8kg FinishedGoodsInventory
+10kg Blend InventoryLot + 40 Bag InventoryLots
+↓ packaging transformation
+9.8kg Packaged SKU InventoryLot (39 finished units) + 0.2kg purge residue
 
 Packaging yield traceability preserves:
 	•	how quantity evolved operationally.
 Yield visibility is treated as:
 	•	operational truth continuity.
+Financial costing and scrap absorption remain governed by Costing Engine.
 
 Packaging Material Principle
-Packaging workflows may involve:
-	•	operational packaging components.
+Packaging materials are physical materials:
+	•	modeled canonically as `MaterialMaster` and tracked as `InventoryLot`s.
 Examples:
-Coffee Bag
-Bottle
-Cap
-Label
-Drip Bag Material
-Box Packaging
+- Stand-up Pouches / Coffee Bags
+- Glass Bottles / RTD Aluminum Cans
+- Bottle Caps / Can Ends
+- Pressure-sensitive Labels
+- Drip Bag Filter Paper & Sachets
+- Outer Corrugated Boxes
 
-Packaging traceability should preserve:
-	•	how operational packaging materials participated in downstream product creation.
+Packaging traceability preserves:
+	•	how specific packaging material `InventoryLot`s participated in downstream product creation, enabling full recall capability for packaging defects.
 
 Cross-Engine Packaging Principle
 Packaging continuity spans across:
 	•	multiple operational engines.
 Example:
-Inventory Engine
+Supplier System (Packaging & Raw Material Inbound)
 ↓
-Production Engine
+Inventory Engine (Packaging Stock Ledger & Lot State)
 ↓
-Costing Engine
+Production Engine (Packaging Transformation Execution)
 ↓
-Sales Engine
+POS Engine (SKU Order Fulfillment & Lot Dispatch)
+↓
+Costing Engine (BOM Material Valuation & Allocation)
 
 Packaging traceability acts as:
-	•	operational-commercial continuity infrastructure between systems.
+	•	operational-commercial continuity infrastructure
+between systems.
 This creates:
 	•	ecosystem-wide packaged product visibility.
 
 Commercial Continuity Principle
 Packaging workflows bridge:
-	•	operational inventory and:
+	•	operational inventory
+and:
 	•	customer-facing products.
 Example:
-BlendInventory
-↓ Packaging
-FinishedGoodsInventory
-↓ Sales
+Bulk Blend InventoryLot + Bag Lot
+↓ Packaging Transformation (Production Engine)
+Packaged Goods SKU InventoryLot
+↓ Sales Fulfillment (POS Engine)
 Customer
 
 Packaging continuity preserves:
@@ -190,15 +198,19 @@ Sales Relationship Principle
 Sales workflows should preserve:
 	•	upstream packaging ancestry.
 Example:
-Customer Purchase
+Customer Purchase Order & POS Line Item
 ↓
-FinishedGoodsInventory
+Fulfilled Packaged SKU InventoryLot
 ↓
-ProductionBatch
+Packaging Transformation (ProductionBatch context)
 ↓
-BlendBatch
+Bulk Blend InventoryLot + Packaging Material Lot(s)
 ↓
-RoastBatch
+Blend Transformation (BlendBatch context)
+↓
+Roasting Transformation (RoastBatch context)
+↓
+Green Coffee Inbound Lot (SupplierMaster origin)
 
 Sales continuity should preserve:
 	•	customer-to-origin genealogy visibility.
@@ -228,14 +240,14 @@ Operators should understand:
 	•	how packaging transformations evolved,
 	•	and why downstream commercial states exist.
 Packaging systems should support:
-	•	operational trust, not merely:
+	•	operational trust,not merely:
 	•	compliance infrastructure.
 
 Operational Truth Principle
 Packaging traceability represents:
 	•	operational-commercial truth continuity.
 The system should preserve:
-	•	what operationally occurred, not merely:
+	•	what operationally occurred,not merely:
 	•	what was administratively recorded.
 This distinction is critical for:
 	•	operational trust,
@@ -281,7 +293,7 @@ Packaging traceability systems should remain understandable for:
 Operators should be able to:
 	•	follow packaging continuity,
 	•	understand product genealogy,
-	•	and trace operational-commercial evolution without enterprise ERP complexity.
+	•	and trace operational-commercial evolutionwithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Packaging Philosophy
@@ -297,7 +309,7 @@ Wholesale Packaging Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the packaging continuity foundation.
 
 AI Boundary Philosophy
@@ -306,7 +318,7 @@ AI systems may:
 	•	identify operational anomalies,
 	•	recommend workflow optimization,
 	•	and support recall analytics.
-However: AI must not autonomously manipulate deterministic packaging continuity.
+However:AI must not autonomously manipulate deterministic packaging continuity.
 Critical operational relationships must remain:
 	•	explicit,
 	•	traceable,
@@ -328,7 +340,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Packaging Traceability acts as:
-	•	the operational-commercial continuity infrastructure inside Batch Traceability.
+	•	the operational-commercial continuity infrastructureinside Batch Traceability.
 This system influences:
 	•	product genealogy,
 	•	operational auditability,

@@ -5,50 +5,13 @@
 This document defines the primary inventory entity structures used across Roastery OS.
 
 The purpose of this structure is to:
-- standardize inventory states,
-- preserve transformation traceability,
-- support production workflows,
-- maintain operational consistency,
-- and enable modular inventory scalability.
-
-Inventory entities represent operational material states within the system.
-
-They are not merely product lists.
-
----
-
-# Core Philosophy
-
-Inventory entities should represent:
-- operational condition,
-- transformation stage,
-- and production readiness.
-
-Different inventory entities may:
-- behave differently,
-- follow different workflows,
-- and require different operational logic.
-
-The architecture should support inventory evolution without redesigning the operational foundation.
-
----
-
-# Inventory Entity Structure
-
-## Purpose
-
-This document defines the primary inventory entity structures used across Roastery OS.
-
-The purpose of this structure is to:
 - standardize inventory tracking around physical stock instances (`InventoryLot`),
 - preserve transformation lineage and cost provenance,
 - support multi-branch and multi-stage production workflows,
 - maintain operational consistency across all material types,
 - and enable modular inventory scalability.
 
-Inventory entities represent operational material states within the system.
-
-They are not merely catalog lists or sales SKUs.
+Inventory entities represent operational material states within the system. They are not merely catalog lists or commercial sales SKUs.
 
 ---
 
@@ -64,11 +27,11 @@ Roastery OS treats physical inventory as a unified entity:
 ```text
 InventoryLot (Physical Instance)
 ├── references → Material (Master definition)
-├── hasState → PhysicalState (Raw Material, Intermediate, Packaged / Commercially Ready)
-├── hasStatus → AvailabilityStatus (Available, Reserved, In-Transformation, Sold, Depleted)
-├── hasLocation → Warehouse / Bin / Tank Location
-├── tracksQuantity → Quantity + Unit of Measure
-└── carriesValuation → Current Unit Cost & Total Asset Value
+├── hasState → PhysicalState (RawMaterial, Intermediate, Packaged)
+├── hasStatus → AvailabilityStatus (Available, Reserved, In-Transformation, Sold, Depleted, Archived)
+├── hasLocation → Warehouse / Location (Master definition)
+├── tracksQuantity → Quantity + Unit of Measure (bound to UnitMaster dimensions)
+└── carriesValuation → Live Unit Cost ($U_{\text{lot}}$) & Total Asset Value ($Q \times U$)
 ```
 
 ---
@@ -94,32 +57,49 @@ Represents an identifiable, measurable quantity of physical material held in a s
 ### Relationships
 ```text
 InventoryLot
-├── references → Material (Master Data)
-├── references → Warehouse / Location (Master Data)
+├── references → Material (MaterialMaster)
+├── references → Warehouse / Location (Location Master)
+├── references → Unit (UnitMaster - dimensionally validated)
 ├── createdBy → PurchaseRecord OR TransformationOutput
-├── consumedBy → TransformationInput OR SalesTransaction
-├── generates → InventoryMovement (Ledger)
-└── carries → Live Asset Valuation & Cost Provenance Link
+├── consumedBy → TransformationInput OR SalesTransaction (SKU fulfillment)
+├── generates → InventoryMovement (Immutable Ledger)
+└── carries → Live Asset Valuation ($U_{\text{lot}}$ derived from Costing Engine)
 ```
 
-### Core Fields
-- `inventoryLotId`: Unique lot identifier.
+### Core Fields Specification
+- `inventoryLotId`: Unique canonical identifier (UUID / string).
 - `lotCode`: Human-readable batch/lot code (e.g., `LOT-GB-2026-001`, `LOT-RB-2026-042`).
-- `materialId`: Reference to Material master definition.
+- `materialId`: Reference to canonical `MaterialMaster` definition.
 - `locationId`: Reference to physical location (warehouse, room, bin, silo, tank).
-- `quantity`: Current measurable scalar amount.
-- `unitId`: Standardized Unit of Measure (kg, g, L, ml, units, pcs).
+- `quantity`: Current measurable scalar amount ($Q \ge 0$).
+- `unitId`: Standardized Unit of Measure from `UnitMaster` (`MASS`, `VOLUME`, `COUNT`).
 - `physicalState`: Physical condition of the material:
-  - `RawMaterial`: Unprocessed sourced stock (Green Beans, Packaging Materials, Ingredients).
+  - `RawMaterial`: Unprocessed sourced stock (Green Coffee, Packaging Materials, Ingredients).
   - `Intermediate`: Processed stock held in bulk/intermediate containers (Roasted Beans, Ground Coffee, Cold Brew Concentrate).
   - `Packaged`: Portion-packed stock in commercial packaging (250g Pouches, 10g Drip Sachets, 1L Glass Bottles).
-- `availabilityStatus`: Operational stock status (Available, Reserved, In-Transformation, Sold, Depleted, Archived).
-- `currentUnitCost`: Live unit asset valuation derived from cost provenance.
-- `totalAssetValue`: Calculated asset balance ($\text{Quantity} \times \text{CurrentUnitCost}$).
-- `packagingTypeId`: Reference to PackagingType master (if packaged).
+- `availabilityStatus`: Operational stock status:
+  - `Available`: Ready for production transformation or sales fulfillment.
+  - `Reserved`: Committed to a scheduled transformation batch or customer order.
+  - `In-Transformation`: Currently being processed in an active transformation batch.
+  - `Sold`: Deducted via sales transaction fulfillment.
+  - `Depleted`: Zero balance reached ($Q = 0$).
+  - `Archived`: Removed from active operations, preserved for permanent auditability.
+- `currentUnitCost`: Live unit asset valuation ($U_{\text{lot}}$) calculated via Costing Engine Equation 1.
+- `totalAssetValue`: Calculated asset balance ($Q \times U_{\text{lot}}$).
+- `packagingTypeId`: Reference to `PackagingTypeMaster` (if packaged).
 - `expirationDate`: Optional shelf-life timestamp.
 - `notes`: Operational and quality remarks.
-- `createdAt`, `updatedAt`
+- `createdAt`: ISO 8601 timestamp.
+- `updatedAt`: ISO 8601 timestamp.
+
+---
+
+# Quantity & Dimensional Unit of Measure Rules
+
+All inventory quantities are strictly bound to **`UnitMaster.md`** dimensional categories (`MASS`, `VOLUME`, `COUNT`):
+1. **Dimensional Integrity:** An `InventoryLot` with a `MASS` unit (e.g. `kg`) can only be adjusted or incremented by `MASS` units.
+2. **Scalar In-Dimension Conversions:** Converting units within the same dimension (e.g. `kg` to `g`) is deterministic and preserves exact quantity ($5.0\text{ kg} = 5,000\text{ g}$).
+3. **Cross-Dimension Barrier:** An `InventoryLot` cannot change dimensions (e.g. `MASS` $\rightarrow$ `VOLUME` or `MASS` $\rightarrow$ `COUNT`) without an explicit **`Transformation`** event.
 
 ---
 
@@ -141,23 +121,22 @@ Status: Sold            Creates Ground Lot              Creates 15x Sachets     
 ### Fractional Consumption Rules
 1. **Physical Quantity Deduction:** When a transformation consumes a quantity $\Delta Q$ from an `InventoryLot` ($Q_{\text{initial}}$), the remaining physical quantity remains associated with the original lot identity and location:
    $$Q_{\text{remaining}} = Q_{\text{initial}} - \Delta Q$$
-2. **Economic Value Attribution:** The corresponding economic value remains attributable to the unconsumed inventory according to the active costing policy (e.g., Moving Weighted Average, Lot Specificity, FIFO). The system preserves complete historical transaction records so that Cost Flow can deterministically determine consumed vs. remaining asset balances.
+2. **Economic Value Attribution:** The corresponding economic value remains attributable to the unconsumed inventory according to the Costing Engine valuation rules. The system preserves complete historical transaction records so that Cost Flow can deterministically determine consumed vs. remaining asset balances.
 3. **Multi-Branch Independence:** Downstream branches operate completely independently. A change in yield or packaging cost in Branch 3 (Drip Bags) does NOT retroactively alter the valuation or status of Branch 4 (Cold Brew) or the remaining intermediate stock.
 4. **Lot Depletion:** When $Q_{\text{remaining}} = 0$, the lot status transitions to `Depleted`. Its complete historical ledger movements, cost provenance, and child lineage links remain permanently archived and auditable.
 
 ---
 
-# Operational Inventory Categories
+# Operational Material Categories Under Unified InventoryLot
 
 Under the unified `InventoryLot` model, different material types behave according to domain rules while sharing the same underlying inventory engine:
 
 ### 1. Raw Coffee Materials (Green Coffee)
-- Represents physical green coffee before roasting.
-- Acts as input to roasting transformations.
-- Sourced via `PurchaseRecord`.
+- Represents physical green coffee before roasting (`Material.category == RAW_COFFEE`).
+- Acts as input to roasting transformations. Sourced via `PurchaseRecord`.
 
 ### 2. Roasted & Blended Coffee (Intermediate Stock)
-- Represents roasted single-origin or blended whole bean stock.
+- Represents roasted single-origin or blended whole bean stock (`Material.category == INTERMEDIATE` or `DERIVATIVE`).
 - Held in intermediate containers (bins, silos, tubs).
 - May be sold directly in bulk, packaged for retail, ground, or extracted.
 
@@ -171,7 +150,7 @@ Under the unified `InventoryLot` model, different material types behave accordin
 - Available for direct POS checkout, wholesale order fulfillment, or kitting into composite gift sets.
 
 ### 5. Packaging & Auxiliary Materials
-- Represents physical bags, bottles, caps, filter sachets, and outer boxes.
+- Represents physical bags, bottles, caps, filter sachets, and outer boxes (`Material.category == PACKAGING_MATERIAL`).
 - Consumed as auxiliary `TransformationInputs` during packaging and bottling operations.
 
 ---
@@ -182,87 +161,6 @@ Under the unified `InventoryLot` model, different material types behave accordin
 2. **State vs. Quantity Separation:** Quantity describes *how much*; Physical State describes *what physical form it has*; Availability Status describes *how it may currently be used*.
 3. **Contextual Readiness:** An inventory lot is sellable if its physical state and packaging match a commercial SKU. It does not require relocation to a separate "Finished Goods" table.
 4. **Lineage Preservation:** Every `InventoryLot` maintains an unbroken link back to its generating transformation output or supplier purchase record.
+5. **Separation of Economic and Physical Ownership:** Inventory Engine owns physical quantities ($Q_{\text{lot}}$), movements, and states. Costing Engine owns unit valuation ($U_{\text{lot}}$) and cost flow calculations.
 
-Inventory Status Structure
-Inventory entities may support operational status references.
-Examples:
-Available
-Reserved
-In Production
-Sold
-Expired
-Archived
-The MVP should keep inventory status logic lightweight and operationally understandable.
-
-Quantity and Unit Principle
-All inventory quantities should reference standardized Unit structures.
-Example:
-quantity
-+
-unitId
-This preserves:
-	•	inventory consistency,
-	•	production compatibility,
-	•	and costing accuracy.
-Unit conversions should remain explicit and traceable.
-
-Costing Relationship Principle
-Each inventory entity may preserve:
-	•	valuation state,
-	•	transformation cost,
-	•	and operational costing history.
-Costing behavior should remain:
-	•	deterministic,
-	•	traceable,
-	•	and auditable.
-
-Traceability Relationship Principle
-All inventory entities should preserve operational lineage.
-Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-↓ SalesTransaction
-Customer
-Traceability should remain operationally readable.
-
-MVP Scope
-The MVP Inventory Entity Structure should prioritize:
-	•	operational clarity,
-	•	transformation visibility,
-	•	simple inventory relationships,
-	•	and traceable inventory workflows.
-The MVP intentionally excludes:
-	•	advanced warehouse routing,
-	•	industrial inventory orchestration,
-	•	and enterprise logistics complexity.
-
-Architectural Notes
-Inventory entities are among the most foundational operational structures within Roastery OS.
-Most modules will:
-	•	consume inventory,
-	•	transform inventory,
-	•	create inventory,
-	•	or analyze inventory behavior.
-Inventory structures should remain:
-	•	modular,
-	•	traceable,
-	•	deterministic,
-	•	and operationally meaningful.
-Future systems should extend inventory entities without redesigning the operational foundation.
-
-Long-Term Direction
-The Inventory Entity Structure is designed to support future evolution toward:
-	•	advanced production orchestration,
-	•	warehouse systems,
-	•	AI-assisted inventory analytics,
-	•	forecasting infrastructure,
-	•	and ecosystem-wide operational intelligence.
-However, inventory entities should always remain:
-	•	understandable,
-	•	transformation-oriented,
-	•	traceable,
-	•	and production-first.
 

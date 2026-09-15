@@ -72,10 +72,10 @@ Additional supplier-related documents may be added progressively as operational 
 
 Supplier System depends on:
 
-- Master Data
-- Inventory Engine
-- Costing Engine
-- Batch Traceability
+- Master Data (SupplierMaster, MaterialMaster)
+- Inventory Engine (PURCHASE_RECEIPT → InventoryLot)
+- Costing Engine (Initial acquisition cost basis & lot valuation)
+- Traceability Engine
 
 Supplier System commonly interacts with:
 - Procurement Engine
@@ -98,17 +98,20 @@ across all sourcing workflows.
 Example operational flow:
 
 ```text id="x5m8tw"
-Supplier
+Supplier (SupplierMaster)
 ↓
-Procurement
+Procurement (Purchase Order / Contract)
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement (02_INVENTORY_ENGINE)
 ↓
-Operational Transformation
+InventoryLot (Initial acquisition cost basis & physical balance)
 ↓
-Finished Goods
+Operational Transformation (Roast / Blend / Packaging)
 ↓
-Customer
+Downstream InventoryLot(s)
+↓
+Customer Commercial Dispatch
+```
 
 Supplier continuity preserves:
 	•	how operational sourcing affects downstream ecosystem behavior.
@@ -128,6 +131,7 @@ Packaging Supplier
 Bottle Supplier
 Label Supplier
 Ingredient Supplier
+Consumable / Equipment Supplier
 
 Supplier System preserves:
 	•	how operational sourcing influences ecosystem continuity.
@@ -136,13 +140,15 @@ Supplier Relationship Philosophy
 Suppliers represent:
 	•	operational relationship continuity.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
-Supplied Material
+Supplied Material (MaterialMaster)
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Workflow
+InventoryLot (02_INVENTORY_ENGINE)
+↓
+Operational Workflow / Transformation
 
 Supplier relationships should preserve:
 	•	sourcing continuity,
@@ -151,7 +157,7 @@ Supplier relationships should preserve:
 
 Material Relationship Philosophy
 Suppliers may provide:
-	•	operational materials.
+	•	operational materials (MaterialMaster).
 Examples:
 Green Coffee
 Packaging Materials
@@ -166,18 +172,14 @@ Material relationships preserve:
 Traceability Philosophy
 Supplier continuity supports:
 	•	upstream traceability visibility.
-Example:
-Customer Product
+Generic Model:
+Downstream Product Lot (InventoryLot)
+↓ Transformations / Execution Batches
+Precursor Intermediate Lots
+↓ Originating Receiving (PURCHASE_RECEIPT)
+Purchased InventoryLot
 ↓
-ProductionBatch
-↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBeanInventory
-↓
-Supplier
+Supplier (SupplierMaster)
 
 Supplier traceability preserves:
 	•	upstream operational ancestry continuity.
@@ -188,11 +190,13 @@ Supplier workflows interact with:
 Example:
 Supplier
 ↓
-Purchase Order
+Purchase Order / Contract
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Usage
+InventoryLot (02_INVENTORY_ENGINE)
+↓
+Operational Usage / Transformation
 
 Procurement continuity preserves:
 	•	sourcing explainability,
@@ -203,13 +207,13 @@ Costing Relationship Philosophy
 Suppliers directly influence:
 	•	operational costing continuity.
 Example:
-Supplier Price
+Supplier Invoice Price
 ↓
-Inventory Valuation
+InventoryLot Acquisition Cost Basis (02_INVENTORY_ENGINE)
 ↓
-Operational Costing
+Lot Valuation & Cost Propagation (07_COSTING_ENGINE)
 ↓
-Profitability
+Profitability Visibility
 
 Supplier pricing continuity preserves:
 	•	operational economic explainability.

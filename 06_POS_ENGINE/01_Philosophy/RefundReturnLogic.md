@@ -165,13 +165,15 @@ Partial refund workflows should preserve:
 
 Inventory Return Principle
 Returns may restore:
-	•	FinishedGoodsInventory continuity.
+	•	InventoryLot continuity via Inventory Engine movements.
 Example:
 Customer Return
 ↓
 Inventory Inspection
 ↓
-Inventory Restoration
+Inventory Movement:
+  - RETURN_RESTORE (Sellable condition → increases InventoryLot balance)
+  - SCRAP (Damaged/unusable condition → recorded as waste/loss)
 
 Inventory restoration should remain:
 	•	explicit,
@@ -191,11 +193,11 @@ Expired Product
 Opened Product
 Contaminated Product
 
-Returned inventory may instead become:
-Waste
-Non-Sellable
-Inspection Required
-Archived
+Returned inventory may instead be processed via:
+- SCRAP movement (Waste / Damaged)
+- Non-Sellable quarantine
+- Inspection Required
+- Archival
 
 The architecture should preserve:
 	•	operational inventory integrity.

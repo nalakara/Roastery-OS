@@ -1,197 +1,113 @@
-# GreenBean Master
+# GreenBean Master (Coffee Sourcing Specification)
 
 ## Purpose
 
-GreenBean Master defines the foundational identity structure for green coffee references used across Roastery OS.
+`GreenBeanMaster` defines the agricultural, agronomic, processing, and sourcing specifications for green coffee materials used across Roastery OS.
 
-This master entity represents the identity of a coffee before it enters operational inventory workflows.
+In the reconciled ontology, green coffee is a specialization of `Material` (`materialType == RAW_COFFEE`). `GreenBeanMaster` provides the rich sourcing and quality attributes attached to these materials.
 
-GreenBean Master is intended to provide:
-- standardized coffee identity references,
-- operational consistency,
-- sourcing traceability,
-- and reusable production references across modules.
+`GreenBeanMaster` provides:
+- standardized green coffee identity and agronomic references,
+- sourcing, farm, and producer traceability attributes,
+- harvest and sensory quality baseline records,
+- and reusable production references across transformation workflows.
 
-This entity does not represent physical stock quantity.
-
-Inventory quantities are handled separately by inventory entities.
+This entity does not represent physical stock quantity. Physical quantities are tracked strictly by `InventoryLot` instances referencing this material.
 
 ---
 
 # Core Philosophy
 
-GreenBean Master should represent coffee identity rather than inventory state.
-
-The structure should remain:
-- operationally practical,
-- flexible,
-- reusable,
-- and suitable for both artisan and production-oriented roasting businesses.
-
-The system should support real-world specialty coffee sourcing workflows without creating excessive operational complexity.
-
----
-
-# Operational Role
-
-GreenBean Master acts as the primary reference entity for:
-- roasting workflows,
-- inventory systems,
-- costing systems,
-- sourcing records,
-- and production traceability.
-
-Most coffee production activities originate from GreenBean references.
-
----
-
-# Relationships
+`GreenBeanMaster` defines **what** a raw coffee lot is botanically and commercially, not its physical inventory state:
 
 ```text
-GreenBean
-├── belongsTo → Origin
-├── belongsTo → ProcessingMethod
-├── belongsTo → Supplier
-├── usedBy → GreenBeanInventory
-├── consumedBy → RoastBatch
-└── referencedBy → Analytics
+Material (type: RAW_COFFEE) + GreenBean Specification
+   │
+   └── tracked as physical stock ──► InventoryLot (kg, warehouse location, state, asset value)
+```
 
-Core Fields
-Identity Fields
-greenBeanId
-name
-species
-commercialName
-internalCode
+Green coffee can participate in any valid material transformation:
+- Roasting transformations (`Process: Roasting`),
+- Pre-roast green blending (`Process: Green Blending`),
+- Cleaning / destoning / sorting (`Process: Mechanical Sorting`),
+- Decoction / extraction (`Process: Extraction`),
+- or direct wholesale / retail fulfillment.
 
-Origin Fields
-originId
-producerName
-farmName
-region
-country
-altitude
-harvestYear
+---
 
-Processing Fields
-processingMethodId
-processingNotes
-fermentationNotes
-dryingMethod
+# Entity Relationships
 
-Sourcing Fields
-supplierId
-purchaseReference
-arrivalDate
+```text
+GreenBean (Material Specialization)
+├── belongsTo → OriginMaster
+├── belongsTo → ProcessingMethodMaster
+├── suppliedBy → SupplierMaster
+├── trackedBy → InventoryLot (1:N generic inventory holdings)
+├── consumedBy → TransformationInput (any valid transformation process)
+└── referencedBy → Analytics & Sourcing Intelligence
+```
 
-Quality Reference Fields
-screenSize
-moistureContent
-density
-cuppingScore
-qualityNotes
-These fields should remain optional in MVP implementations.
+---
 
-General Fields
-notes
-isActive
-createdAt
-updatedAt
+# Core Fields & Attributes
 
-Product Philosophy
-A GreenBean represents:
-	•	a coffee identity,
-	•	a sourcing reference,
-	•	and a production input.
-It should not directly represent:
-	•	roast result,
-	•	finished product,
-	•	or inventory quantity.
-Roasting processes create new operational identities from GreenBean references.
+### 1. Identity & Classification
+- `greenBeanId` / `materialId`: Unique master identifier.
+- `name`: Full formal name (e.g., *Guatemala Huehuetenango El Injerto Bourbon*).
+- `species`: Arabica, Robusta, Liberica, Eugenioides.
+- `variety`: Bourbon, Caturra, Geisha, SL28, Typica, etc.
+- `internalCode`: Sourcing code (e.g., `GB-GUA-INJ-2026`).
 
-Inventory Separation Principle
-GreenBean Master must remain separated from inventory quantity systems.
-Example:
-GreenBean
-≠
-GreenBeanInventory
+### 2. Origin & Terroir Attributes
+- `originId`: Reference to `OriginMaster`.
+- `producerName`: Farm owner or estate name.
+- `farmName`: Specific farm, washing station, or cooperative name.
+- `region`: Growing micro-region / department.
+- `country`: Producing country.
+- `altitude`: Elevation range (e.g., `1600 - 1850 masl`).
+- `harvestYear`: Crop / harvest season (e.g., `2025/2026`).
 
-GreenBean
-Represents:
-	•	coffee identity,
-	•	origin,
-	•	processing,
-	•	sourcing information,
-	•	and reusable references.
+### 3. Processing & Agronomic Attributes
+- `processingMethodId`: Reference to `ProcessingMethodMaster` (Washed, Natural, Honey, Anaerobic, etc.).
+- `processingNotes`: Fermentation protocols, yeast inoculation, drying details.
+- `dryingMethod`: Raised African beds, patio sun-dried, mechanical guardiola.
 
-GreenBeanInventory
-Represents:
-	•	stock quantity,
-	•	warehouse location,
-	•	operational availability,
-	•	and inventory valuation.
-This separation preserves:
-	•	modular consistency,
-	•	inventory clarity,
-	•	and operational scalability.
+### 4. Sourcing & Lot Attributes
+- `supplierId`: Reference to `SupplierMaster`.
+- `purchaseReference`: Sourcing contract or purchase order reference.
+- `arrivalDate`: Date of initial warehouse landing.
 
-Naming Convention
-Entity Name:
-GreenBean
-Primary Identifier:
-greenBeanId
-Related References:
-originId
-processingMethodId
-supplierId
-Naming must follow the standards defined in:
-	•	NamingConvention.md
-	•	DataModel.md
+### 5. Quality & Physical Baseline Attributes
+- `screenSize`: Bean size classification (e.g., `17/18`, `15/16`, `Peaberry`).
+- `moistureContent`: Initial green bean moisture percentage (e.g., `10.8%`).
+- `density`: Bulk density ($g/L$).
+- `waterActivity`: Initial water activity ($a_w$).
+- `cuppingScore`: Baseline specialty cupping score (e.g., `87.5`).
+- `qualityNotes`: Flavor profile, defect count, grading notes.
 
-Used By Modules
-GreenBean Master is shared across:
-	•	Inventory Engine
-	•	Roasting Engine
-	•	Costing Engine
-	•	Batch Traceability
-	•	Supplier System
-	•	Analytics Dashboard
-	•	Future AI Systems
+### 6. Operational Status
+- `isActive`: Boolean flag.
+- `notes`: General operational comments.
+- `createdAt`, `updatedAt`: Timestamps.
 
-MVP Scope
-The MVP implementation should prioritize only essential operational fields.
-Required MVP fields:
-greenBeanId
-name
-species
-originId
-processingMethodId
-supplierId
-harvestYear
-notes
-Advanced sourcing and quality fields may be added progressively in future operational stages.
+---
 
-Future Expansion Possibilities
-Future versions may support:
-	•	producer cooperatives,
-	•	lot separation,
-	•	crop season tracking,
-	•	import references,
-	•	certifications,
-	•	cupping datasets,
-	•	and advanced quality control systems.
-Future expansion should extend the entity structure without breaking the operational foundation.
+# Inventory Separation Principle
 
-Architectural Notes
-GreenBean Master is one of the foundational entities of Roastery OS.
-Most production workflows originate from GreenBean references before entering transformation workflows such as:
-	•	roasting,
-	•	blending,
-	•	production,
-	•	and derivative manufacturing.
-This entity should remain:
-	•	stable,
-	•	reusable,
-	•	operationally meaningful,
-	•	and loosely coupled from transactional workflows.
+`GreenBean` master specifications must remain strictly decoupled from physical inventory holdings:
+
+- **`GreenBean` (Material Master):** Defines terroir, variety, processing, supplier, and baseline quality attributes.
+- **`InventoryLot` (Physical Inventory):** Tracks the actual physical kilograms, warehouse bin location, availability status, and carried economic valuation.
+
+# Naming & Module Alignment
+
+- **Primary Identifier:** `greenBeanId` (or `materialId` where `materialType == RAW_COFFEE`).
+- **Related References:** `originId`, `processingMethodId`, `supplierId`.
+
+### Shared Across:
+- `Inventory Engine` (references master definition for physical `InventoryLot` holdings)
+- `Production / Roasting Engine` (references input material specifications in transformation recipes)
+- `Costing Engine` (references physical attributes for dimensional baselines)
+- `Batch Traceability` (records botanical terroir origin in causal lineage)
+- `Supplier System` (associates purchase contracts with coffee materials)
 

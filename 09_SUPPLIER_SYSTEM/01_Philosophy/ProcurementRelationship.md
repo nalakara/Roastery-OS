@@ -47,18 +47,18 @@ The system should preserve:
 Traditional business systems commonly interpret procurement as:
 
 ```text id="x5m8tw"
-Purchase Transaction Management
-
 Roastery OS uses a continuity-oriented procurement model:
 Supplier
 ↓
 Procurement Workflow
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement (02_INVENTORY_ENGINE)
 ↓
-Operational Workflow
+InventoryLot
 ↓
-Finished Product
+Operational Workflow / Transformation
+↓
+Finished Product Lot
 
 Procurement relationships should preserve:
 	•	operational sourcing continuity, not merely:
@@ -68,13 +68,15 @@ Core Procurement Principle
 Every procurement workflow should preserve:
 	•	sourcing continuity visibility.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
-Purchase Order
+Purchase Order / Contract (referencing MaterialMaster)
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement (02_INVENTORY_ENGINE)
 ↓
-Operational Workflow
+InventoryLot (Initial physical balance & acquisition cost basis)
+↓
+Operational Workflow / Transformation
 
 Procurement continuity should remain:
 	•	operationally connected,
@@ -104,13 +106,13 @@ Procurement workflows connect:
 	•	suppliers to:
 	•	operational continuity.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
 Procurement Workflow
 ↓
-Material Intake
+PURCHASE_RECEIPT Movement
 ↓
-Inventory Continuity
+InventoryLot (02_INVENTORY_ENGINE)
 
 Supplier procurement continuity preserves:
 	•	sourcing ancestry visibility.
@@ -134,17 +136,17 @@ Material continuity preserves:
 The system should preserve:
 	•	deterministic procurement lineage continuity.
 
-Inventory Intake Principle
+Inbound Inventory Intake Principle
 Procurement workflows connect directly to:
-	•	inventory intake continuity.
+	•	inbound inventory continuity via the Inventory Engine ledger.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
 Purchase Order
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement (02_INVENTORY_ENGINE)
 ↓
-Available Inventory
+InventoryLot (state: AVAILABLE)
 
 Inventory continuity preserves:
 	•	sourcing explainability,
@@ -157,9 +159,9 @@ Procurement workflows preserve:
 Examples:
 Ordered Quantity
 Received Quantity
-Rejected Quantity
-Damaged Quantity
-Accepted Quantity
+Rejected Quantity (Non-received / Return to Vendor)
+Damaged Quantity (Scrapped or Quarantined)
+Accepted Quantity (Recorded on InventoryLot via PURCHASE_RECEIPT)
 
 Quantity continuity supports:
 	•	operational explainability,
@@ -170,11 +172,11 @@ Pricing Continuity Principle
 Procurement relationships directly influence:
 	•	operational costing continuity.
 Example:
-Supplier Price
+Supplier Invoice Price + Landed Costs
 ↓
-Procurement Intake
+InventoryLot Acquisition Cost Basis (02_INVENTORY_ENGINE)
 ↓
-Inventory Valuation
+Lot Valuation & Cost Propagation (07_COSTING_ENGINE)
 ↓
 Operational Costing
 
@@ -248,9 +250,9 @@ Supplier System
 ↓
 Procurement Engine
 ↓
-Inventory Engine
+Inventory Engine (PURCHASE_RECEIPT → InventoryLot)
 ↓
-Costing Engine
+Costing Engine (Lot Valuation & COGS)
 ↓
 Traceability Engine
 
@@ -262,20 +264,14 @@ This creates:
 Upstream Traceability Principle
 Procurement continuity supports:
 	•	upstream operational traceability.
-Example:
-Customer Product
+Generic Model:
+Downstream Finished Lot (InventoryLot)
+↓ Transformations / Execution Batches
+Precursor Intermediate Lots
+↓ Originating Receiving (PURCHASE_RECEIPT)
+Purchased InventoryLot
 ↓
-ProductionBatch
-↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBeanInventory
-↓
-Procurement Intake
-↓
-Supplier
+Supplier (SupplierMaster)
 
 Procurement continuity preserves:
 	•	sourcing ancestry visibility.

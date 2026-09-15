@@ -56,21 +56,21 @@ Downstream Dependency
 Recall Isolation
 
 Recall capability should preserve:
-	•	deterministic operational continuity, not merely:
+	•	deterministic operational continuity,not merely:
 	•	inventory blocking behavior.
 
 Core Recall Principle
 Every operational transformation should remain:
 	•	recall-traceable.
 Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-↓ Sales
+InventoryLot (Green Coffee)
+↓ Roasting Transformation (RoastBatch context)
+InventoryLot (Roasted Coffee)
+↓ Blending Transformation (BlendBatch context)
+InventoryLot (Blend)
+↓ Packaging Transformation (ProductionBatch context)
+InventoryLot (Packaged Coffee SKU Lot)
+↓ POS Fulfillment (Sales Order)
 Customer
 
 Operators should be able to:
@@ -82,11 +82,11 @@ Operational Recall Principle
 Operational recalls may originate from:
 	•	any transformation stage.
 Examples:
-Defective Green Bean Lot
-Roasting Error
-Packaging Failure
-Production Contamination
-Workflow Error
+- Defective Inbound Lot (Supplier Origin)
+- Roasting Machine Anomaly / Process Deviation
+- Packaging Material Contamination
+- Foreign Object in Blending
+- Workflow Execution Error
 
 Recall systems should preserve:
 	•	complete downstream continuity visibility.
@@ -97,15 +97,15 @@ Downstream Dependency Principle
 Recall capability depends on:
 	•	deterministic downstream lineage continuity.
 Example:
-Affected RoastBatch
+Affected Green Coffee / Inbound Lot
 ↓
-Affected BlendBatch
+Affected Roasting Transformation & Output Lot(s)
 ↓
-Affected ProductionBatch
+Affected Blending Transformation & Output Lot(s)
 ↓
-Affected Finished Goods
+Affected Packaging Transformation & Packaged SKU Lot(s)
 ↓
-Affected Sales
+Affected Customer Sales Orders & Dispatched Lots
 
 The system should preserve:
 	•	operational dependency explainability.
@@ -114,15 +114,15 @@ Upstream Verification Principle
 Auditability should preserve:
 	•	upstream operational ancestry visibility.
 Example:
-FinishedGoodsInventory
+Customer-Reported Packaged SKU Lot
 ↓
-ProductionBatch
+Packaging Transformation (ProductionBatch context)
 ↓
-BlendBatch
+Packaging Material Lot(s) + Roasted/Blend InventoryLot(s)
 ↓
-RoastBatch
+Roasting Transformation (RoastBatch context)
 ↓
-GreenBeanInventory
+Inbound Receiving & Green Coffee InventoryLot (SupplierMaster origin)
 
 Operators should be able to:
 	•	trace operational ancestry,
@@ -148,24 +148,25 @@ Yield Auditability Principle
 Operational yield should remain:
 	•	traceable and explainable.
 Example:
-10kg Green Bean
-↓ roasting shrinkage
-8.5kg Roasted Coffee
+10kg Green Coffee Input Lot
+↓ roasting shrinkage (Transformation)
+8.5kg Roasted Coffee Output Lot
 
 Operators should understand:
 	•	where quantity evolved,
-	•	how operational loss occurred,
+	•	how operational loss occurred physically,
 	•	and why downstream inventory differs.
 Yield visibility is treated as:
 	•	operational truth continuity.
+Financial costing and scrap absorption remain governed by Costing Engine.
 
 Packaging Auditability Principle
 Packaging workflows should remain:
 	•	operationally explainable.
 Example:
-BlendInventory
-↓ Packaging Workflow
-FinishedGoodsInventory
+Roasted/Blend InventoryLot + Packaging Material Lot
+↓ Packaging Transformation
+Packaged SKU InventoryLot
 
 Packaging auditability preserves:
 	•	operational-commercial continuity visibility.
@@ -184,7 +185,7 @@ Drip Bag
 Derivative auditability should preserve:
 	•	workflow-specific operational continuity.
 The architecture should support:
-	•	derivative lineage visibility, without redesigning:
+	•	derivative lineage visibility,without redesigning:
 	•	the auditability foundation.
 
 Cross-Engine Auditability Principle
@@ -237,7 +238,7 @@ Operational Truth Principle
 Recall and auditability represent:
 	•	operational truth continuity.
 The system should preserve:
-	•	what operationally occurred, not merely:
+	•	what operationally occurred,not merely:
 	•	what was administratively recorded.
 This distinction is critical for:
 	•	operational trust,
@@ -298,7 +299,7 @@ Recall and auditability systems should remain understandable for:
 Operators should be able to:
 	•	verify operational continuity,
 	•	understand genealogy relationships,
-	•	and trace inventory evolution without enterprise ERP complexity.
+	•	and trace inventory evolutionwithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Auditability Philosophy
@@ -314,7 +315,7 @@ RTD Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the auditability foundation.
 
 AI Boundary Philosophy
@@ -323,7 +324,7 @@ AI systems may:
 	•	identify anomalies,
 	•	recommend workflow optimization,
 	•	and support recall analytics.
-However: AI must not autonomously manipulate deterministic operational lineage.
+However:AI must not autonomously manipulate deterministic operational lineage.
 Critical operational relationships must remain:
 	•	explicit,
 	•	traceable,
@@ -345,7 +346,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Recall And Auditability acts as:
-	•	the operational trust infrastructure inside Batch Traceability.
+	•	the operational trust infrastructureinside Batch Traceability.
 This system influences:
 	•	lineage verification,
 	•	operational genealogy,

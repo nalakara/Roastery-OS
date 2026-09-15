@@ -2,403 +2,168 @@
 
 ## Purpose
 
-This document defines the ProductionBatch entity structure and operational production batch behavior used across the Production Engine inside Roastery OS.
+This document defines the `ProductionBatch` entity structure and operational production batch behavior used across the Production Engine inside Roastery OS.
 
-The purpose of ProductionBatch is to:
-- preserve production execution continuity,
-- standardize transformation workflows,
-- support finished goods generation,
+The purpose of `ProductionBatch` is to:
+- act as the operational execution context for material transformation workflows,
+- standardize production execution across diverse manufacturing archetypes,
+- support finished goods and derivative product generation,
 - maintain operational traceability,
-- and provide readable manufacturing workflow structures.
+- and provide structured records for $N \to M$ inventory transformations.
 
-ProductionBatch acts as:
-- operational production execution entity,
-- transformation anchor,
-- and finished goods generation reference.
-
-ProductionBatch is one of the core orchestration entities inside the Production Engine.
+`ProductionBatch` acts as:
+- operational production execution context,
+- transformation container,
+- and physical inventory generation reference.
 
 ---
 
 # Core Philosophy
 
-Roastery OS treats ProductionBatch as:
+Roastery OS treats `ProductionBatch` as:
 - operational manufacturing execution,
 - inventory transformation orchestration,
 - and commercial product generation infrastructure.
 
-ProductionBatch is not:
+`ProductionBatch` is not:
 - a retail SKU,
 - a packaging label,
-- or a sales record.
+- or a static sales record.
 
-ProductionBatch represents:
-- actual production execution.
-
-This distinction is one of the foundational architectural principles inside the Production Engine.
+`ProductionBatch` represents:
+- actual physical production execution (`Transformation`).
 
 ---
 
 # ProductionBatch Philosophy
 
-Every production workflow should preserve:
+Every production workflow preserves:
 - operational continuity,
 - deterministic transformation behavior,
-- and production traceability.
+- physical mass/count balance,
+- and multi-parent production traceability.
 
-Example:
+```text
+Transformation Inputs (N InventoryLot instances: Intermediate Coffee, Packaging Materials, Additives)
+       ↓
+[ ProductionBatch Execution ] (Guided by Recipe / BOM)
+       ↓
+Transformation Outputs (M InventoryLot instances: Packaged Finished Goods, Byproducts, Derivative Lots)
+```
 
-```text id="x5m8tw"
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-ProductionBatch should preserve:
-	•	transformation relationships,
-	•	workflow visibility,
-	•	and commercial inventory continuity.
+`ProductionBatch` preserves:
+- transformation relationships,
+- workflow visibility,
+- and physical inventory continuity.
 
-Core Relationship Principle
-ProductionBatch acts as:
-	•	operational transformation anchor.
-Example:
-ProductionBatch
-├── consumes → ProductionReadyInventory
-├── creates → FinishedGoodsInventory
-├── affects → Costing
-├── preserves → Traceability
-└── generates → InventoryMovement
-ProductionBatch relationships should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally meaningful.
+---
 
-ProductionBatch Entity
-Purpose
-Represents actual production execution workflows.
-ProductionBatch acts as:
-	•	transformation execution entity,
-	•	operational production reference,
-	•	and finished goods generation structure.
+# Core Relationship Principle
 
-Core Fields
-Identity Fields
-productionBatchId
-batchCode
-productionType
-workflowType
-Examples of workflowType:
-Ground Coffee
-Drip Bag
-Cold Brew
-RTD
-Bulk Espresso
-Packaging
-Identity structures should remain:
-	•	operationally meaningful,
-	•	readable,
-	•	and scalable.
+`ProductionBatch` acts as the execution wrapper around the generic `Transformation` contract:
 
-Source Inventory Fields
-sourceInventoryId
-sourceInventoryType
-sourceBatchReference
-Examples:
-BlendInventory
-RoastedCoffeeInventory
-These relationships preserve:
-	•	upstream production continuity,
-	•	inventory lineage,
-	•	and operational traceability.
+```text
+ProductionBatch (Execution Context)
+├── executes → Transformation
+│    ├── consumes → Source InventoryLots (TRANSFORMATION_CONSUME)
+│    └── produces → Output InventoryLots (TRANSFORMATION_PRODUCE)
+├── measuredBy → Production Yield & Telemetry
+├── costedBy → 07_COSTING_ENGINE (Canonical Equations 1 & 7)
+├── recordedIn → InventoryMovement Ledger
+└── preserves → Multi-Parent Lineage (DAG)
+```
 
-Output Inventory Fields
-finishedGoodsInventoryId
-finishedGoodsType
-packagingType
-skuReference
-Examples of finishedGoodsType:
-Whole Bean
-Ground Coffee
-Drip Bag
-Cold Brew Bottle
-RTD Can
-Bulk Espresso
-Output structures should preserve:
-	•	commercial inventory continuity,
-	•	and production transformation visibility.
+---
 
-Quantity Fields
-inputQuantity
-outputQuantity
-yieldPercentage
-lossQuantity
-Quantity relationships should remain:
-	•	deterministic,
-	•	measurable,
-	•	and operationally understandable.
+# ProductionBatch Data Structure Specification
 
-Costing Fields
-sourceCost
-packagingCost
-productionOverhead
-finalProductionCost
-These fields support:
-	•	operational profitability visibility,
-	•	and production costing continuity.
-The MVP should keep costing structures:
-	•	lightweight,
-	•	and production-oriented.
+### 1. Identity & Execution Context
+- `productionBatchId`: Unique UUID string identifying this production batch.
+- `transformationId`: Unique UUID string linking this execution to the canonical `Transformation` ledger record.
+- `batchCode`: Human-readable production code (e.g., `PB-20260521-001`).
+- `productionArchetype`: Enum identifying the conversion archetype:
+  - `MECHANICAL_CONVERSION` (Grinding / Milling)
+  - `LIQUID_EXTRACTION` (Cold Brew / Concentrate)
+  - `PORTIONING` (Drip Bags / Sachets)
+  - `FORMULATION_BOTTLING` (RTD / Beverage Prep)
+  - `ASSEMBLY_KITTING` (Gift Sets / Variety Packs)
+  - `DECANTING_REWORK` (Repurposing / Bulk Conversion)
+- `recipeId`: Optional reference to the process recipe or BOM specification.
 
-Operational Fields
-operatorId
-productionStatus
-scheduledAt
-startedAt
-completedAt
-Operational fields preserve:
-	•	workflow visibility,
-	•	production progression,
-	•	and manufacturing continuity.
+### 2. Transformation Inputs (`TransformationInput[]`)
+Collection of physical stock instances consumed during batch execution:
+- `inputs`: Array of input records:
+  - `inventoryLotId`: UUID of consumed source `InventoryLot`.
+  - `materialId`: UUID of source `MaterialMaster` (e.g., Roasted Whole Bean, Drip Bag Filter, Glass Bottle).
+  - `materialRole`: `PRIMARY_COFFEE`, `PACKAGING`, `ADDITIVE`, `WATER`, or `AUXILIARY`.
+  - `quantity`: Consumed physical quantity ($Q_{\text{consumed}, i}$).
+  - `unitId`: Unit of Measure (`kg`, `g`, `l`, `ml`, `unit`, `box`).
 
-Packaging Fields
-packagingTypeId
-packagingSize
-packagingUnit
-labelVersion
-Examples:
-250g Bag
-500g Bag
-1L Bottle
-12-Pack Drip Bag
-Packaging relationships should remain:
-	•	modular,
-	•	and operationally flexible.
+### 3. Transformation Outputs (`TransformationOutput[]`)
+Collection of physical stock instances produced by batch execution:
+- `outputs`: Array of output records:
+  - `inventoryLotId`: UUID of created target `InventoryLot`.
+  - `materialId`: UUID of target `MaterialMaster` (e.g., 250g Packaged Coffee, Cold Brew Concentrate).
+  - `quantity`: Produced physical quantity ($Q_{\text{out}}$).
+  - `unitId`: Unit of Measure (`unit`, `kg`, `l`, `bottle`, `sachet`).
+  - `targetSkuId`: Optional reference to commercial `SKUMaster` satisfied by this lot.
 
-Yield Fields
-expectedYield
-actualYield
-yieldLossReason
-Yield visibility supports:
-	•	production analytics,
-	•	operational review,
-	•	and profitability understanding.
+### 4. Yield & Physical Measurements
+- `inputMassTotal`: Aggregated coffee mass consumed (standardized to base unit).
+- `outputMassTotal`: Aggregated output mass/count produced.
+- `yieldPercentage`: Physical yield ratio ($Y_{\%}$).
+- `lossQuantity`: Measured physical loss ($Q_{\text{loss}}$) with reason code (`PURGE`, `RESIDUE`, `SPILLAGE`, `SCRAP`).
 
-Traceability Fields
-traceabilityReference
-upstreamBatchReference
-downstreamInventoryReference
-These relationships preserve:
-	•	transformation continuity,
-	•	operational lineage,
-	•	and production storytelling.
+### 5. Costing Engine Interface
+*Note: Production Engine records physical quantities only. Economic valuation is calculated and maintained strictly by `07_COSTING_ENGINE`.*
+- `costingStatus`: Status of economic calculation (`PENDING`, `CALCULATED`, `LOCKED`).
+- `valuationReference`: Reference to the `TransformationCostPool` in `07_COSTING_ENGINE`.
+- `directCostEvents`: Collection of capitalizable direct costs ($C_{\text{direct}}$) associated with batch execution (e.g., outsourced bottling fee, direct contract packaging labor).
 
-General Fields
-notes
-productionLogs
-createdAt
-updatedAt
+### 6. Operational & Status Fields
+- `operatorId`: UUID of user who executed the batch.
+- `productionStatus`: Current lifecycle state (`PLANNED`, `PREPARED`, `IN_PROGRESS`, `PAUSED`, `COMPLETED`, `CANCELLED`, `ARCHIVED`).
+- `scheduledAt`: Timestamp of planned execution.
+- `startedAt`: Timestamp when transformation began.
+- `completedAt`: Timestamp when production was finalized.
 
-ProductionBatch vs SKU Principle
-Example:
-ProductionBatch
-≠
-Retail SKU
+### 7. Traceability & Lineage
+- `parentLotIds`: Array of source `InventoryLot` UUIDs consumed.
+- `childLotIds`: Array of output `InventoryLot` UUIDs produced.
+- `traceabilityHash`: Cryptographic or sequential hash anchoring this batch in the production DAG.
 
-ProductionBatch
-Represents:
-	•	operational production execution,
-	•	inventory transformation,
-	•	and manufacturing continuity.
+---
 
-Retail SKU
-Represents:
-	•	commercial sales identity,
-	•	customer-facing product structure,
-	•	and sales categorization.
-This separation preserves:
-	•	modular architecture,
-	•	production flexibility,
-	•	and commercial scalability.
+# ProductionBatch vs SKU Principle
 
-Transformation Integrity Principle
-ProductionBatch should preserve:
-	•	deterministic transformation continuity.
-Example:
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-Transformation relationships should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally understandable.
-The system should avoid:
-	•	hidden inventory mutation,
-	•	ambiguous production behavior,
-	•	and disconnected workflow lineage.
+```text
+ProductionBatch (Operational Execution) ≠ Retail SKU (Commercial Presentation)
+```
 
-Derivative Product Principle
-Different ProductionBatch workflows may generate:
-	•	different derivative product categories.
-Examples:
-Ground Coffee
-Drip Bag
-Cold Brew
-RTD
-Bulk Espresso
-The architecture should support:
-	•	production diversity,
-	•	operational flexibility,
-	•	and future workflow extensibility.
+- **ProductionBatch:** Represents operational manufacturing execution, physical transformation, and inventory creation.
+- **Retail SKU:** Represents commercial sales identity, customer-facing packaging format, pricing, and sales channel cataloging.
 
-Production-Oriented Philosophy
-ProductionBatch should support:
-	•	real production workflows,
-	•	not merely commercial labeling systems.
-Production batches should remain:
-	•	operationally meaningful,
-	•	inventory-aware,
-	•	and transformation-oriented.
-This philosophy differentiates Roastery OS from:
-	•	POS systems,
-	•	retail inventory software,
-	•	and static SKU databases.
+A single `ProductionBatch` may produce `InventoryLot` instances that satisfy one or more commercial SKUs without merging production identity with retail sales identity.
 
-Costing Relationship Principle
-ProductionBatch directly affects:
-	•	inventory valuation,
-	•	profitability visibility,
-	•	and commercial costing continuity.
-Example:
-BlendInventory Cost
-+
-Packaging Cost
-+
-Production Overhead
-↓
-FinishedGoodsInventory Cost
-Costing continuity should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally understandable.
+---
 
-Traceability Principle
-ProductionBatch should preserve:
-	•	upstream transformation lineage.
-Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-Production relationships should remain:
-	•	connected,
-	•	readable,
-	•	and operationally meaningful.
+# Costing & Economic Boundary Principle
 
-Workflow State Principle
-ProductionBatch may evolve through:
-	•	operational lifecycle states.
-Example:
-Planned
-↓
-Prepared
-↓
-In Progress
-↓
-Completed
-↓
-Archived
-Lifecycle transitions should remain:
-	•	deterministic,
-	•	explicit,
-	•	and operationally understandable.
+Production Engine owns:
+- physical recipe quantities ($Q_{\text{consumed}, i}$),
+- physical output counts/mass ($Q_{\text{out}}$),
+- and physical packaging scrap / handling loss.
 
-Deterministic Production Principle
-Critical production batch behavior must remain deterministic.
-Examples:
-	•	inventory deduction,
-	•	finished goods generation,
-	•	costing continuity,
-	•	yield calculation,
-	•	and traceability relationships.
-Production workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden workflow mutation,
-	•	ambiguous production relationships,
-	•	and disconnected transformation continuity.
+Costing Engine (`07_COSTING_ENGINE`) owns:
+- economic valuation of consumed inputs ($V_{\text{consumed}} = \sum Q_{\text{consumed}, i} \times U_{\text{consumed}, i}$),
+- aggregation of direct capitalizable costs ($C_{\text{direct}}$),
+- derivation of finished lot unit cost via Canonical Equation 1:
+  $$U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$$
+- and cost provenance decomposition via Canonical Equation 7.
 
-Human-Centered Philosophy
-ProductionBatch systems should remain understandable for real operators.
-Operators should be able to:
-	•	execute production workflows,
-	•	understand transformation continuity,
-	•	and manage finished goods generation  without manufacturing ERP complexity.
-Operational clarity should take priority over industrial manufacturing abstraction.
+---
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze production efficiency,
-	•	recommend operational optimization,
-	•	identify production anomalies,
-	•	and support manufacturing analytics.
-However:  AI must not autonomously manipulate deterministic ProductionBatch workflows.
-Critical production relationships must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+# Summary
 
-MVP Scope
-The MVP ProductionBatch system should prioritize:
-	•	deterministic production workflows,
-	•	finished goods generation,
-	•	inventory continuity,
-	•	costing visibility,
-	•	and operational traceability.
-The MVP intentionally excludes:
-	•	industrial factory orchestration,
-	•	autonomous manufacturing systems,
-	•	enterprise production routing,
-	•	and predictive manufacturing AI.
+`ProductionBatch` is the operational execution wrapper for all material conversions in the Production Engine. By structuring inputs and outputs as generic arrays of `InventoryLot` instances typed by `MaterialMaster`, `ProductionBatch` provides universal support for grinding, brewing, portioning, packaging, and kitting workflows inside Roastery OS.
 
-Architectural Notes
-ProductionBatch is one of the orchestration entities inside the Production Engine.
-Production batch systems influence:
-	•	inventory evolution,
-	•	commercial product generation,
-	•	workflow continuity,
-	•	operational analytics,
-	•	and transformation traceability.
-ProductionBatch structures should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend workflow behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The ProductionBatch system is designed to support future evolution toward:
-	•	advanced manufacturing orchestration,
-	•	AI-assisted production intelligence,
-	•	predictive workflow optimization,
-	•	operational forecasting,
-	•	and ecosystem-wide production visibility.
-However, production workflows should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
-
-Philosophy Summary
-ProductionBatch is not:
-	•	a retail product,
-	•	or a packaging label.
-ProductionBatch is:
-	•	operational manufacturing execution,
-	•	inventory transformation orchestration,
-	•	and finished goods generation infrastructure.
-ProductionBatch defines how production operationally happens inside Roastery OS.

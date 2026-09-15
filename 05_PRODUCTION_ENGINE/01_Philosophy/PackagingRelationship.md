@@ -2,368 +2,125 @@
 
 ## Purpose
 
-This document defines the operational philosophy and architectural relationship between packaging systems and production workflows inside Roastery OS.
+This document defines the operational philosophy and architectural relationship between packaging materials and production workflows inside Roastery OS.
 
 The purpose of Packaging Relationship is to:
-- define packaging as operational transformation,
-- preserve inventory continuity,
-- maintain packaging traceability,
-- support commercial product generation,
-- and establish modular packaging architecture.
+- define packaging as a physical material conversion in the `Transformation` lifecycle,
+- preserve physical inventory ledger continuity for packaging items,
+- maintain packaging traceability and scrap recording,
+- support commercial finished goods generation,
+- and establish a modular, decoupled packaging architecture.
 
-Packaging is one of the major commercial transformation layers inside the Production Engine.
-
-Packaging workflows transform:
-- production-ready inventory,
-into:
-- commercially usable inventory states.
+Packaging is the physical encapsulation transformation layer inside the Production Engine.
 
 ---
 
 # Core Philosophy
 
 Roastery OS treats packaging as:
-- operational inventory transformation,
-- commercial usability generation,
-- and finished goods manufacturing.
+- physical material consumption (`TransformationInput`),
+- commercial usability enablement,
+- and finished goods generation.
 
 Packaging is not merely:
-- visual presentation,
-- branding decoration,
-- or retail wrapping.
+- visual presentation or cosmetic decoration,
+- or an abstract financial overhead percentage.
 
-Packaging creates:
-- new inventory identity,
-- new commercial lifecycle states,
-- new operational relationships,
-- and new customer-facing usability.
-
-The system should preserve:
-- transformation continuity,
-- packaging traceability,
-- and deterministic workflow behavior.
+Packaging materials are:
+- real physical items tracked in `MaterialMaster` (`materialType = PACKAGING`),
+- stocked in discrete `InventoryLot` instances,
+- and consumed via `TRANSFORMATION_CONSUME` ledger movements.
 
 ---
 
-# Packaging Philosophy
+# Packaging as Physical Transformation
 
-Traditional retail systems commonly interpret packaging as:
+Traditional retail systems treat packaging as an intangible markup or cosmetic step:
+$$\text{Coffee} + \text{Packaging Markup} = \text{Product}$$
 
-```text id="x5m8tw"
-Packaging
-=
-Presentation
-Roastery OS uses a transformation-oriented packaging philosophy:
-ProductionReadyInventory
-↓ Packaging Workflow
-FinishedGoodsInventory
-Packaging represents:
-	•	operational manufacturing transformation,  not:
-	•	cosmetic product decoration.
+Roastery OS treats packaging as an explicit physical material transformation:
 
-Packaging as Transformation Principle
-Packaging workflows create:
-	•	new commercially operational inventory states.
-Example:
-BlendInventory
-↓ Packaging
-250g Coffee Bag
+```text
+Source Coffee Lot (Material: Roasted Coffee, INTERMEDIATE)
++
+Packaging Lot (Material: 250g Gusset Valve Bag, PACKAGING)
++
+Label Lot (Material: Front/Back Label Set, PACKAGING)
+       ↓ ProductionBatch (Packaging Transformation)
+Output Packaged Lot (Material: 250g Retail Bag, FINISHED_GOODS)
+```
+
 Packaging creates:
-	•	measurable inventory identity evolution.
-The system should preserve:
-	•	inventory continuity,
-	•	quantity continuity,
-	•	costing continuity,
-	•	and traceability continuity.
+- a new physical `InventoryLot` with defined commercial format,
+- unbroken multi-parent lineage back to both coffee and packaging lots,
+- and capitalized asset value based on both coffee and packaging consumption.
 
-Packaging Relationship Structure
-Packaging workflows preserve explicit operational relationships.
-Example:
-BlendInventory
-├── transformedBy → ProductionBatch
-↓
-FinishedGoodsInventory
-├── packagedAs → 250g Bag
-Relationships should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally meaningful.
+---
 
-Packaging vs Branding Principle
-Roastery OS separates:
-	•	packaging systems,  from:
-	•	branding systems.
-Example:
-Packaging
-≠
-Branding
+# Packaging vs Commercial Entities
 
-Packaging
-Represents:
-	•	operational product format,
-	•	physical containment,
-	•	quantity standardization,
-	•	and commercial usability.
-Examples:
-250g Bag
-Bottle
-Can
-Drip Bag Pouch
-Bulk Container
+To ensure modularity and scalability, Roastery OS maintains strict separation between related domain concepts:
 
-Branding
-Represents:
-	•	visual communication,
-	•	commercial storytelling,
-	•	and customer perception.
-This separation preserves:
-	•	modular architecture,
-	•	operational flexibility,
-	•	and future scalability.
+```text
+Packaging Material (MaterialMaster) ≠ Packaging Spec (PackagingTypeMaster) ≠ Commercial SKU (SKUMaster)
+```
 
-Packaging vs SKU Principle
-Roastery OS distinguishes between:
-	•	packaging structure,  and:
-	•	SKU identity.
-Example:
-Packaging
-≠
-SKU
+1. **Packaging Material (`MaterialMaster`):** The physical stock item (e.g. `250g Matte Black Valve Bag`, `330ml Amber Glass Bottle`). Stored in `InventoryLot` instances with physical count/weight and purchase unit cost.
+2. **Packaging Specification (`PackagingTypeMaster`):** The structural engineering profile (dimensions, capacity, tare weight, seal temp, valve specs) that guides machine settings and recipe portioning.
+3. **Commercial SKU (`SKUMaster`):** The customer-facing sales identity (e.g. `House Espresso 250g Whole Bean - E-Commerce`), which is fulfilled by an available packaged `InventoryLot`.
 
-Packaging
-Represents:
-	•	physical commercial format.
+---
 
-SKU
-Represents:
-	•	commercial sales identity.
-Example:
-250g Packaging
-+
-House Blend SKU
-This distinction preserves:
-	•	inventory flexibility,
-	•	sales scalability,
-	•	and modular product architecture.
+# Packaging Inventory Mechanics
 
-Packaging Quantity Principle
-Packaging workflows introduce:
-	•	standardized commercial quantities.
-Examples:
-250g
-500g
-1kg
-1L Bottle
-12-Pack
-Packaging quantity structures should remain:
-	•	measurable,
-	•	deterministic,
-	•	and operationally understandable.
-Commercial quantity behavior should preserve:
-	•	inventory continuity.
+### 1. Procurement & Storage
+Packaging items are received via `PURCHASE_RECEIPT` into `InventoryLot` records:
+- Lot ID: `LOT-BAG-2026-004`
+- Material: `250g Matte Black Gusset Bag`
+- Quantity: `5,000 units`
+- Unit Cost: `$0.45 / unit`
 
-Packaging Material Philosophy
-Packaging workflows may consume:
-	•	packaging materials.
-Examples:
-Coffee Bag
-Bottle
-Cap
-Label
-Drip Bag Filter
-Box Packaging
-Packaging materials should behave as:
-	•	operational inventory entities.
-The architecture should support:
-	•	packaging inventory continuity,
-	•	and operational cost visibility.
+### 2. Consumption in Production
+When executing a packaging batch:
+- The required packaging count is deducted from `LOT-BAG-2026-004` via `TRANSFORMATION_CONSUME`.
+- Damaged bags or calibration scrap are recorded as physical scrap quantities on the `ProductionBatch`.
 
-Packaging Costing Principle
-Packaging directly affects:
-	•	finished goods valuation,
-	•	operational profitability,
-	•	and commercial production economics.
-Example:
-Source Inventory Cost
-+
-Packaging Cost
-+
-Production Overhead
-↓
-FinishedGoodsInventory Cost
-Packaging costing should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally understandable.
+### 3. Economic Capitalization
+The Costing Engine values packaging consumption directly as part of $V_{\text{consumed}}$:
+$$V_{\text{packaging}} = Q_{\text{bags\_consumed}} \times U_{\text{bag\_cost}}$$
 
-Packaging Yield Principle
-Packaging workflows may introduce:
-	•	operational residue,
-	•	filling variance,
-	•	sealing loss,
-	•	and quantity shrinkage.
-Examples:
-Bag Filling Residue
-Bottle Filling Loss
-Drip Bag Portioning Loss
-Grinding Retention
-Yield behavior should remain:
-	•	explicit,
-	•	measurable,
-	•	and operationally meaningful.
-Packaging yield is considered:
-	•	operational production behavior,  not:
-	•	inventory anomaly.
+This value enters the transformation cost pool and is capitalized directly into the resulting finished goods unit cost via Canonical Equation 1. Packaging is never treated as vague indirect overhead.
 
-Packaging Traceability Principle
-Packaging workflows should preserve:
-	•	transformation lineage continuity.
-Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-Packaging traceability should preserve:
-	•	inventory evolution,
-	•	operational continuity,
-	•	and commercial product lineage.
+---
 
-Derivative Product Packaging Principle
-Different derivative products may require:
-	•	different packaging workflows.
-Examples:
-Whole Bean Bag
-Ground Coffee Bag
-Drip Bag Box
-Cold Brew Bottle
-RTD Can
-Bulk Espresso Container
-The architecture should support:
-	•	packaging diversity,
-	•	operational flexibility,
-	•	and future extensibility.
+# Multi-Format Packaging Independence
 
-Packaging Lifecycle Principle
-Packaging may introduce:
-	•	commercial inventory lifecycle behavior.
-Examples:
-Packaged
-Reserved
-Sold
-Returned
-Archived
-Packaging relationships should preserve:
-	•	inventory continuity,
-	•	operational visibility,
-	•	and commercial workflow readability.
+The same bulk roasted coffee lot can be split across multiple packaging formats without duplicating roasting records:
 
-Packaging Independence Principle
-Packaging systems should remain:
-	•	modular,
-	•	reusable,
-	•	and operationally independent.
-The same inventory source may later generate:
-	•	multiple packaging formats,
-	•	multiple commercial products,
-	•	and multiple sales experiences.
-Example:
-BlendInventory
-↓
-250g Retail Bag
-500g Retail Bag
-1kg Wholesale Bag
-The architecture should support:
-	•	commercial multiplicity,  without:
-	•	duplicating production logic.
+```text
+Bulk Roasted Coffee Lot (100 kg)
+  ├── 40 kg + 160 Bags (250g) ──► Output Lot 1: 160 units of 250g Retail Bags
+  ├── 30 kg + 60 Bags (500g)  ──► Output Lot 2: 60 units of 500g Retail Bags
+  └── 30 kg + 6 Totes (5kg)   ──► Output Lot 3: 6 units of 5kg Wholesale Totes
+```
 
-Deterministic Packaging Principle
-Critical packaging behavior must remain deterministic.
-Examples:
-	•	inventory deduction,
-	•	packaging quantity continuity,
-	•	costing allocation,
-	•	and finished goods generation.
-Packaging workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden inventory mutation,
-	•	ambiguous packaging behavior,
-	•	and disconnected commercial lineage.
+Each packaging run is an independent `ProductionBatch` that consumes the exact physical materials required, ensuring precise mass balance and inventory ledger integrity.
 
-Human-Centered Philosophy
-Packaging systems should remain understandable for operational users.
-Operators should be able to:
-	•	manage packaging workflows,
-	•	understand inventory evolution,
-	•	and trace commercial continuity  without industrial ERP complexity.
-Operational clarity should take priority over manufacturing abstraction.
+---
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze packaging efficiency,
-	•	recommend packaging optimization,
-	•	identify operational anomalies,
-	•	and support production analytics.
-However:  AI must not autonomously manipulate deterministic packaging relationships.
-Critical packaging continuity must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+# Packaging Scrap & Filling Variance
 
-MVP Scope
-The MVP Packaging Relationship system should prioritize:
-	•	packaging transformation continuity,
-	•	commercial quantity standardization,
-	•	packaging costing visibility,
-	•	inventory continuity,
-	•	and operational traceability.
-The MVP intentionally excludes:
-	•	industrial packaging automation,
-	•	autonomous packaging systems,
-	•	enterprise logistics orchestration,
-	•	and advanced supply chain AI.
+Packaging operations may experience machine sealing defects, bag tears, or overfill purge:
+- **Scrap Tracking:** Packaging units consumed but scrapped during setup are recorded on the `ProductionBatch` (`lossQuantity`, reason `PACKAGING_SCRAP`).
+- **Cost Absorption:** Because the Costing Engine divides the total consumed pool ($V_{\text{consumed}}$) by the actual successful produced units ($Q_{\text{out}}$), scrap costs are naturally absorbed into the good units.
 
-Architectural Notes
-Packaging systems are one of the operational-commercial bridge layers inside the Production Engine.
-Packaging systems influence:
-	•	finished goods generation,
-	•	commercial inventory continuity,
-	•	costing visibility,
-	•	sales workflows,
-	•	and customer-facing product usability.
-Packaging architecture should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend packaging behavior without redesigning the operational foundation.
+---
 
-Long-Term Direction
-The Packaging Relationship system is designed to support future evolution toward:
-	•	advanced packaging orchestration,
-	•	AI-assisted packaging intelligence,
-	•	sustainable packaging analytics,
-	•	automated packaging workflows,
-	•	and ecosystem-wide commercial visibility.
-However, packaging behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+# Summary
 
-Philosophy Summary
-Packaging is not merely:
-	•	wrapping,
-	•	labeling,
-	•	or product decoration.
-Packaging is:
-	•	operational inventory transformation,
-	•	commercial usability generation,
-	•	and finished goods identity evolution.
-Packaging defines how coffee operationally becomes commercially usable inside Roastery OS.
+Packaging in Roastery OS is:
+- physical material transformation,
+- tracked via `MaterialMaster` and `InventoryLot`,
+- capitalized deterministically via `07_COSTING_ENGINE`,
+- and completely decoupled from commercial SKU presentation.
+

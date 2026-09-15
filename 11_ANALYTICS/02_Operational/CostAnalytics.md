@@ -85,12 +85,12 @@ Cost continuity should remain:
 Operational Economic Visibility Principle
 Cost analytics should preserve:
 	•	ecosystem economic visibility.
-Examples:
+Analytical Dimensions (Viewing facts from 07_COSTING_ENGINE):
 Inventory Valuation
-Roasting Cost
-Blend Cost
-Production Cost
-Packaging Cost
+Roasting Process Cost
+Blend Process Cost
+Derivative Production Process Cost
+Packaging Assembly Cost
 Operational Profitability
 
 Economic visibility supports:
@@ -118,12 +118,12 @@ Context continuity preserves:
 Workflow Cost Principle
 Cost analytics should preserve:
 	•	workflow continuity visibility.
-Examples:
-Inventory Intake Cost
-Roasting Cost
-Blend Cost
-Production Cost
-Packaging Cost
+Analytical Process Views:
+Inventory Intake Valuation (07_COSTING_ENGINE)
+Roasting Cost View
+Blend Cost View
+Derivative Production Cost View
+Packaging Cost View
 
 Workflow continuity preserves:
 	•	operational economic explainability.
@@ -134,17 +134,17 @@ Operators should be able to:
 
 Cost Genealogy Principle
 Cost analytics should preserve:
-	•	economic ancestry continuity.
+	•	economic ancestry continuity derived from 07_COSTING_ENGINE.
 Example:
-Supplier Pricing
+Supplier Acquisition Price (09_SUPPLIER_SYSTEM)
 ↓
-Inventory Valuation
+InventoryLot Unit Valuation (07_COSTING_ENGINE)
 ↓
-Roasting Cost
+Transformation Economic Consequence (07_COSTING_ENGINE)
 ↓
-Blend Cost
+Output InventoryLot Unit Cost (07_COSTING_ENGINE)
 ↓
-Finished Product Cost
+Commercial COGS at Dispatch (07_COSTING_ENGINE)
 
 Cost continuity preserves:
 	•	sourcing-to-profitability explainability.
@@ -152,6 +152,21 @@ Operators should be able to:
 	•	trace economic evolution,
 	•	identify cost dependency,
 	•	and explain profitability behavior.
+
+Costing Engine Boundary Principle
+07_COSTING_ENGINE is the sole authoritative economic source for:
+	•	inventory valuation,
+	•	lot unit cost ($U_{\text{lot}}$),
+	•	HPP,
+	•	and realized COGS.
+11_ANALYTICS acts as an analytical consumer and read-model.
+Analytics does NOT:
+	•	calculate authoritative HPP/COGS independently,
+	•	define valuation policies (e.g. Weighted Average vs FIFO),
+	•	or mutate ledger cost balances.
+When Analytics calculates commercial gross margin:
+	$$\text{Gross Margin} = \text{Commercial Revenue} - \text{COGS (from 07_COSTING_ENGINE)}$$
+it represents an analytical derivation, not an independent accounting valuation.
 
 Yield And Cost Principle
 Cost analytics directly interacts with:

@@ -6,19 +6,12 @@ This document defines the roasting logging philosophy and operational roast logg
 
 The purpose of Roast Logging is to:
 - preserve roasting history,
-- maintain operational visibility,
+- maintain operational visibility of batch thermal execution and sensory observations,
 - support production continuity,
 - provide readable roasting records,
 - and create long-term roasting intelligence infrastructure.
 
-Roast logging acts as:
-- operational memory,
-- production documentation,
-- and roasting history preservation.
-
-Roast logging is not merely data recording.
-
-Roast logging preserves the operational story of roasting execution.
+Roast logging acts as operational memory, production documentation, and roasting history preservation.
 
 ---
 
@@ -29,282 +22,66 @@ Roastery OS treats roast logging as:
 - roasting execution visibility,
 - and production intelligence infrastructure.
 
-Roast logging is not merely:
-- note-taking,
-- or roasting journaling.
-
 Roast logging represents:
-- observable roasting behavior,
+- observable roasting behavior and telemetry,
 - operational roasting context,
-- and transformation documentation.
-
-The system should preserve roasting history in:
-- a readable,
-- traceable,
-- and operationally meaningful way.
+- and physical transformation documentation.
 
 ---
 
 # Logging Philosophy
 
-Every meaningful roasting activity should leave:
+Every meaningful roasting activity leaves:
 - operational visibility,
-- roasting context,
+- roasting context (thermal curves, phase milestones, ambient conditions),
 - and traceable execution history.
 
-Example:
+```text
+Input InventoryLot (RAW_COFFEE)
+↓ RoastBatch (with Roast Logging)
+Output InventoryLot (INTERMEDIATE Roasted)
+```
 
-```text id="x8m4qa"
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-Roast logging should preserve:
-	•	how roasting happened,
-	•	what occurred during roasting,
-	•	and what operational observations were recorded.
-Logging preserves:
-	•	roasting memory,
-	•	not merely system data.
+---
 
-Operational Logging Principle
-Roast logging should document:
-	•	operational roasting behavior,
-	•	production execution context,
-	•	and transformation events.
-Examples:
-Roast Started
-First Crack Observed
-Development Completed
-Drop Temperature Recorded
-Yield Validated
-Roast Completed
-Logs should preserve:
-	•	operational sequence,
-	•	roasting observations,
-	•	and workflow continuity.
+## Core Logging Categories
 
-Core Logging Categories
-Roastery OS currently recognizes several roasting log categories.
-Examples:
-Operational Logs
-Roast Observation Logs
-Yield Logs
-Transformation Logs
-Status Logs
-Operator Notes
-Environmental Notes
-The MVP should prioritize:
-	•	lightweight operational logging,
-	•	not industrial manufacturing telemetry systems.
+Roastery OS recognizes several roasting log categories:
+1. **Operational Logs**: Batch scheduling, start time, drop time, cooling duration, operator ID.
+2. **Roast Telemetry & Curve Logs**: Charge temp, Turning Point, Yellowing milestone, First Crack (time/temp), Development Time Ratio (DTR%), Drop temp, Rate of Rise (RoR) progression.
+3. **Yield Logs**: Green charged weight (kg), Roasted output weight (kg), actual yield %, weight loss %.
+4. **Sensory & QC Logs**: Ground/whole bean Agtron color values, defect notes, cupping evaluation scores.
+5. **Inventory Movement Logs**: `TRANSFORMATION_CONSUME` (source lot) and `TRANSFORMATION_PRODUCE` (output lot).
+6. **Cost Event Logs**: Direct labor and machine absorption events published to `07_COSTING_ENGINE`.
 
-Roast Observation Philosophy
-Roast observations represent:
-	•	human operational insight,
-	•	roasting experience,
-	•	and execution context.
-Examples:
-First Crack Timing
-Development Duration
-Color Observation
-Environmental Condition
-Unexpected Roast Behavior
-Observation logs should remain:
-	•	readable,
-	•	flexible,
-	•	and operationally useful.
-The system should support:
-	•	real roasting workflow behavior,
-	•	not rigid manufacturing procedures.
+---
 
-Human-Centered Logging Principle
-Roast logging should support:
-	•	real roasting operators,
-	•	real production workflows,
-	•	and practical operational usage.
-Operators should be able to:
-	•	log observations naturally,
-	•	preserve roasting context,
-	•	and record operational notes  without excessive administrative burden.
-Operational clarity should take priority over bureaucratic logging systems.
+## Roast Observation Philosophy
 
-RoastBatch Relationship Principle
-Roast logging should remain connected to RoastBatch.
-Example:
-RoastBatch
-↓
-Roast Logs
-Logs should preserve:
-	•	operational sequence,
-	•	transformation continuity,
-	•	and roasting lineage.
-Roast logs should remain traceable to:
-	•	inventory transformation,
-	•	yield behavior,
-	•	and production history.
+Roast observations represent human operational insight and execution context:
+- First crack sound intensity and vigor.
+- Smoke/aroma transition markers during Maillard and development phases.
+- Visual roast color uniformity in the cooling tray.
+- Environmental variables (ambient room temperature and relative humidity).
 
-Inventory Transformation Logging
-Roast logging should preserve transformation visibility.
-Example:
-100kg Green Beans
-↓ roasting
-82kg Roasted Coffee
-Transformation logs may include:
-	•	inventory deduction,
-	•	roasted inventory creation,
-	•	yield calculation,
-	•	and operational validation.
-Transformation logging should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally meaningful.
+---
 
-Yield Logging Principle
-Yield behavior should remain historically visible.
-Examples:
-Input Quantity
-Output Quantity
-Yield Percentage
-Shrinkage Percentage
-Yield logs should support:
-	•	roasting consistency analysis,
-	•	operational review,
-	•	and future roasting intelligence systems.
-Yield logging preserves:
-	•	operational transformation memory.
+## Deterministic vs Observational Logging
 
-Status Logging Principle
-Roast status progression should remain historically visible.
-Example:
-Planned
-↓
-Prepared
-↓
-In Progress
-↓
-Completed
-Status logs should preserve:
-	•	workflow progression,
-	•	operational timeline,
-	•	and production continuity.
+The system separates:
+- **Deterministic Transformation Logs**: Consumed `InventoryLot`, produced `InventoryLot`, measured weights, and ledger movements (immutable and strictly auditable).
+- **Observational Logs**: Roaster qualitative notes, cupping impressions, and sensory descriptors.
 
-Environmental Logging Philosophy
-Roasting may be affected by:
-	•	environmental conditions,
-	•	operational context,
-	•	and roasting variables.
-Examples:
-Humidity
-Ambient Temperature
-Machine Condition
-Operator Observation
-Environmental logs should remain:
-	•	optional,
-	•	lightweight,
-	•	and operationally meaningful.
-The MVP should avoid:
-	•	industrial telemetry complexity.
+---
 
-Costing Logging Principle
-Roast logging may preserve operational costing visibility.
-Examples:
-Yield-Adjusted Cost
-Production Overhead
-Operational Cost Notes
-Costing logs should support:
-	•	profitability understanding,
-	•	operational analytics,
-	•	and production review.
+## AI Boundary Philosophy
 
-Deterministic Logging Principle
-Critical roasting logs should remain deterministic.
-Examples:
-	•	transformation events,
-	•	inventory creation,
-	•	yield validation,
-	•	and status progression.
-Logging systems should:
-	•	preserve operational integrity,
-	•	support auditability,
-	•	and maintain traceable production continuity.
-The system should avoid:
-	•	hidden operational mutation,
-	•	ambiguous logging behavior,
-	•	and disconnected roasting history.
+AI systems may summarize roasting batch histories, analyze rate-of-rise trends, and detect anomalies across batches. However, AI systems must **never** autonomously alter or rewrite deterministic batch logs.
 
-Readability Principle
-Roast logs should remain:
-	•	human-readable,
-	•	operationally understandable,
-	•	and chronologically meaningful.
-Operators should be able to reconstruct:
-	•	roasting events,
-	•	transformation flow,
-	•	and production context  through roast logging history.
-Logging should support:
-	•	operational storytelling,
-	•	not merely database storage.
+---
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze roasting patterns,
-	•	identify consistency trends,
-	•	summarize roasting history,
-	•	and support operational analytics.
-However:  AI must not autonomously alter deterministic roasting logs.
-Critical roasting history must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+## Philosophy Summary
 
-MVP Scope
-The MVP Roast Logging system should prioritize:
-	•	RoastBatch history,
-	•	roasting observations,
-	•	transformation visibility,
-	•	yield logging,
-	•	and operational timeline preservation.
-The MVP intentionally excludes:
-	•	industrial telemetry infrastructure,
-	•	automated sensor orchestration,
-	•	advanced machine logging,
-	•	and AI-generated autonomous roasting records.
+Roast logging is not merely data storage. Roast logging is **roasting memory, operational storytelling, and production history preservation**. Roast logging preserves exactly how roasting physically and operationally happened inside Roastery OS.
 
-Architectural Notes
-Roast Logging is one of the operational memory layers inside the Roasting Engine.
-Logging systems influence:
-	•	roasting history,
-	•	operational analytics,
-	•	production review,
-	•	traceability continuity,
-	•	and future roasting intelligence.
-Roast logging should remain:
-	•	modular,
-	•	readable,
-	•	traceable,
-	•	and operationally meaningful.
-Future systems should extend logging behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The Roast Logging system is designed to support future evolution toward:
-	•	roast analytics,
-	•	consistency monitoring,
-	•	AI-assisted roasting intelligence,
-	•	production review systems,
-	•	and operational storytelling infrastructure.
-However, roast logging should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
-
-Philosophy Summary
-Roast logging is not merely:
-	•	roast notes,
-	•	or operational journaling.
-Roast logging is:
-	•	roasting memory,
-	•	operational storytelling,
-	•	and production history preservation.
-Roast logging preserves how roasting operationally happened inside Roastery OS.
 

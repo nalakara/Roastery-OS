@@ -48,18 +48,18 @@ The system should preserve:
 Traditional procurement systems commonly interpret supplier-material relationships as:
 
 ```text id="x5m8tw"
-Vendor Item Mapping
-
 Roastery OS uses a continuity-oriented sourcing model:
 Supplier
 ↓
-Material Relationship
+Material Relationship (MaterialMaster)
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement (02_INVENTORY_ENGINE)
 ↓
-Operational Workflow
+InventoryLot
 ↓
-Finished Product
+Operational Workflow / Transformation
+↓
+Downstream InventoryLot(s)
 
 Supplier-material relationships should preserve:
 	•	operational sourcing continuity, not merely:
@@ -68,16 +68,18 @@ Supplier-material relationships should preserve:
 Core Relationship Principle
 Every operational material should preserve:
 	•	supplier continuity visibility.
-Example:
-Supplier
+Generic Model:
+Supplier (SupplierMaster)
 ↓
-Green Coffee
+Supplied Material (MaterialMaster)
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-RoastBatch
+InventoryLot (02_INVENTORY_ENGINE)
 ↓
-Finished Product
+Transformation / Operational Usage
+↓
+Downstream InventoryLot(s)
 
 Supplier-material continuity should remain:
 	•	traceable,
@@ -86,7 +88,7 @@ Supplier-material continuity should remain:
 
 Material Continuity Principle
 Supplier relationships connect to:
-	•	operational material continuity.
+	•	operational material continuity (MaterialMaster).
 Examples:
 Green Coffee
 Packaging Materials
@@ -133,12 +135,12 @@ Operators should be able to:
 
 Material Category Principle
 Materials may belong to:
-	•	different operational categories.
+	•	different operational categories (MaterialMaster).
 Examples:
-Raw Materials
-Packaging Materials
-Ingredients
-Consumables
+Raw Materials (Coffee, Grains)
+Packaging Materials (Bags, Boxes, Labels)
+Ingredients / Additives (Syrups, Flavors)
+Consumables (Filters, Cleaning Agents)
 Operational Supplies
 
 Material categories preserve:
@@ -150,11 +152,13 @@ Supplier-material relationships interact with:
 Example:
 Supplier
 ↓
-Purchase Order
+Purchase Order / Contract
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Usage
+InventoryLot (02_INVENTORY_ENGINE)
+↓
+Operational Usage / Transformation
 
 Procurement continuity preserves:
 	•	sourcing explainability,
@@ -194,13 +198,13 @@ Pricing Continuity Principle
 Supplier-material relationships directly influence:
 	•	operational costing continuity.
 Example:
-Supplier Material Price
+Supplier Material Invoice Price
 ↓
-Inventory Valuation
+InventoryLot Acquisition Cost Basis (02_INVENTORY_ENGINE)
 ↓
-Operational Costing
+Lot Valuation & Cost Propagation (07_COSTING_ENGINE)
 ↓
-Profitability
+Profitability Visibility
 
 Pricing continuity preserves:
 	•	sourcing-to-profitability explainability.
@@ -267,9 +271,9 @@ Supplier System
 ↓
 Procurement Engine
 ↓
-Inventory Engine
+Inventory Engine (PURCHASE_RECEIPT → InventoryLot)
 ↓
-Costing Engine
+Costing Engine (Lot Valuation & COGS)
 ↓
 Traceability Engine
 
@@ -281,18 +285,14 @@ This creates:
 Upstream Traceability Principle
 Supplier-material relationships support:
 	•	upstream operational traceability.
-Example:
-Customer Product
+Generic Model:
+Downstream Product Lot (InventoryLot)
+↓ Transformations / Execution Batches
+Precursor InventoryLots
+↓ Originating Receiving (PURCHASE_RECEIPT)
+Purchased InventoryLot
 ↓
-ProductionBatch
-↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBeanInventory
-↓
-Supplier
+Supplier (SupplierMaster)
 
 Supplier-material continuity preserves:
 	•	sourcing ancestry visibility.
@@ -305,7 +305,7 @@ Relationship Persistence Principle
 Supplier-material relationships should remain:
 	•	historically persistent.
 Example:
-Supplier ↔ Green Coffee
+Supplier ↔ Material (MaterialMaster)
 → preserved sourcing continuity
 
 Relationship persistence preserves:

@@ -116,22 +116,20 @@ Context continuity preserves:
 
 Production Continuity Principle
 Production analytics should preserve:
-	•	workflow continuity visibility.
+	•	workflow continuity visibility across generic N:M transformations.
 Example:
-Inventory Intake
-↓
-Production Workflow
-↓
-Packaging Workflow
-↓
-Finished Goods
+InventoryLot Intake (MaterialMaster)
+↓ Transformation (Roasting / Extraction / Assembly / Packaging)
+Intermediary InventoryLot(s)
+↓ Transformation
+Finished Sellable InventoryLot(s)
 
 Production continuity preserves:
 	•	operational explainability.
 Operators should be able to:
 	•	understand workflow evolution,
 	•	identify operational bottlenecks,
-	•	and evaluate production stability.
+	•	and evaluate production stability across diverse product forms (whole bean, ground, drip bags, RTD cold brew).
 
 Batch Visibility Principle
 Production analytics should preserve:

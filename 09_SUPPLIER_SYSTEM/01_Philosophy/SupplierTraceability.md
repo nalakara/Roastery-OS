@@ -67,18 +67,20 @@ Supplier traceability should preserve:
 Core Traceability Principle
 Every operational material should preserve:
 	•	upstream sourcing ancestry.
-Example:
-Supplier
+Generic Model:
+Supplier (SupplierMaster)
 ↓
-GreenBeanInventory
+Supplied Material (MaterialMaster)
 ↓
-RoastBatch
+PURCHASE_RECEIPT Movement
 ↓
-BlendBatch
+Purchased InventoryLot (02_INVENTORY_ENGINE)
 ↓
-ProductionBatch
+Transformation(s) / Batch(es)
 ↓
-FinishedGoodsInventory
+Downstream InventoryLot(s)
+↓
+Customer Commercial Dispatch
 
 Supplier continuity should remain:
 	•	traceable,
@@ -88,18 +90,16 @@ Supplier continuity should remain:
 Upstream Ancestry Principle
 Supplier traceability preserves:
 	•	operational sourcing ancestry continuity.
-Example:
-Customer Product
+Example (Generic Multi-Material Instance):
+Customer Dispatched Lot (e.g. Bottled Beverage)
+↓ ProductionBatch (Liquid Packaging Transformation)
+├── Precursor Coffee InventoryLot (from Cold Brew Extraction Transformation)
+├── Packaging InventoryLot (Bottles & Caps from Packaging Supplier)
+└── Additive InventoryLot (Syrup from Ingredient Supplier)
 ↓
-ProductionBatch
-↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBeanInventory
-↓
-Supplier
+Originating Purchased InventoryLots
+↓ PURCHASE_RECEIPT Movements
+Respective Suppliers (SupplierMaster)
 
 Operators should be able to:
 	•	trace sourcing origin,
@@ -112,11 +112,13 @@ Supplier traceability interacts with:
 Example:
 Supplier
 ↓
-Purchase Order
+Purchase Order / Contract
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Workflow
+InventoryLot (Initial acquisition cost basis & physical balance)
+↓
+Operational Workflow / Transformation
 
 Procurement continuity preserves:
 	•	sourcing explainability,
@@ -143,7 +145,7 @@ Multi-Supplier Continuity Principle
 Operational materials may originate from:
 	•	multiple sourcing relationships.
 Example:
-Green Coffee
+Green Coffee Material
 ├── Supplier A
 ├── Supplier B
 └── Seasonal Supplier
@@ -158,16 +160,16 @@ Operators should be able to:
 Transformation Continuity Principle
 Supplier traceability should preserve:
 	•	sourcing continuity throughout operational transformations.
-Example:
-Supplier
-↓
-GreenBeanInventory
-↓ roasting
-RoastedCoffeeInventory
-↓ blending
-BlendInventory
-↓ packaging
-FinishedGoodsInventory
+Generic Transformation Chain Example:
+Supplier (SupplierMaster)
+↓ PURCHASE_RECEIPT
+Green Coffee Lot (InventoryLot)
+↓ Thermal Transformation (RoastBatch)
+Roasted Coffee Lot (InventoryLot)
+↓ Combination Transformation (BlendBatch)
+Blend Coffee Lot (InventoryLot)
+↓ Packaging Transformation (ProductionBatch)
+Final Packaged Lot (InventoryLot)
 
 Operational genealogy should remain:
 	•	connected,
@@ -175,14 +177,16 @@ Operational genealogy should remain:
 	•	and explainable.
 
 Packaging Traceability Principle
-Supplier continuity may extend into:
+Supplier continuity extends into:
 	•	packaging genealogy continuity.
 Example:
-Bottle Supplier
-↓
-Bottle Packaging Workflow
-↓
-Finished RTD Product
+Bottle Supplier (SupplierMaster)
+↓ PURCHASE_RECEIPT
+Glass Bottle Lot (InventoryLot)
+↓ Beverage Packaging Workflow (ProductionBatch)
+Finished RTD Product Lot (InventoryLot)
+↓ COMMERCIAL_DISPATCH
+Customer
 ↓
 Customer
 

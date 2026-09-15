@@ -130,13 +130,15 @@ Metrics should:
 
 Workflow Metrics Principle
 Operational metrics should preserve:
-	•	workflow continuity visibility.
-Examples:
-Inventory Intake Metrics
-Roasting Metrics
-Blend Metrics
-Production Metrics
-Packaging Metrics
+	•	workflow continuity visibility across distinct Master Data dimensions.
+
+Master Data Analytical Dimensions (01_MASTER_DATA & 02_INVENTORY_ENGINE):
+	•	MaterialMaster: Physical raw material consumption, moisture, and bulk sourcing volume.
+	•	ProductMaster: Commercial brand performance, flavor profile continuity, and blend product lines.
+	•	SKUMaster: Sellable pack size, packaging channel, pricing velocity, and unit sales volume.
+	•	InventoryLot: Physical lot aging, exact transformation yield, shrinkage, and batch genealogy.
+
+Analytics maintains explicit distinction across these four dimensions and avoids collapsing them into an undifferentiated "product" reporting object.
 
 Workflow continuity preserves:
 	•	operational explainability.

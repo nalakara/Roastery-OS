@@ -151,12 +151,12 @@ Pricing Relationship Structure
 Customer pricing structures should preserve:
 	•	continuity-aware pricing visibility.
 Examples:
-Wholesale Pricing
-Volume Pricing
-Contract Pricing
-Relationship Pricing
+Wholesale Tier Pricing (linked to SKUMaster from 01_MASTER_DATA)
+Volume Tier Pricing
+Contract Pricing Agreement
+Payment / Credit Terms (e.g., Net 30, Due on Receipt)
 Discount Structures
-Margin Visibility
+Commercial Selling Margin Visibility (Selling Price vs Costing Engine COGS)
 
 Pricing continuity supports:
 	•	profitability visibility,
@@ -182,9 +182,9 @@ Production Relationship Structure
 Customer entities may preserve:
 	•	production continuity relationships.
 Examples:
-Recurring Blend Allocation
+Recurring Blend Demand Signals
 Production Scheduling Influence
-Packaging Allocation
+Packaging Preference Allocation
 Operational Priority
 Fulfillment Relationships
 
@@ -195,10 +195,10 @@ Production continuity supports:
 
 Inventory Relationship Structure
 Customer entities may preserve:
-	•	inventory continuity relationships.
+	•	inventory continuity relationships via 02_INVENTORY_ENGINE.
 Examples:
-Reserved Inventory
-Safety Stock Allocation
+Reserved Inventory Lots
+Safety Stock Allocation Signals
 Demand Dependency
 Packaging Dependency
 Consumption Visibility
@@ -210,9 +210,10 @@ Inventory continuity supports:
 
 Traceability Relationship Structure
 Customer entities may preserve:
-	•	downstream traceability continuity.
+	•	downstream traceability continuity via 08_BATCH_TRACEABILITY.
 Examples:
-Batch Allocation
+WholesaleOrder → FulfillmentAllocation → InventoryLot Linkage
+Batch Allocation History
 Packaging Relationships
 Delivery Continuity
 Recall Readiness

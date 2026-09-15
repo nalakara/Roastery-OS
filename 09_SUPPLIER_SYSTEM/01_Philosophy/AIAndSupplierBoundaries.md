@@ -184,13 +184,15 @@ Procurement Continuity Principle
 AI systems must preserve:
 	•	deterministic procurement continuity.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
 Procurement Workflow
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Workflow
+InventoryLot (02_INVENTORY_ENGINE)
+↓
+Operational Workflow / Transformation
 
 AI systems must never:
 	•	obscure sourcing ancestry,
@@ -205,6 +207,7 @@ Green Coffee Supplier
 Packaging Supplier
 Ingredient Supplier
 Bottle Manufacturer
+Consumables Vendor
 
 AI must not autonomously:
 	•	merge,
@@ -218,11 +221,11 @@ Pricing Integrity Principle
 Supplier pricing continuity must remain:
 	•	human-auditable.
 Example:
-Supplier Pricing
+Supplier Invoice Price
 ↓
-Inventory Valuation
+PURCHASE_RECEIPT (InventoryLot Cost Basis)
 ↓
-Operational Costing
+07_COSTING_ENGINE (Lot Valuation & Cost Propagation)
 
 AI may:
 	•	analyze pricing patterns,
@@ -268,7 +271,7 @@ Reason:
 Repeated Procurement Delay
 
 Affected Workflow:
-Inventory Intake → Production Continuity
+Inbound Receiving (PURCHASE_RECEIPT) → Production Continuity
 
 AI systems should support:
 	•	operational explainability, not:

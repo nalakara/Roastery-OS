@@ -5,295 +5,78 @@
 This document defines the blend traceability philosophy and operational traceability behavior used inside the Blend Engine of Roastery OS.
 
 The purpose of Blend Traceability is to:
-- preserve blend composition lineage,
-- maintain production continuity,
-- support inventory transformation visibility,
+- preserve multi-parent blend composition lineage,
+- maintain production continuity from individual roast batches to intermediate blend lots and packaged finished goods,
+- support inventory transformation visibility across multi-lot inputs,
 - enable operational accountability,
-- and provide readable production history across blend workflows.
-
-Blend traceability preserves:
-- how multiple roasted inventories evolve into a newly defined blend entity.
-
-Blend traceability is one of the core operational visibility systems inside Roastery OS.
+- and provide clear production history across blend workflows.
 
 ---
 
 # Core Philosophy
 
 Roastery OS treats blend traceability as:
-- composition lineage,
+- multi-parent composition lineage,
 - transformation continuity,
 - and operational relationship visibility.
 
-Blend traceability is not merely:
-- recipe storage,
-- or batch numbering.
-
 Blend traceability represents:
-- where blend inventory originated,
-- how composition transformation occurred,
-- and how production relationships evolved.
-
-The system should preserve blend history in:
-- a readable,
-- traceable,
-- and operationally meaningful way.
+- which component `InventoryLot` instances were combined,
+- which `RoastBatch` and agricultural source lots created those components,
+- what recipe version was executed,
+- and which output `InventoryLot` instances were created.
 
 ---
 
-# Traceability Philosophy
+# Traceability Architecture
 
-Blend production is one of the major transformation layers inside Roastery OS.
+Blending creates multi-parent nodes in the Roastery OS lineage graph:
 
-Example:
+```text
+[Farm A] -> PO Receipt -> Green Lot 1 -> RoastBatch 1 -> Roasted Lot 1 (60kg) ──┐
+                                                                               ├──> BlendBatch -> Output Blend Lot (99.5kg) -> Packaging -> Finished Retail SKU
+[Farm B] -> PO Receipt -> Green Lot 2 -> RoastBatch 2 -> Roasted Lot 2 (40kg) ──┘
+```
 
-```text id="x5m8tw"
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-Blend traceability should preserve:
-	•	roasting lineage,
-	•	composition continuity,
-	•	transformation history,
-	•	and operational production visibility.
-Traceability should preserve the operational story of blend evolution.
+---
 
-BlendBatch Traceability Principle
-Every blend production execution should generate:
-	•	BlendBatch identity,
-	•	composition references,
-	•	transformation continuity,
-	•	and operational lineage.
-Example:
-BB-20260520-001
-BlendBatch acts as:
-	•	transformation anchor,
-	•	composition lineage node,
-	•	and production execution reference.
-Batch systems should remain:
-	•	readable,
-	•	deterministic,
-	•	traceable,
-	•	and operationally meaningful.
+## Core Traceability Graph Properties
 
-Core Traceability Relationships
-Blend traceability should preserve explicit operational relationships.
-Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ Packaging
-FinishedGoods
-Every relationship should remain:
-	•	connected,
-	•	readable,
-	•	and operationally understandable.
+Every `BlendBatch` acts as an immutable multi-parent transformation node recording:
+1. `blendBatchId`: Unique transformation execution identifier.
+2. `recipeId`: Reference to `BlendRecipeMaster` and version.
+3. `consumedLots`: Array of input `InventoryLot` IDs, quantities consumed (kg), and unit cost basis.
+4. `producedLots`: Array of output `InventoryLot` IDs, quantities produced (kg), and allocated unit cost basis ($U_{\text{out}}$).
+5. `compositionRatios`: Actual recorded weight percentages per input lot.
+6. `yieldMetrics`: Total mass charged vs total mass recovered.
 
-Composition Continuity Principle
-Blend inventory should preserve:
-	•	measurable composition visibility.
-Example:
-Brazil Natural → 60%
-Ethiopia Washed → 40%
-The system should preserve:
-	•	source composition lineage,
-	•	ratio continuity,
-	•	and operational blend identity.
-Composition continuity should remain:
-	•	traceable,
-	•	deterministic,
-	•	and human-readable.
+---
 
-Source Continuity Principle
-Blend inventory should preserve:
-	•	upstream roasting relationships.
-Example:
-BlendInventory
-├── references → BlendBatch
-├── references → RoastBatch
-├── references → GreenBean
-├── references → Origin
-└── references → Supplier
-Blend inventory should remain traceable to:
-	•	sourcing origin,
-	•	roasting execution,
-	•	and production transformation history.
+## Forward & Backward Lineage
 
-Transformation Visibility Principle
-Blend transformations should never become operational black boxes.
-The system should preserve:
-	•	what inventories transformed,
-	•	how compositions were created,
-	•	when blend production occurred,
-	•	and what operational process created the blend inventory.
-Example:
-Roasted Coffee A
-+
-Roasted Coffee B
-↓ BlendBatch
-BlendInventory
-Transformation history should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally meaningful.
+- **Forward Traceability (Roast Batch $\rightarrow$ Blend Batch $\rightarrow$ Packaging Lot $\rightarrow$ Customer)**:
+  Starting from any individual roast batch or green coffee lot, discover every blend batch that utilized it and every retail bag shipped containing that blend.
+- **Backward Traceability (Customer Retail Bag $\rightarrow$ Blend Batch $\rightarrow$ Parent Roasted Lots $\rightarrow$ Green Lots $\rightarrow$ Farms)**:
+  Starting from a retail bag barcode, trace back to the exact blend batch, all constituent parent roast batches, roasting curves, roaster operators, and green sourcing contracts.
 
-Yield Traceability Principle
-Blend production yield should remain traceable.
-Example:
-10kg Blend Input
-↓
-9.8kg Blend Output
-The system should preserve:
-	•	input quantity,
-	•	output quantity,
-	•	operational loss visibility,
-	•	and transformation continuity.
-Yield behavior is considered:
-	•	operational intelligence,
-	•	not hidden inventory mutation.
+---
 
-Costing Traceability Principle
-Blend traceability should preserve:
-	•	valuation continuity.
-Example:
-Roasted Inventory Cost
-↓ BlendBatch
-BlendInventory Cost
-The system should preserve:
-	•	ratio-weighted valuation,
-	•	costing lineage,
-	•	and operational profitability continuity.
-Costing continuity should remain:
-	•	traceable,
-	•	deterministic,
-	•	and operationally understandable.
+## Multi-Stage & Reusable Intermediate Lineage
 
-Production Continuity Principle
-Blend traceability should support:
-	•	downstream production workflows.
-Example:
-BlendInventory
-↓ Packaging
-FinishedGoodsInventory
-↓ Sales
-Customer
-Blend lineage should remain connected to:
-	•	packaging workflows,
-	•	finished products,
-	•	and customer-facing inventory.
-Blend traceability is one of the foundations of:
-	•	end-to-end production visibility.
+Because blending output is an `InventoryLot` (`INTERMEDIATE`), the lineage graph cleanly supports multi-stage blending (e.g. creating a base blend intermediate lot, and later blending that intermediate lot with additional flavor components or varietals).
 
-Blend vs Product Principle
-Roastery OS distinguishes between:
-	•	blend identity,
-	•	and retail product identity.
-Example:
-BlendRecipe
-≠
-Retail Product
-A single blend may later create:
-	•	multiple retail SKUs,
-	•	multiple packaging formats,
-	•	and multiple sales workflows.
-This distinction preserves:
-	•	operational clarity,
-	•	modular scalability,
-	•	and production continuity.
+---
 
-Deterministic Traceability Principle
-Blend traceability relationships must remain deterministic.
-The system should preserve:
-	•	explicit composition lineage,
-	•	predictable transformation continuity,
-	•	and auditability.
-The architecture should avoid:
-	•	disconnected inventory relationships,
-	•	hidden composition mutation,
-	•	and ambiguous production lineage.
+## AI Boundary Philosophy
 
-Human-Readable Traceability Principle
-Blend traceability should remain understandable by operational users.
-Operators should be able to answer questions such as:
-Which roasted coffees formed this blend?
-Which roast batches were used?
-What was the composition ratio?
-Which supplier originated the coffee?
-Which products used this blend?
-Traceability should support:
-	•	operational understanding,
-	•	not merely technical system logging.
+AI systems may assist roasters in querying complex multi-parent graphs (e.g., "Trace all blends affected by green recall on LOT-ETH-09"). However, AI systems must **never** modify frozen lineage links.
 
-Human-Centered Philosophy
-Blend traceability systems should support operational readability.
-Operators should:
-	•	understand composition evolution,
-	•	follow production relationships,
-	•	and trace inventory continuity  without enterprise manufacturing complexity.
-Operational clarity should take priority over industrial traceability bureaucracy.
+---
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze blend consistency,
-	•	identify traceability anomalies,
-	•	recommend composition optimization,
-	•	and support operational analytics.
-However:  AI must not autonomously alter deterministic blend lineage relationships.
-Traceability integrity must remain:
-	•	explicit,
-	•	deterministic,
-	•	traceable,
-	•	and human-auditable.
+## Philosophy Summary
 
-MVP Scope
-The MVP Blend Traceability system should prioritize:
-	•	BlendBatch lineage,
-	•	composition continuity,
-	•	roasting relationship preservation,
-	•	transformation visibility,
-	•	and downstream production continuity.
-The MVP intentionally excludes:
-	•	industrial genealogy systems,
-	•	enterprise compliance orchestration,
-	•	automated forensic production tracing,
-	•	and advanced regulatory infrastructure.
-
-Architectural Notes
-Blend Traceability is one of the operational visibility layers inside the Blend Engine.
-Traceability systems influence:
-	•	inventory continuity,
-	•	production visibility,
-	•	operational accountability,
-	•	costing continuity,
-	•	and transformation analytics.
-Blend traceability should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend traceability behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The Blend Traceability system is designed to support future evolution toward:
-	•	production intelligence,
-	•	AI-assisted operational insight,
-	•	advanced composition analytics,
-	•	ecosystem-wide production visibility,
-	•	and transformation intelligence systems.
-However, blend traceability should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
-
-Philosophy Summary
-Blend traceability is not merely:
-	•	recipe history,
-	•	or batch logging.
+Blend traceability is **multi-parent composition lineage, transformation visibility, and operational production storytelling**. Blend traceability preserves the unbroken operational memory of how multiple coffees combine to create a blend in Roastery OS.
+	or batch logging.
 Blend traceability is:
 	•	composition lineage,
 	•	transformation visibility,

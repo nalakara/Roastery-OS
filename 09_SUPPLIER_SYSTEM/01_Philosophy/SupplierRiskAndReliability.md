@@ -67,14 +67,16 @@ Supplier reliability should preserve:
 Core Reliability Principle
 Every supplier relationship may influence:
 	•	operational continuity stability.
-Example:
-Reliable Green Coffee Supplier
+Generic Model:
+Reliable Supplier (SupplierMaster)
 ↓
-Stable Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Consistent Roasting Workflow
+Stable InventoryLot Availability (02_INVENTORY_ENGINE)
 ↓
-Stable Product Quality
+Consistent Transformation / Workflow Execution
+↓
+Stable Product Quality & Fulfillment
 
 Supplier reliability continuity should remain:
 	•	operationally connected,
@@ -129,13 +131,15 @@ Procurement Reliability Principle
 Supplier reliability interacts directly with:
 	•	procurement continuity systems.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
 Procurement Workflow
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Workflow
+InventoryLot (02_INVENTORY_ENGINE)
+↓
+Operational Workflow / Transformation
 
 Procurement continuity preserves:
 	•	sourcing explainability,
@@ -146,7 +150,7 @@ Dependency Risk Principle
 Operational workflows may become:
 	•	dependent on specific supplier continuity.
 Example:
-Single Green Coffee Supplier
+Single Green Coffee / Packaging Supplier
 ↓
 Operational Dependency
 ↓
@@ -252,9 +256,9 @@ Supplier System
 ↓
 Procurement Engine
 ↓
-Inventory Engine
+Inventory Engine (PURCHASE_RECEIPT → InventoryLot)
 ↓
-Costing Engine
+Costing Engine (Lot Valuation & COGS)
 ↓
 Traceability Engine
 
@@ -266,18 +270,14 @@ This creates:
 Upstream Traceability Principle
 Supplier reliability supports:
 	•	sourcing continuity explainability.
-Example:
-Customer Product
+Generic Model:
+Downstream Finished Lot (InventoryLot)
+↓ Transformations / Execution Batches
+Precursor Intermediate Lots
+↓ Originating Receiving (PURCHASE_RECEIPT)
+Purchased InventoryLot
 ↓
-ProductionBatch
-↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBeanInventory
-↓
-Supplier Reliability
+Supplier Reliability (SupplierMaster)
 
 Supplier continuity preserves:
 	•	sourcing resilience visibility.

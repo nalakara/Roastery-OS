@@ -2,212 +2,135 @@
 
 ## Purpose
 
-ProductCategory Master defines the operational product category references used across Roastery OS.
+ProductCategory Master defines the commercial, catalog, and reporting taxonomy references used across Roastery OS.
 
-This entity standardizes product grouping structures to support:
-- inventory organization,
-- production workflows,
-- sales categorization,
-- operational reporting,
-- and product scalability.
+This entity standardizes commercial categorization structures to support:
+- catalog organization and navigation,
+- sales categorization and POS grouping,
+- commercial reporting and revenue analytics,
+- brand and product line taxonomy.
 
-Product categories are treated as reusable operational references shared across inventory, production, POS, and analytics systems.
+Product categories are strictly commercial and reporting metadata. They do not dictate physical manufacturing rules, transformation mechanics, or inventory lot tracking.
 
 ---
 
 # Core Philosophy
 
-Product categories should represent operational product structures rather than rigid retail classifications.
+Product categories represent **commercial and reporting taxonomy**, not physical transformation behavior or inventory constraints.
 
-The system should support:
-- evolving coffee product formats,
-- transformation-based production workflows,
-- and modular product expansion
-without forcing overly complex product taxonomy systems.
+In the frozen Roastery OS ontology:
+- **ProductCategory** classifies commercial **Product** and **SKU** entities.
+- **Material** (`MaterialMaster`) defines physical material classifications (`RAW_COFFEE`, `PACKAGING_MATERIAL`, etc.).
+- **Transformation** governs conversion mechanics, recipes, and inputs/outputs.
+- **InventoryLot** represents physical stock instances and their independent tracking states.
 
-Product categories should remain:
-- operationally practical,
-- flexible,
-- scalable,
-- and understandable for real-world roastery operations.
+ProductCategory must never:
+- Imply physical inventory tracking flags (inventory tracking is a universal capability of `InventoryLot`).
+- Dictate mandatory manufacturing packaging or recipe defaults (recipes and packaging bills of materials belong to `Transformation`/BOM specifications).
+- Be confused with physical `Material` classifications.
 
 ---
 
 # Operational Role
 
 ProductCategory Master functions as:
-- a product grouping structure,
-- an inventory categorization reference,
-- a production classification layer,
-- and a reporting segmentation structure.
-
-Product categories are commonly used in:
-- inventory systems,
-- production workflows,
-- POS systems,
-- pricing structures,
-- product naming,
-- and operational analytics.
+- a catalog hierarchy and navigation taxonomy,
+- a sales and POS grouping mechanism,
+- a commercial reporting and analytics segmentation dimension,
+- a marketing and customer-facing classification structure.
 
 ---
 
-# Relationships
+# Entity Relationships
 
 ```text
 ProductCategory
-├── referencedBy → Inventory
-├── referencedBy → Finished Goods
-├── referencedBy → POS Products
-├── referencedBy → Analytics
-└── affects → Operational Workflow
+ ├── categorizes → Product (1:N)
+ ├── (optional) classifies → SKU (via Product or direct commercial override)
+ ├── referencedBy → POS Catalog & Commercial Menus
+ └── referencedBy → Sales Analytics & Revenue Reporting
+```
 
-Core Fields
-Identity Fields
-productCategoryId
-name
-displayName
-internalCode
+### Boundary Distinctions
 
-Classification Fields
-categoryType
-parentCategoryId
-isDerivativeProduct
-isSellable
+| Entity | Domain Scope | Responsibility |
+| :--- | :--- | :--- |
+| **`ProductCategory`** | Commercial / Reporting | Catalog grouping, commercial reporting, POS hierarchy |
+| **`Product`** | Commercial Identity | Conceptual product entity (e.g. *"House Blend 250g Package"*) |
+| **`SKU`** | Commercial Sellable Unit | Transactable sellable unit (e.g. *"HB-250G-WB"*) |
+| **`Material`** | Physical Master Data | Physical material specification (e.g. Roasted Blend Coffee) |
+| **`InventoryLot`** | Physical Stock Instance | Specific physical batch/lot in stock |
 
-Operational Fields
-defaultUnit
-defaultPackagingType
-requiresProductionBatch
-requiresInventoryTracking
-isActive
+---
 
-General Fields
-description
-notes
-createdAt
-updatedAt
+# Core Fields Specification
 
-Product Category Philosophy
-The system should support flexible product structures.
-Examples:
-Roasted Beans
-Single Origin Beans
-Blend Beans
-Ground Coffee
-Cold Brew
-RTD Coffee
-Drip Bag
-Concentrate
-The architecture should support future product expansion without restructuring the operational foundation.
+### Identity Fields
+- `productCategoryId`: Unique canonical identifier (UUID / string).
+- `name`: Human-readable category name (e.g. *"Retail Whole Bean"*, *"Cold Brew Beverages"*, *"Brewing Merchandise"*).
+- `displayName`: Customer-facing or POS display name.
+- `internalCode`: Unique short code for business operations (e.g. `CAT_RETAIL_BEAN`).
 
-Product Structure Principle
-Product categories should support transformation-based workflows.
-Example:
-Roasted Beans
-↓
-Ground Coffee
-↓
-Drip Bag
-↓
-RTD Coffee
-Each category may represent:
-	•	different inventory behavior,
-	•	different production workflows,
-	•	different costing logic,
-	•	and different sales structures.
+### Commercial & Taxonomy Fields
+- `categoryType`: High-level commercial domain (`COFFEE_BEANS`, `BEVERAGES`, `READY_TO_DRINK`, `MERCHANDISE`, `EQUIPMENT`, `SERVICES`).
+- `parentCategoryId`: Self-referencing link to parent category for hierarchical catalog trees (nullable).
+- `displayOrder`: Integer sorting index for POS/e-commerce menus.
+- `isSellable`: Boolean indicating if products in this category are commercially offered.
+- `isActive`: Boolean indicating active catalog status.
 
-Product Category Identity Principle
-ProductCategory represents operational grouping identity only.
-Example:
-ProductCategory
-≠
-Inventory
+### Metadata Fields
+- `description`: Text describing the scope of this commercial category.
+- `notes`: Operational or merchandising notes.
+- `createdAt`: ISO 8601 timestamp.
+- `updatedAt`: ISO 8601 timestamp.
 
-ProductCategory
-Represents:
-	•	operational grouping,
-	•	workflow classification,
-	•	and reusable product references.
+---
 
-Inventory
-Represents:
-	•	actual stock state,
-	•	inventory quantity,
-	•	costing,
-	•	and operational availability.
-This separation preserves:
-	•	modular consistency,
-	•	workflow flexibility,
-	•	and operational scalability.
+# Categorization Principles
 
-Hierarchical Category Principle
-The system should support category hierarchy when needed.
-Example:
-Roasted Coffee
-├── Single Origin
-└── Blend
+### 1. Separation from Physical Transformation
+A product category such as *"Single Origin Retail"* may be fulfilled by an `InventoryLot` that underwent a complex sequence of transformations:
+```text
+Green Coffee (Material)
+   ↓ (Roasting Transformation)
+Roasted Beans (Material / InventoryLot)
+   ↓ (Packaging Transformation)
+Packaged Coffee (Material / InventoryLot) ── fulfilled as ──> SKU (ProductCategory: "Single Origin Retail")
+```
+`ProductCategory` classifies the commercial offer (`Product`/`SKU`), while `MaterialMaster` and `Transformation` govern the physical lineage.
 
-Derivative Products
-├── Ground Coffee
-├── Cold Brew
-├── RTD
-└── Drip Bag
-Category hierarchy should remain optional during MVP stages.
+### 2. No Embedded Physical Packaging or Inventory Rules
+Physical packaging specifications are defined in `PackagingTypeMaster` and tracked as physical `Material`. Physical stock is tracked via `InventoryLot`. `ProductCategory` does not contain `defaultPackagingType` or `requiresInventoryTracking` flags.
 
-Naming Convention
-Entity Name:
-ProductCategory
-Primary Identifier:
-productCategoryId
-Related References:
-categoryType
-parentCategoryId
-defaultUnit
-Naming should follow standards defined in:
-	•	NamingConvention.md
-	•	DataModel.md
+### 3. Hierarchical Classification Support
+Categories can optionally form simple hierarchical trees for deep retail catalogs:
+```text
+Packaged Coffee (Parent)
+ ├── Single Origin (Child)
+ └── Blends (Child)
 
-Used By Modules
-ProductCategory Master is shared across:
-	•	Inventory Engine
-	•	Production Engine
-	•	POS Engine
-	•	Product Naming
-	•	Analytics Dashboard
-	•	Future AI Systems
+Ready to Drink (Parent)
+ ├── Bottled Cold Brew (Child)
+ └── Nitro Cans (Child)
+```
 
-MVP Scope
-The MVP implementation should remain lightweight.
-Required MVP fields:
-productCategoryId
-name
-description
-isSellable
-Basic MVP examples:
-Roasted Beans
-Ground Coffee
-Cold Brew
-Drip Bag
-RTD Coffee
-Advanced category hierarchy and workflow classification may be introduced progressively in future operational stages.
+---
 
-Future Expansion Possibilities
-Future versions may support:
-	•	nested category trees,
-	•	dynamic workflow mapping,
-	•	product lifecycle tagging,
-	•	AI-assisted product grouping,
-	•	product recommendation systems,
-	•	and advanced manufacturing categorization.
-Future expansion should extend the structure without redesigning the operational foundation.
+# Module Reference Matrix
 
-Architectural Notes
-ProductCategory Master is designed as a reusable operational reference entity.
-Multiple inventory and product entities may reference the same ProductCategory structure.
-This entity should remain:
-	•	stable,
-	•	reusable,
-	•	operationally meaningful,
-	•	and loosely coupled from transactional workflows.
-Product categories should support operational clarity while remaining flexible enough for evolving specialty coffee business models and future product formats.
+| Module | Usage |
+| :--- | :--- |
+| **Commercial / POS Engine** | Organizes menu items, POS screens, and online catalog navigation. |
+| **Product Master (`ProductMaster`)** | Primary classification attribute for conceptual products. |
+| **Analytics & Reporting** | Aggregates revenue, sales volume, and margin performance by category. |
+| **Inventory Engine** | *None* (Inventory Engine operates strictly on `InventoryLot` and `Material`). |
+| **Costing Engine** | *None* (Costing Engine calculates economic flow across `Transformation` and `InventoryLot`). |
+
+---
+
+# Summary & Architectural Guardrails
+
+- `ProductCategory` is strictly commercial and reporting metadata.
+- It applies to `Product` and `SKU`, never directly to physical `InventoryLot` or `Material`.
+- Physical inventory tracking and transformation logic are decoupled from product categorization.
 

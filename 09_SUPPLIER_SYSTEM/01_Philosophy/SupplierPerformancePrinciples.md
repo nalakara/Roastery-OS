@@ -160,9 +160,9 @@ Supplier performance may influence:
 Example:
 Supplier Pricing Stability
 ↓
-Inventory Valuation Stability
+InventoryLot Acquisition Cost Basis Stability (02_INVENTORY_ENGINE)
 ↓
-Operational Costing Stability
+Costing Engine Valuation Stability (07_COSTING_ENGINE)
 ↓
 Profitability Predictability
 
@@ -173,9 +173,9 @@ Dependency Risk Principle
 Operational workflows may become:
 	•	dependent on supplier continuity.
 Example:
-Single Green Coffee Supplier
+Single Green Coffee / Packaging Supplier
 ↓
-Blend Consistency Dependency
+Material Consistency Dependency
 ↓
 Operational Risk Exposure
 
@@ -217,9 +217,11 @@ Supplier
 ↓
 Procurement Workflow
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Workflow
+InventoryLot (02_INVENTORY_ENGINE)
+↓
+Operational Workflow / Transformation
 
 Procurement continuity preserves:
 	•	sourcing explainability,
@@ -234,9 +236,9 @@ Supplier System
 ↓
 Procurement Engine
 ↓
-Inventory Engine
+Inventory Engine (PURCHASE_RECEIPT → InventoryLot)
 ↓
-Costing Engine
+Costing Engine (Lot Valuation & COGS)
 ↓
 Traceability Engine
 
@@ -248,18 +250,14 @@ This creates:
 Upstream Traceability Principle
 Supplier performance supports:
 	•	sourcing ancestry explainability.
-Example:
-Customer Product
+Generic Model:
+Downstream Finished Lot (InventoryLot)
+↓ Transformations / Execution Batches
+Precursor Intermediate Lots
+↓ Originating Receiving (PURCHASE_RECEIPT)
+Purchased InventoryLot
 ↓
-ProductionBatch
-↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBeanInventory
-↓
-Supplier Performance
+Supplier Performance (SupplierMaster)
 
 Supplier continuity preserves:
 	•	sourcing intelligence visibility.

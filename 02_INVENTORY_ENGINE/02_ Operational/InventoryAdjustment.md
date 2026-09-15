@@ -5,311 +5,102 @@
 This document defines the inventory adjustment philosophy and operational adjustment behavior used across Roastery OS.
 
 The purpose of Inventory Adjustment is to:
-- preserve inventory accuracy,
-- maintain operational transparency,
-- support real-world inventory correction,
-- and provide traceable exceptional inventory events.
+- preserve physical inventory accuracy,
+- record exceptional non-transformation quantity changes (shrinkage, damage, spoilage, physical count reconciliation),
+- maintain operational transparency and human accountability,
+- and ensure all corrections generate auditable `InventoryMovement` records without silent data mutation.
 
-Inventory adjustments are treated as exceptional operational corrections rather than normal inventory workflows.
-
----
-
-# Core Philosophy
-
-Roastery OS prioritizes:
-- deterministic inventory behavior,
-- traceable inventory movement,
-- and production-oriented operational clarity.
-
-Inventory adjustments should therefore remain:
-- explicit,
-- traceable,
-- explainable,
-- and operationally meaningful.
-
-Inventory adjustments should never become hidden inventory manipulation.
+Inventory adjustments are treated as **exceptional operational corrections**, distinct from standard production transformations.
 
 ---
 
-# Adjustment Philosophy
+# Core Philosophy: Adjustment vs. Transformation Yield
 
-Inventory adjustments represent:
-- exceptional operational corrections,
-- inventory reconciliation,
-- or unavoidable real-world inventory deviations.
+Roastery OS strictly distinguishes between **natural process yield loss** and **exceptional inventory adjustments**:
 
-Examples:
+| Dimension | Transformation Yield Loss | Inventory Adjustment |
+| :--- | :--- | :--- |
+| **Trigger** | Execution of a planned physical `Transformation` (e.g. moisture loss during roasting, extraction residue). | Exceptional physical deviation (e.g. bag dropped, water leak, count discrepancy during cycle count). |
+| **Governing Entity** | `Transformation` & Yield Mathematics ($Y = Q_{\text{out}} / Q_{\text{in}}$). | `InventoryAdjustment` & `InventoryMovement`. |
+| **Cost Treatment** | Absorbed directly into output lot unit cost ($U_{\text{out}} = C_{\text{total}} / Q_{\text{out}}$) via Costing Equation 1. | Value written off as unrecovered loss / shrinkage expense via Costing Engine. |
+| **Frequency** | Standard operational occurrence on every production run. | Exceptional operational deviation subject to review/approval. |
 
-```text id="v8m4tw"
-Shrinkage
-Damage
-Expired Product
-Spillage
-Measurement Correction
-Manual Reconciliation
-Adjustments should preserve:
-	•	operational reason,
-	•	inventory lineage,
-	•	and traceable history.
+---
 
-Adjustment vs Transformation Principle
-Roastery OS distinguishes between:
-	•	inventory transformation,
-	•	and inventory adjustment.
-Example:
-Roasting
-→ transformation
+# Entity Relationships
 
-Damaged Product
-→ adjustment
-
-Transformation
-Represents:
-	•	operational evolution,
-	•	production workflow,
-	•	and inventory state progression.
-Transformation creates:
-	•	new inventory state.
-
-Adjustment
-Represents:
-	•	inventory correction,
-	•	exceptional operational event,
-	•	or reconciliation activity.
-Adjustment does not represent production evolution.
-This distinction preserves:
-	•	operational clarity,
-	•	traceability consistency,
-	•	and deterministic inventory behavior.
-
-Adjustment Event Principle
-Every inventory adjustment should:
-	•	generate movement history,
-	•	preserve operational reason,
-	•	and remain auditable.
-Inventory quantity should never change silently.
-Example:
-Roasted Coffee Inventory
-↓ Damage Adjustment
-Quantity Reduced
-↓ Adjustment Record Created
-The system should preserve:
-	•	what changed,
-	•	why it changed,
-	•	when it changed,
-	•	and who performed the adjustment.
-
-InventoryAdjustment Entity
-Purpose
-Represents explicit operational inventory correction events.
-This entity acts as:
-	•	adjustment history,
-	•	operational reconciliation record,
-	•	and audit reference.
-
-Relationships
+```text
 InventoryAdjustment
-├── references → Inventory Entity
-├── generates → InventoryMovement
-├── affects → Inventory State
-├── affects → Costing
-└── supports → Auditability
+ ├── targets → InventoryLot (references inventoryLotId)
+ ├── references → Material (references materialId from MaterialMaster)
+ ├── references → Unit (references unitId from UnitMaster)
+ ├── generates → InventoryMovement (Type: INVENTORY_ADJUSTMENT)
+ └── notifies → Costing Engine (for asset valuation write-off / adjustment)
+```
 
-Core Fields
-Identity Fields
-inventoryAdjustmentId
-adjustmentCode
-adjustmentType
-adjustmentCategory
+---
 
-Inventory Reference Fields
-inventoryEntityType
-inventoryEntityId
-relatedBatchId
-Examples of inventoryEntityType:
-GreenBeanInventory
-RoastedCoffeeInventory
-BlendInventory
-FinishedGoodsInventory
+# Core Fields Specification
 
-Quantity Fields
-adjustmentDirection
-quantityDifference
-unitId
-previousQuantity
-resultingQuantity
-Examples of adjustmentDirection:
-INCREASE
-DECREASE
-CORRECTION
+### Identity Fields
+- `inventoryAdjustmentId`: Unique canonical adjustment identifier (UUID / string).
+- `adjustmentCode`: Human-readable reference code (e.g. `ADJ-2026-00014`).
+- `adjustmentType`: Operational classification:
+  - `DAMAGE`: Physical destruction or contamination (dropped bag, torn pouch).
+  - `SHRINKAGE_UNEXPLAINED`: Unexplained physical discrepancy discovered during stock check.
+  - `SPOILAGE_EXPIRATION`: Shelf-life expiration (e.g. expired RTD beverage lot).
+  - `AUDIT_CORRECTION`: Reconciliation following physical cycle count / wall-to-wall audit.
+  - `INTERNAL_SAMPLE`: Quality control cupping, sensory testing, or promotional tasting deduction.
 
-Adjustment Reason Fields
-adjustmentReason
-adjustmentDescription
-operationalNotes
-Examples of adjustmentReason:
-Damage
-Shrinkage
-Expired Product
-Measurement Error
-Manual Reconciliation
-Sample Usage
+### Target Inventory References
+- `inventoryLotId`: Canonical identifier of target `InventoryLot`.
+- `lotCode`: Snapshot of target lot code.
+- `materialId`: Canonical `MaterialMaster` reference.
+- `locationId`: Physical location where adjustment occurred.
 
-Operational Fields
-adjustmentTimestamp
-performedBy
-approvedBy
-approvalStatus
+### Quantity Adjustment Fields
+- `adjustmentDirection`: Direction of adjustment (`INCREASE` | `DECREASE`).
+- `quantityDifference`: Scalar magnitude of adjustment ($\Delta Q > 0$).
+- `unitId`: Standardized Unit of Measure matching target `InventoryLot`.
+- `previousQuantity`: Lot quantity immediately prior to adjustment ($Q_{\text{prev}}$).
+- `resultingQuantity`: Lot quantity immediately following adjustment ($Q_{\text{prev}} \pm \Delta Q$).
 
-Costing Fields
-costImpact
-valuationAdjustment
-Advanced costing behavior may remain optional during MVP stages.
+### Reason & Accountability Fields
+- `adjustmentReason`: High-level operational reason category.
+- `adjustmentDescription`: Mandatory textual narrative explaining why the adjustment occurred.
+- `performedBy`: User / operator executing the physical adjustment.
+- `approvedBy`: Manager / supervisor authorizing the adjustment.
+- `approvalStatus`: Status (`PENDING`, `APPROVED`, `REJECTED`).
+- `adjustmentTimestamp`: ISO 8601 timestamp.
 
-General Fields
-notes
-createdAt
-updatedAt
+### Costing Snapshot
+- `unitCostSnapshot`: Economic unit cost of the lot at the time of adjustment ($U_{\text{lot}}$).
+- `totalFinancialImpact`: Total monetary value written off or adjusted ($\Delta Q \times U_{\text{lot}}$).
 
-Adjustment Categories
-The system should support several operational adjustment categories.
-Examples:
-Damage
-Shrinkage
-Expired
-Correction
-Operational Usage
-Sampling
-Loss
-Return
-The MVP should prioritize only essential operational adjustment types.
+---
 
-Shrinkage Philosophy
-Some inventory reduction represents natural operational loss.
-Examples:
-Coffee Dust Loss
-Grinding Residue
-Packaging Residue
-Liquid Evaporation
-The system should distinguish between:
-	•	expected operational yield behavior,
-	•	and abnormal inventory loss.
-Expected production yield belongs to:
-	•	transformation workflows.
-Unexpected operational loss belongs to:
-	•	adjustment workflows.
+# Operational Adjustment Workflow
 
-Expired Inventory Philosophy
-Certain inventory types may expire operationally.
-Examples:
-Cold Brew
-RTD Coffee
-Ground Coffee
-Expired inventory should:
-	•	preserve traceability,
-	•	remain historically visible,
-	•	but no longer participate in active workflows.
-Expiration handling should remain operationally understandable.
+```text
+1. Physical Discrepancy Discovered
+         │
+2. Create InventoryAdjustment Record
+   (Captures lotId, deltaQuantity, reason, narrative, operator)
+         │
+3. Manager Approval (if required by threshold)
+         │
+4. Execute Adjustment:
+   ├── Mutates InventoryLot.quantity (Q_new = Q_prev ± deltaQuantity)
+   ├── Appends immutable InventoryMovement [Type: INVENTORY_ADJUSTMENT]
+   └── Informs Costing Engine (records inventory write-off expense)
+```
 
-Manual Correction Philosophy
-Manual adjustments should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally justified.
-The system should discourage:
-	•	invisible quantity editing,
-	•	silent stock mutation,
-	•	and non-traceable corrections.
-Manual adjustments should always preserve:
-	•	operational reason,
-	•	timestamp,
-	•	and responsible operator.
+---
 
-Deterministic Adjustment Principle
-Inventory adjustments must remain deterministic.
-Adjustment workflows should:
-	•	produce predictable inventory outcomes,
-	•	preserve operational history,
-	•	and remain auditable.
-The system should never allow ambiguous adjustment behavior.
+# Architectural Invariants
 
-Traceability Principle
-Adjustment history should remain traceable.
-Example:
-Roast Batch
-↓
-RoastedCoffeeInventory
-↓
-Damage Adjustment
-↓
-Updated Inventory State
-Adjustment records should preserve:
-	•	operational lineage,
-	•	inventory relationships,
-	•	and historical visibility.
+1. **No Silent Stock Editing:** Direct in-place mutation of `InventoryLot.quantity` without an accompanying `InventoryAdjustment` and `InventoryMovement` record is strictly prohibited.
+2. **Deterministic Ledger Traceability:** Every adjustment must be traceable to a specific operator, timestamp, and human-readable narrative.
+3. **Dimensional Integrity:** Adjustments must strictly use the dimensional category (`MASS`, `VOLUME`, `COUNT`) of the target `InventoryLot`.
+4. **Separation from Process Yield:** Operational process shrinkage (e.g. roasting mass loss) must never be recorded as an inventory adjustment; it is modeled via `TransformationOutput` yield mathematics.
 
-Human-Centered Philosophy
-Inventory adjustment workflows should remain understandable for operational users.
-Operators should:
-	•	understand why adjustments exist,
-	•	trace inventory corrections easily,
-	•	and perform operational reconciliation  without ERP-level operational complexity.
-Operational clarity should take priority over bureaucratic inventory procedures.
-
-AI Boundary Philosophy
-AI systems may:
-	•	detect adjustment anomalies,
-	•	identify unusual inventory behavior,
-	•	and recommend operational investigation.
-However:  AI must not autonomously create inventory adjustments.
-Adjustments must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-authorized.
-
-MVP Scope
-The MVP Inventory Adjustment system should prioritize:
-	•	explicit correction workflows,
-	•	traceable adjustment history,
-	•	operational inventory reconciliation,
-	•	and deterministic inventory correction behavior.
-The MVP intentionally excludes:
-	•	enterprise warehouse reconciliation,
-	•	automated adjustment engines,
-	•	industrial audit orchestration,
-	•	and advanced accounting automation.
-
-Architectural Notes
-Inventory Adjustment is an operational exception layer within the Inventory Engine.
-Adjustments should remain:
-	•	rare,
-	•	explicit,
-	•	operationally meaningful,
-	•	and traceable.
-The architecture should encourage:
-	•	accurate transformation workflows,
-	•	deterministic inventory movement,
-	•	and minimal adjustment dependency.
-Future systems should extend adjustment behavior without weakening inventory integrity.
-
-Long-Term Direction
-The Inventory Adjustment system is designed to support future evolution toward:
-	•	anomaly detection,
-	•	operational audit systems,
-	•	forecasting intelligence,
-	•	AI-assisted inventory analysis,
-	•	and advanced traceability infrastructure.
-However, adjustment workflows should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
-
-Philosophy Summary
-Inventory adjustments are not normal inventory behavior.
-Inventory adjustments represent:
-	•	exceptional correction,
-	•	operational reconciliation,
-	•	and traceable inventory repair.
-Inventory integrity is preserved not by hiding adjustments,  but by making them explicit.

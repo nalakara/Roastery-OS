@@ -1,0 +1,1613 @@
+/* ==========================================================================
+   Roastery OS — BeanHub Design System & Ergonomics
+   Aesthetics: High-Density Artisan Coffee Glassmorphism (Inter + JetBrains Mono)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  /* Artisan Coffee Amber & Warm Slate Palette */
+  --color-primary: #c2732e;
+  --color-primary-hover: #a56227;
+  --color-primary-container: #f8eadd;
+  --color-on-primary-container: #41240b;
+  --color-secondary: #705543;
+  --color-secondary-container: #f1e9e4;
+  --color-tertiary: #bd8228;
+  
+  /* Surface & Canvas Tokens */
+  --color-bg: #fbfaf8;
+  --color-surface: #ffffff;
+  --color-surface-container: #f3f0ec;
+  --color-surface-container-high: #ede9e3;
+  --color-surface-container-highest: #e6e1db;
+  --color-outline: #9d897b;
+  --color-outline-variant: #e7e0da;
+  
+  /* Text & Typography */
+  --color-text: #251d18;
+  --color-text-secondary: #6f5e52;
+  --color-text-muted: #9a897e;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  
+  /* Semantic Status Tokens */
+  --color-success: #279b51;
+  --color-success-bg: #e7f8ed;
+  --color-success-text: #104c26;
+  --color-warning: #c47908;
+  --color-warning-bg: #fdf2e2;
+  --color-warning-text: #533509;
+  --color-danger: #af1d1d;
+  --color-danger-bg: #f9dcdc;
+  --color-danger-text: #420b0b;
+  --color-info: #2577b1;
+  --color-info-bg: #ebf4fa;
+  --color-info-text: #123954;
+
+  /* Glassmorphism & Elevation */
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(194, 115, 46, 0.14);
+  --glass-blur: blur(14px);
+  --shadow-ambient: 0 4px 20px -2px rgba(37, 29, 24, 0.05), 0 2px 6px -1px rgba(37, 29, 24, 0.03);
+  --shadow-float: 0 12px 32px -4px rgba(37, 29, 24, 0.1), 0 4px 12px -2px rgba(37, 29, 24, 0.05);
+  
+  /* Aliases for compatibility */
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --text-main: var(--color-text);
+  --text-muted: var(--color-text-secondary);
+  --border: var(--color-outline-variant);
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --font: var(--font-sans);
+  --mono: var(--font-mono);
+
+  --sidebar-width: 250px;
+  --topbar-height: 60px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  font-size: 13.5px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   APP SHELL LAYOUT (BeanHub Modular Sidebar + Main View Canvas)
+   ========================================================================== */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+/* 1. Left Sidebar */
+.app-sidebar {
+  width: var(--sidebar-width);
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-outline-variant);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  padding: 1.15rem 1.25rem 0.85rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.brand-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brand-title span.accent {
+  color: var(--color-primary);
+}
+
+/* Sidebar Nav Groups */
+.sidebar-nav {
+  padding: 0.75rem 0.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-nav-group-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-outline);
+  padding: 12px 10px 4px;
+  margin-top: 4px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7.5px 12px;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.sidebar-link:hover {
+  background: var(--color-surface-container);
+  color: var(--color-text);
+}
+
+.sidebar-link.active {
+  background: var(--color-primary-container);
+  color: var(--color-primary-hover);
+  font-weight: 600;
+}
+
+.sidebar-icon {
+  font-size: 15px;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-footer {
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.sidebar-footer .workspace-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-toggle-diag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-toggle-diag:hover {
+  background: #f8fafc;
+  color: var(--color-text);
+}
+
+/* 2. Main Content Canvas */
+.app-main {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 0;
+}
+
+/* 3. Top Header Bar */
+.hub-header {
+  height: var(--topbar-height);
+  background: rgba(251, 250, 248, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding: 0 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.hub-title-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-title-area .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 8px rgba(39, 155, 81, 0.6);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.hub-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.hub-subtitle {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hub-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-quick-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.btn-quick-action.primary {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-quick-action.primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-quick-action.secondary {
+  background: #ffffff;
+  border-color: var(--color-outline-variant);
+  color: var(--color-text);
+}
+
+.btn-quick-action.secondary:hover {
+  background: var(--color-surface-container);
+}
+
+.btn-command-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-command-bar:hover {
+  border-color: var(--color-outline);
+  color: var(--color-text);
+}
+
+.kbd-shortcut {
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+
+.attention-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #fca5a5;
+  cursor: pointer;
+}
+
+/* 4. Canvas Content */
+.hub-canvas {
+  padding: 1.5rem 1.75rem 3rem;
+  flex: 1;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.hub-view {
+  display: none;
+}
+
+.hub-view.active {
+  display: block;
+}
+
+/* ==========================================================================
+   GLASSMORPHIC CARDS & PANELS (BeanHub Visual Standard)
+   ========================================================================== */
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-ambient);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease;
+}
+
+.glass-card:hover {
+  box-shadow: var(--shadow-float);
+  border-color: rgba(194, 115, 46, 0.28);
+}
+
+.section-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-ambient);
+}
+
+/* ==========================================================================
+   TOP 6-KPI DASHBOARD GRID (BeanHub Sparkline Grid)
+   ========================================================================== */
+
+.kpi-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 14px;
+  padding: 1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-ambient);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(194, 115, 46, 0.35);
+  box-shadow: var(--shadow-float);
+}
+
+.kpi-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.kpi-card-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kpi-icon-pill {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.kpi-icon-pill.revenue { background: rgba(39, 155, 81, 0.12); color: #279b51; }
+.kpi-icon-pill.sales { background: rgba(194, 115, 46, 0.12); color: #c2732e; }
+.kpi-icon-pill.green { background: rgba(0, 186, 167, 0.12); color: #00baa7; }
+.kpi-icon-pill.roasted { background: rgba(196, 121, 8, 0.12); color: #c47908; }
+.kpi-icon-pill.sku { background: rgba(37, 119, 177, 0.12); color: #2577b1; }
+.kpi-icon-pill.health { background: rgba(175, 29, 29, 0.12); color: #af1d1d; }
+
+.kpi-main-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.kpi-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.kpi-sparkline {
+  width: 50px;
+  height: 20px;
+}
+
+.kpi-subtitle {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-outline-variant);
+  padding-top: 6px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ==========================================================================
+   PRODUCTION & DEGASSING WIDGETS
+   ========================================================================== */
+
+.dashboard-sections-grid {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-sections-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.panel-title-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.panel-subtitle {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* Degassing item */
+.degassing-item {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+.degassing-item.resting {
+  border-color: rgba(196, 121, 8, 0.25);
+  background: rgba(253, 242, 226, 0.3);
+}
+
+.degassing-item.ready {
+  border-color: rgba(39, 155, 81, 0.25);
+  background: rgba(231, 248, 237, 0.3);
+}
+
+.degassing-progress-track {
+  height: 5px;
+  background: var(--color-outline-variant);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.degassing-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.degassing-progress-fill.resting { background: var(--color-warning); }
+.degassing-progress-fill.ready { background: var(--color-success); }
+
+/* Live Recent Activities Feed */
+.activity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.activity-row:last-child {
+  border-bottom: none;
+}
+
+.activity-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.activity-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.activity-badge.sale { background: var(--color-success-bg); color: var(--color-success); }
+.activity-badge.roast { background: var(--color-warning-bg); color: var(--color-warning); }
+.activity-badge.receiving { background: var(--color-info-bg); color: var(--color-info); }
+.activity-badge.blend { background: var(--color-primary-container); color: var(--color-primary); }
+
+.activity-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.activity-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-meta {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.activity-amount {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.activity-amount.positive { color: var(--color-success); }
+.activity-amount.neutral { color: var(--color-text-secondary); }
+
+/* ==========================================================================
+   SUB-NAVIGATION PILL TABS (BeanHub Segmented Controls)
+   ========================================================================== */
+
+.subnav-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  padding: 4px;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.subnav-tab-btn {
+  background: none;
+  border: none;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.subnav-tab-btn:hover {
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.subnav-tab-btn.active {
+  background: #ffffff;
+  color: var(--color-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Category Filter Pills */
+.category-pills-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  align-items: center;
+}
+
+.category-pill {
+  background: #ffffff;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-outline-variant);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.category-pill:hover {
+  border-color: var(--color-outline);
+  color: var(--color-text);
+}
+
+.category-pill.active {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+/* ==========================================================================
+   DATA TABLES (High-Density Clean Layout)
+   ========================================================================== */
+
+.table-container {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-ambient);
+  margin-bottom: 1.5rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: var(--color-surface-container);
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-outline-variant);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--color-outline-variant);
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover {
+  background-color: #faf9f7;
+}
+
+.lot-mono {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.lot-mono:hover {
+  text-decoration: underline;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-badge.ISSUED, .status-badge.DRAFT { background: var(--color-surface-container-high); color: var(--color-text-secondary); }
+.status-badge.PARTIALLY_RECEIVED, .status-badge.RESERVED { background: var(--color-warning-bg); color: var(--color-warning); }
+.status-badge.RECEIVED, .status-badge.FULFILLED, .status-badge.PAID, .status-badge.COMPLETED { background: var(--color-success-bg); color: var(--color-success); }
+.status-badge.CANCELLED, .status-badge.CRITICAL { background: var(--color-danger-bg); color: var(--color-danger); }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  border-color: var(--color-outline-variant);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-surface-container);
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 11.5px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  padding: 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   CONTEXTUAL 360° & AMBIENT AI SLIDE-OUT DRAWERS
+   ========================================================================== */
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(37, 29, 24, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.drawer-backdrop.active {
+  display: block;
+  opacity: 1;
+}
+
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  min-width: 480px;
+  max-width: 680px;
+  background: #ffffff;
+  box-shadow: var(--shadow-float);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.drawer-panel.active {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  padding: 1.15rem 1.5rem;
+  background: var(--color-surface-container);
+  border-bottom: 1px solid var(--color-outline-variant);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-title-area h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawer-body {
+  padding: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.drawer-footer {
+  padding: 1rem 1.5rem;
+  background: var(--color-surface-container);
+  border-top: 1px solid var(--color-outline-variant);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.drawer-kpi {
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.drawer-kpi .kpi-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.drawer-kpi .kpi-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Forms & Inputs */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #ffffff;
+  color: var(--color-text);
+  transition: border-color 0.15s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* Alert Banner */
+.alert-banner {
+  margin: 1rem 1.75rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.alert-banner.success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid #86efac;
+}
+
+.alert-banner.error {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border: 1px solid #fca5a5;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Subview compatibility & display states */
+.comm-subview, .prod-subview, .inv-subview, .insights-subview {
+  display: none;
+}
+
+.comm-subview.active, .prod-subview.active, .inv-subview.active, .insights-subview.active {
+  display: block;
+}
+
+/* ==========================================================================
+   BEANHUB INNER PAGE STYLING (Inventory, Roasting, Analytics, Traceability)
+   ========================================================================== */
+
+/* Page Header & Top Actions */
+.beanhub-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.beanhub-title-area h1, .beanhub-title-area h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.beanhub-title-area p {
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+}
+
+.beanhub-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-beanhub-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid var(--color-outline-variant);
+  color: var(--color-text);
+  transition: all 0.15s ease;
+}
+
+.btn-beanhub-pill:hover {
+  background: var(--color-surface-container);
+  border-color: var(--color-outline);
+}
+
+.btn-beanhub-pill.primary {
+  background: #e85934;
+  border-color: #e85934;
+  color: #ffffff;
+}
+
+.btn-beanhub-pill.primary:hover {
+  background: #d44926;
+  border-color: #d44926;
+}
+
+/* BeanHub Tab & Search Toolbar */
+.beanhub-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.beanhub-tabs-group {
+  display: inline-flex;
+  background: var(--color-surface-container);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--color-outline-variant);
+}
+
+.beanhub-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.beanhub-tab-btn:hover {
+  color: var(--color-text);
+}
+
+.beanhub-tab-btn.active {
+  background: #ffffff;
+  color: var(--color-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.beanhub-search-box {
+  position: relative;
+  min-width: 280px;
+}
+
+.beanhub-search-box input {
+  width: 100%;
+  padding: 8px 16px 8px 36px;
+  border-radius: 999px;
+  border: 1px solid var(--color-outline-variant);
+  background: #ffffff;
+  font-size: 13px;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.beanhub-search-box input:focus {
+  border-color: var(--color-primary);
+}
+
+.beanhub-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* BeanHub Clean Zero-State Card Container */
+.beanhub-card-container {
+  background: #ffffff;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  box-shadow: var(--shadow-ambient);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 340px;
+}
+
+.beanhub-empty-icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: #fdf3eb;
+  color: #e85934;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 1.25rem;
+}
+
+.beanhub-empty-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.beanhub-empty-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.5rem;
+  max-width: 420px;
+}
+
+/* Roasting Analytics 3 Big Cards */
+.analytics-stack-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.analytics-full-card {
+  background: #ffffff;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 16px;
+  padding: 1.75rem 2rem;
+  box-shadow: var(--shadow-ambient);
+}
+
+.analytics-full-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.analytics-full-card p.empty-hint {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+}
+
+/* BeanHub Center Modal Dialog */
+.beanhub-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 14, 11, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.beanhub-modal-backdrop.active {
+  display: flex;
+}
+
+.beanhub-modal-window {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  box-shadow: var(--shadow-float);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.beanhub-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.beanhub-modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.beanhub-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.beanhub-modal-close:hover {
+  color: var(--color-text);
+}
+
+.beanhub-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.beanhub-modal-section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-pull-scores {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #ffffff;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.btn-pull-scores:hover {
+  background: var(--color-surface-container);
+  color: var(--color-text);
+}
+
+.sensory-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-bottom: 1.5rem;
+}
+
+.sensory-field label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.sensory-field input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-outline-variant);
+  font-size: 13.5px;
+  color: var(--color-text);
+  outline: none;
+}
+
+.sensory-field input:focus {
+  border-color: var(--color-primary);
+}
+
+.timeline-event-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+  background: var(--color-surface-container);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-outline-variant);
+}
+
+/* ==========================================================================
+   BEANHUB NEW ROASTING BATCH FORM & LIVE BATCH SUMMARY
+   ========================================================================== */
+
+.roast-batch-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.roast-form-main-card {
+  background: #ffffff;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 16px;
+  padding: 1.75rem 2rem;
+  box-shadow: var(--shadow-ambient);
+}
+
+.roast-form-section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 1.25rem 0 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.roast-form-section-title:first-child {
+  margin-top: 0;
+}
+
+.roast-inputs-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+  margin-bottom: 1rem;
+}
+
+.roast-inputs-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px 16px;
+  margin-bottom: 1rem;
+}
+
+.roast-field label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 5px;
+}
+
+.roast-field input, .roast-field select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-outline-variant);
+  font-size: 13.5px;
+  color: var(--color-text);
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.roast-field input:focus, .roast-field select:focus {
+  border-color: var(--color-primary);
+}
+
+/* Batch Summary Sidebar Card */
+.roast-batch-summary-card {
+  background: #ffffff;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: var(--shadow-ambient);
+  position: sticky;
+  top: 90px;
+}
+
+.roast-batch-summary-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 1rem;
+}
+
+.roast-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.roast-summary-row strong {
+  font-family: var(--font-mono);
+  color: var(--color-text);
+  font-size: 13.5px;
+}
+
+.roast-moisture-display-box {
+  background: #faf8f5;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  margin: 1.25rem 0;
+}
+
+.roast-moisture-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-success);
+  line-height: 1.1;
+}
+
+.roast-moisture-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.moisture-tolerance-bar {
+  height: 6px;
+  background: var(--color-outline-variant);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 10px 0 6px;
+}
+
+.moisture-tolerance-fill {
+  height: 100%;
+  background: var(--color-success);
+  border-radius: 999px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.moisture-tolerance-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.btn-record-batch {
+  width: 100%;
+  padding: 11px 16px;
+  background: #e85934;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  margin-top: 1rem;
+}
+
+.btn-record-batch:hover {
+  background: #d44926;
+}
+
+/* ==========================================================================
+   BEANHUB ADD NEW ITEM MODAL & INVENTORY SPECIFIC STYLES
+   ========================================================================== */
+
+.add-item-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+  margin-bottom: 1rem;
+}
+
+.add-item-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.add-item-field input,
+.add-item-field select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-outline-variant);
+  font-size: 13.5px;
+  color: var(--color-text);
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.add-item-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.add-item-field input:focus,
+.add-item-field select:focus {
+  border-color: #e85934;
+  box-shadow: 0 0 0 3px rgba(232, 89, 52, 0.12);
+}
+
+.add-item-field input::placeholder {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.btn-create-item {
+  width: 100%;
+  padding: 12px 16px;
+  background: #e85934;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-create-item:hover {
+  background: #d44926;
+}
+
+.btn-create-item:active {
+  transform: scale(0.99);
+}
+
+
+

@@ -5,329 +5,131 @@
 This document defines the foundational production philosophy used across the Production Engine inside Roastery OS.
 
 The purpose of this philosophy is to establish:
-- how production workflows are interpreted operationally,
-- how derivative products behave as production entities,
-- how finished goods evolve from upstream inventories,
-- and how production transformation remains deterministic and traceable.
+- how production workflows are interpreted operationally as physical material transformations,
+- how derivative products and commercial goods evolve from upstream inventory lots,
+- how multi-input and multi-output ($N \to M$) conversion archetypes are executed,
+- and how production transformation remains deterministic, physically measurable, and traceable.
 
-Production is one of the core orchestration systems inside Roastery OS.
-
-Production workflows represent:
-- commercial-oriented inventory transformation.
+Production is one of the core physical transformation systems inside Roastery OS.
 
 ---
 
 # Core Philosophy
 
 Roastery OS treats production as:
-- operational manufacturing,
-- inventory transformation orchestration,
-- and commercial product generation.
+- physical material conversion (`Transformation`),
+- inventory composition and packaging orchestration,
+- and commercial inventory readiness generation.
 
 Production is not merely:
-- packaging activity,
-- product labeling,
-- or retail preparation.
+- cosmetic packaging or labeling activity,
+- or arbitrary commercial categorization.
 
 Production creates:
-- new inventory identity,
-- new operational lineage,
-- new costing structures,
-- and commercially sellable inventory states.
+- new physical inventory identities (`InventoryLot`),
+- new operational lineage (multi-parent DAG connections),
+- and commercially ready inventory states.
 
-The system should preserve:
-- production continuity,
-- transformation traceability,
-- costing evolution,
+The system preserves:
+- physical production continuity,
+- multi-parent transformation traceability,
+- accurate physical mass/count balances,
 - and operational readability.
 
 ---
 
-# Production as Transformation
+# Production as Material State Transformation
 
-Traditional inventory systems commonly interpret production as:
+Traditional POS and retail inventory systems commonly merge inventory and product presentation:
+$$\text{Inventory} + \text{Packaging} = \text{Product}$$
 
-```text id="x5m8tw"
-Inventory
-+
-Packaging
-=
-Product
-Roastery OS uses a transformation-oriented production model:
-ProductionReadyInventory
-↓ ProductionBatch
-FinishedGoodsInventory
+Roastery OS uses a generalized material state conversion model:
+
+```text
+Source InventoryLots (Consumed)
+  ├── Intermediate Coffee Lot (MaterialMaster: Roasted Coffee / Blend)
+  ├── Packaging Material Lot (MaterialMaster: Valve Bag / Glass Bottle)
+  └── Additive Lot (MaterialMaster: Purified Water / Flavoring)
+       ↓ ProductionBatch (Transformation Execution)
+Target InventoryLots (Produced)
+  ├── Packaged Coffee Lot (MaterialMaster: 250g Retail Bag, FINISHED_GOODS)
+  └── Secondary Lot / Byproduct (MaterialMaster: Coffee Extract / Rework)
+```
+
 Production represents:
-	•	operational inventory evolution,  not:
-	•	cosmetic inventory labeling.
+- operational material evolution, not cosmetic labeling.
 
-Production-Oriented Philosophy
-Production workflows should prioritize:
-	•	operational manufacturing logic,
-	•	inventory continuity,
-	•	and commercial readiness.
-Production systems should adapt to:
-	•	production behavior,  not:
-	•	retail abstraction.
-This philosophy differentiates Roastery OS from:
-	•	generic POS systems,
-	•	retail-first inventory software,
-	•	and static SKU databases.
+---
 
-Finished Goods Philosophy
-Production workflows create:
-	•	FinishedGoodsInventory.
-Finished goods represent:
-	•	commercially sellable inventory states.
-Example:
-BlendInventory
-↓ Packaging
-FinishedGoodsInventory
-Finished goods may include:
-	•	roasted beans,
-	•	ground coffee,
-	•	drip bags,
-	•	cold brew bottles,
-	•	RTD products,
-	•	bulk espresso,
-	•	and future derivative product categories.
-Finished goods become:
-	•	customer-facing inventory entities.
+# Commercial Readiness as a Contextual Role
 
-Production Identity Philosophy
-Production creates:
-	•	new operational inventory identity.
-Example:
-BlendInventory
-≠
-FinishedGoodsInventory
-Even when using the same coffee source, finished goods represent:
-	•	different operational meaning,
-	•	different commercial behavior,
-	•	different inventory lifecycle,
-	•	and different costing structures.
-Production transformation creates:
-	•	commercially operational inventory states.
+In Roastery OS, **"Finished Goods" is not an immutable terminal storage silo**. It is a contextual commercial readiness state of an `InventoryLot`.
 
-SKU Philosophy
-Roastery OS separates:
-	•	production identity,  from:
-	•	commercial SKU identity.
-Example:
-FinishedGoodsInventory
-≠
-Retail SKU
-A single production inventory may later produce:
-	•	multiple SKUs,
-	•	multiple packaging formats,
-	•	multiple sales channels,
-	•	and multiple customer experiences.
-This separation preserves:
-	•	modular architecture,
-	•	production flexibility,
-	•	and operational scalability.
+An `InventoryLot` in state `AVAILABLE` and material type `FINISHED_GOODS`:
+1. Is immediately available for commercial sales fulfillment (E-Commerce, POS, Wholesale).
+2. Retains the physical capability to enter downstream transformations (e.g. decanting whole beans for cold brew extraction, or assembling packaged lots into variety gift sets).
 
-Derivative Product Philosophy
-Production workflows may create:
-	•	derivative product categories.
-Examples:
-Ground Coffee
-Drip Bags
-Cold Brew
-RTD Coffee
-Bulk Espresso
-Each derivative product represents:
-	•	a unique operational production workflow.
-The architecture should support:
-	•	workflow diversity,
-	•	production flexibility,
-	•	and future extensibility.
+---
 
-Packaging Philosophy
-Packaging is treated as:
-	•	operational production transformation.
-Packaging is not merely:
-	•	wrapping inventory,
-	•	or assigning labels.
-Packaging may introduce:
-	•	new inventory identity,
-	•	new costing behavior,
-	•	and new operational lifecycle states.
-Example:
-BlendInventory
-↓ PackagingBatch
-Retail Product
-Packaging workflows should remain:
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
+# Production vs Commercial SKU Identity
 
-ProductionBatch Philosophy
-ProductionBatch represents:
-	•	actual production execution.
-ProductionBatch:
-	•	consumes production-ready inventory,
-	•	creates finished goods,
-	•	and preserves operational lineage.
-Example:
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-ProductionBatch acts as:
-	•	transformation event,
-	•	workflow anchor,
-	•	and operational traceability reference.
+Roastery OS strictly separates:
+- **Operational Production & Stock Identity:** [`InventoryLot`](file:///Users/yudhan/Documents/FRAMEWORKS/Roastery%20OS/02_INVENTORY_ENGINE) & [`MaterialMaster`](file:///Users/yudhan/Documents/FRAMEWORKS/Roastery%20OS/01_MASTER_DATA)
+- **Commercial Sales Presentation:** [`SKUMaster`](file:///Users/yudhan/Documents/FRAMEWORKS/Roastery%20OS/01_MASTER_DATA) & [`ProductMaster`](file:///Users/yudhan/Documents/FRAMEWORKS/Roastery%20OS/01_MASTER_DATA)
 
-Transformation Continuity Principle
-Production workflows should preserve:
-	•	inventory lineage continuity.
-Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-The system should preserve:
-	•	upstream production relationships,
-	•	transformation visibility,
-	•	and downstream commercial continuity.
+```text
+InventoryLot (Physical Stock) ≠ SKUMaster (Commercial Listing)
+```
 
-Costing Philosophy
-Production workflows directly affect:
-	•	inventory valuation,
-	•	operational profitability,
-	•	and commercial economics.
-Example:
-BlendInventory Cost
-+
-Packaging Cost
-+
-Production Overhead
-↓
-FinishedGoodsInventory Cost
-Production costing should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally understandable.
+A single physical production lot (e.g. 500 units of 250g Packaged Blend) can fulfill multiple commercial SKUs (Retail Shop SKU, Online Subscription SKU, Wholesale Sample SKU) without duplicating physical stock records.
 
-Yield Philosophy
-Production workflows may introduce:
-	•	handling loss,
-	•	packaging loss,
-	•	purge,
-	•	residue,
-	•	and operational shrinkage.
-Example:
-10kg BlendInventory
-↓ Production
-9.7kg FinishedGoodsInventory
-Yield behavior should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally meaningful.
-The MVP should preserve:
-	•	lightweight yield visibility,
-	•	without industrial manufacturing complexity.
+---
 
-Traceability Philosophy
-Production workflows should preserve:
-	•	full transformation lineage.
-Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-↓ Sales
-Customer
-Production traceability should preserve:
-	•	operational storytelling,
-	•	inventory continuity,
-	•	and commercial product lineage.
+# Costing & Economic Boundary Philosophy
 
-Deterministic Production Principle
-Critical production workflows must remain deterministic.
-Examples:
-	•	inventory deduction,
-	•	finished goods creation,
-	•	costing continuity,
-	•	yield calculation,
-	•	and traceability relationships.
-Production operations should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden inventory mutation,
-	•	ambiguous workflow behavior,
-	•	and disconnected production lineage.
+Production alters inventory asset values, but valuation arithmetic is governed strictly by the Costing Engine (`07_COSTING_ENGINE`).
 
-Human-Centered Philosophy
-Production systems should remain understandable for real operators.
-Operators should be able to:
-	•	execute production workflows,
-	•	understand transformation behavior,
-	•	and trace commercial inventory continuity  without manufacturing ERP complexity.
-Operational clarity should take priority over industrial production abstraction.
+Production Engine owns:
+- physical recipe formulation and consumption quantities ($Q_{\text{consumed}, i}$),
+- physical output counts and mass ($Q_{\text{out}}$),
+- and physical handling loss / scrap tracking.
 
-Modular Production Philosophy
-Different production workflows may behave differently.
-Examples:
-Ground Coffee Workflow
-Drip Bag Workflow
-Cold Brew Workflow
-RTD Workflow
-Bulk Espresso Workflow
-The architecture should support:
-	•	operational flexibility,
-	•	workflow diversity,
-	•	and future product evolution  without redesigning the production foundation.
+Costing Engine owns:
+- valuation of consumed lots ($V_{\text{consumed}} = \sum Q_{\text{consumed}, i} \times U_{\text{consumed}, i}$),
+- direct cost capitalization ($C_{\text{direct}}$),
+- derivation of output unit cost via Canonical Equation 1 ($U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$),
+- and analytical provenance decomposition (Canonical Equation 7).
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze production efficiency,
-	•	recommend operational optimization,
-	•	identify workflow anomalies,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic production workflows.
-Critical production behavior must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+---
 
-MVP Production Philosophy
-The MVP Production Engine should prioritize:
-	•	ProductionBatch workflows,
-	•	FinishedGoodsInventory creation,
-	•	deterministic transformation behavior,
-	•	production traceability,
-	•	and operational continuity.
-The MVP intentionally excludes:
-	•	industrial manufacturing orchestration,
-	•	autonomous production systems,
-	•	predictive manufacturing AI,
-	•	and enterprise factory infrastructure.
+# Multi-Parent Traceability Philosophy
 
-Long-Term Direction
-The Production Philosophy is designed to support future evolution toward:
-	•	advanced manufacturing orchestration,
-	•	AI-assisted production intelligence,
-	•	predictive workflow optimization,
-	•	automated production assistance,
-	•	and ecosystem-wide commercial visibility.
-However, production workflows should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+Production transformation preserves complete upstream sourcing and manufacturing lineage via a Directed Acyclic Graph (DAG):
 
-Philosophy Summary
-Production is not merely:
+```text
+Green Coffee Lot ──► RoastBatch ──► Roasted Coffee Lot ──┐
+                                                         ├──► ProductionBatch ──► Packaged SKU Lot ──► Customer
+Packaging Material Lot ──────────────────────────────────┘
+```
+
+The system preserves:
+- sourcing origin,
+- roasting profile telemetry,
+- intermediate blend composition,
+- packaging lot batch codes,
+- and customer sales fulfillment records.
+
+---
+
+# Summary
+
+Production in Roastery OS is:
+- operational manufacturing orchestration,
+- multi-dimensional physical material conversion,
+- and commercially ready inventory creation.
+
+Production is where roasted coffee, packaging materials, and formulation ingredients operationally evolve into sellable physical `InventoryLot` instances inside Roastery OS.
+not merely:
 	•	packaging,
 	•	or retail preparation.
 Production is:

@@ -10,13 +10,13 @@ The purpose of MVP Boundaries is to:
 - reduce unnecessary production complexity,
 - and ensure sustainable ecosystem evolution.
 
-The MVP Blend Engine should prioritize:
+The MVP Blend Engine prioritizes:
 - operational usefulness,
 - deterministic production workflows,
 - and practical specialty coffee operations.
 
-The MVP is intended to establish:
-- a strong blend production foundation,
+The MVP establishes:
+- a strong blend production foundation based on generic `InventoryLot` and `MaterialMaster` transformations,
 - not a complete industrial manufacturing platform.
 
 ---
@@ -25,13 +25,13 @@ The MVP is intended to establish:
 
 Roastery OS is designed to evolve progressively.
 
-The MVP Blend Engine should therefore focus on:
+The MVP Blend Engine focuses on:
 - foundational blend workflows,
 - measurable composition structures,
-- deterministic transformation behavior,
+- deterministic physical transformation behavior,
 - and production-oriented operational clarity.
 
-The MVP should avoid:
+The MVP avoids:
 - premature manufacturing complexity,
 - enterprise formulation abstraction,
 - and unnecessary automation systems.
@@ -44,273 +44,182 @@ The goal is:
 
 # MVP Philosophy
 
-The MVP Blend Engine should behave as:
+The MVP Blend Engine behaves as:
 
-```text id="x5m8tw"
+```text
 Production-Oriented
 Composition-Aware
 Deterministic
 Traceable
 Human-Centered
 Operationally Understandable
+```
+
 The MVP is not intended to become:
-	•	industrial manufacturing software,
-	•	enterprise ERP production orchestration,
-	•	or autonomous blend optimization infrastructure.
-The MVP should solve:
-	•	real specialty coffee blend workflows,
-	•	with realistic operational complexity.
+- industrial manufacturing software,
+- enterprise ERP production orchestration,
+- or autonomous blend optimization infrastructure.
 
-MVP Core Objectives
-The MVP should successfully support:
-	•	BlendRecipe creation
-	•	BlendBatch execution
-	•	Roasted inventory consumption
-	•	BlendInventory creation
-	•	Composition visibility
-	•	Yield visibility
-	•	Basic costing continuity
-	•	Basic blend traceability
-	•	Production workflow visibility
-	•	Operational logging
-These capabilities already establish:
-	•	meaningful production value,
-	•	and a strong architectural foundation.
+The MVP solves:
+- real specialty coffee blend workflows,
+- with realistic operational complexity.
 
-MVP Operational Scope
-The MVP Blend Engine should primarily support:
-Home Roastery
-Nano Roastery
-Small Batch Production
-Specialty Coffee Operations
-Independent Coffee Roasters
-The MVP is intentionally optimized for:
-	•	lightweight production workflows,
-	•	not industrial-scale manufacturing infrastructure.
+---
 
-Included MVP Features
-BlendRecipe Management
-Included:
-BlendRecipe Creation
-Composition Ratio Structure
-Reusable Blend Formulation
-Recipe Version Visibility
+# MVP Core Objectives
 
-BlendBatch Production
-Included:
-BlendBatch Creation
-BlendBatch Completion
-Production Workflow Visibility
-Basic Lifecycle Status
+The MVP successfully supports:
+- `BlendRecipe` creation (defining percentage composition across `MaterialMaster` definitions)
+- `BlendBatch` execution (executing physical transformation across `InventoryLot` instances)
+- Source `InventoryLot` consumption (`TRANSFORMATION_CONSUME`)
+- Output `InventoryLot` creation (`TRANSFORMATION_PRODUCE`)
+- Composition ratio visibility
+- Physical yield and handling loss visibility
+- Costing continuity via `07_COSTING_ENGINE` (Canonical Equations 1 & 7)
+- Multi-parent blend traceability (DAG)
+- Production workflow visibility and logging
 
-Inventory Transformation
-Included:
-Roasted Inventory Consumption
-BlendInventory Creation
-Composition Continuity
-Yield Visibility
+These capabilities establish:
+- meaningful production value,
+- and a strong architectural foundation.
 
-Blend Costing
-Included:
-Weighted Composition Costing
-Yield-Adjusted Valuation
-Basic Profitability Visibility
+---
 
-Blend Traceability
-Included:
-Composition Lineage
-Roasting Relationship Preservation
-Transformation Continuity
-Basic Production Traceability
+# MVP Operational Scope
 
-Blend Logging
-Included:
-Operational Logs
-Composition Logs
-Yield Logs
-Production Notes
-Workflow Timeline
+The MVP Blend Engine primarily supports:
+- Home Roasteries
+- Nano Roasteries
+- Small Batch Specialty Operations
+- Independent Coffee Roasters
 
-Excluded MVP Features
+The MVP is optimized for:
+- lightweight production workflows,
+- not industrial-scale continuous manufacturing infrastructure.
+
+---
+
+# Included MVP Features
+
+### BlendRecipe Management
+- BlendRecipe Creation
+- Material-based Composition Ratio Structure ($\sum \% = 100\%$)
+- Reusable Blend Formulation Templates
+- Recipe Version Visibility
+
+### BlendBatch Production
+- BlendBatch Creation & Execution (`Transformation`)
+- Multi-input consumption to single/multi-output production
+- Production Workflow Visibility
+- Lifecycle Status Progression (`PLANNED` $\to$ `COMPLETED` / `CANCELLED`)
+
+### Inventory Transformation
+- Source `InventoryLot` Consumption (`TRANSFORMATION_CONSUME`)
+- Transformed `InventoryLot` Output Creation (`TRANSFORMATION_PRODUCE`)
+- Composition Continuity
+- Yield & Handling Loss Tracking
+
+### Blend Costing Interface
+- Input valuation aggregation via `07_COSTING_ENGINE`
+- Direct cost capitalization
+- Output unit cost derivation via Canonical Equation 1 ($U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$)
+- Provenance decomposition via Canonical Equation 7
+
+### Blend Traceability
+- Composition Lineage
+- Multi-parent DAG linkage across green and roasted parent lots
+- Transformation Continuity
+- Complete Production Traceability
+
+### Blend Logging
+- Scale weight logs
+- Component ratio execution logs
+- Mixing and homogenization notes
+- Workflow timeline
+
+---
+
+# Excluded MVP Features
+
 The MVP intentionally excludes:
-	•	advanced industrial manufacturing infrastructure,
-	•	enterprise production complexity,
-	•	and premature AI automation systems.
+- advanced industrial manufacturing infrastructure,
+- enterprise production complexity,
+- and premature AI automation systems.
 
-Excluded: Flavor Simulation Systems
-Not included in MVP:
-Flavor Mapping
-Sensory Prediction
-AI Flavor Modeling
-Taste Simulation Systems
-Reason:
-	•	operational production workflows take priority over advanced sensory analytics.
+### Excluded: Flavor Simulation Systems
+- Flavor Mapping
+- Sensory Prediction
+- AI Flavor Modeling
+- Taste Simulation Systems
+- *Reason:* Operational production workflows take priority over advanced sensory analytics.
 
-Excluded: Automated Blend Optimization
-Not included in MVP:
-Automatic Ratio Adjustment
-AI Blend Generation
-Autonomous Composition Optimization
-Predictive Blend Formulation
-Reason:
-	•	deterministic composition workflows must remain human-controlled during foundational product stages.
+### Excluded: Automated Blend Optimization
+- Automatic Ratio Adjustment
+- AI Blend Generation
+- Autonomous Composition Optimization
+- Predictive Blend Formulation
+- *Reason:* Deterministic composition workflows must remain human-controlled during foundational product stages.
 
-Excluded: Industrial Manufacturing Systems
-Not included in MVP:
-Factory Routing
-Industrial Scheduling
-Multi-Facility Production
-Enterprise Manufacturing Orchestration
-Reason:
-	•	MVP target users are:
-	•	home roasters,
-	•	nano roasteries,
-	•	and small specialty coffee operations.
+### Excluded: Industrial Manufacturing Systems
+- Factory Routing
+- Industrial Continuous Mixing Line Scheduling
+- Multi-Facility Production
+- Enterprise Manufacturing Orchestration
+- *Reason:* MVP target users are small batch and specialty coffee roasteries.
 
-Excluded: Advanced Production Analytics
-Not included in MVP:
-Predictive Production Modeling
-Advanced Statistical Blend Analysis
-Industrial Yield Forecasting
-Enterprise Operational Intelligence
-Reason:
-	•	foundational operational workflows take priority over advanced analytics infrastructure.
+### Excluded: Advanced Production Analytics
+- Predictive Production Modeling
+- Advanced Statistical Blend Analysis
+- Industrial Yield Forecasting
+- Enterprise Operational Intelligence
+- *Reason:* Foundational operational workflows take priority over advanced analytics infrastructure.
 
-Excluded: IoT Infrastructure
-Not included in MVP:
-Machine Sensor Streaming
-Automated Production Sync
-Industrial Production Monitoring
-Real-Time Telemetry Infrastructure
-Reason:
-	•	excessive implementation complexity,
-	•	hardware dependency,
-	•	and reduced MVP accessibility.
+### Excluded: IoT Infrastructure
+- Automated Scale Streaming
+- Robotic Silo Dispensing Sync
+- Real-Time Continuous In-line Telemetry
+- *Reason:* Excessive implementation complexity, hardware dependency, and reduced MVP accessibility.
 
-Excluded: Enterprise Accounting Systems
-Not included in MVP:
-ERP Finance Modules
-Accounting Ledger Systems
-Tax Orchestration
-Complex Cost Allocation
-Reason:
-	•	Roastery OS MVP prioritizes:
-	•	operational costing,
-	•	not enterprise accounting infrastructure.
+### Excluded: Enterprise Accounting Systems
+- ERP Finance Modules
+- General Ledger Balancing
+- Tax Orchestration
+- Complex Overhead Absorption Matrices
+- *Reason:* Roastery OS MVP prioritizes operational inventory costing via `07_COSTING_ENGINE`, not general ledger accounting.
 
-Excluded: Full AI Infrastructure
-Not included in MVP:
-Autonomous Workflow Systems
-Predictive Production AI
-Automatic Inventory Mutation
-Self-Adjusting Production Logic
-Reason:
-	•	deterministic operational integrity must remain human-auditable.
-AI should initially act as:
-	•	operational assistant,
-	•	not autonomous production operator.
+### Excluded: Full Autonomous AI Infrastructure
+- Autonomous Workflow Execution
+- Predictive Production AI
+- Automatic Inventory Mutation
+- Self-Adjusting Production Logic
+- *Reason:* Deterministic operational integrity must remain human-auditable. AI acts as an operational assistant, not an autonomous production operator.
 
-Human-Centered MVP Principle
-The MVP should remain:
-	•	approachable,
-	•	operationally understandable,
-	•	and easy to adopt.
-The system should feel:
-	•	lightweight,
-	•	practical,
-	•	and useful for real production workflows.
-The MVP should avoid:
-	•	ERP intimidation,
-	•	industrial manufacturing rigidity,
-	•	and operational bureaucracy.
+---
 
-Simplicity Principle
-The MVP should prioritize:
-	•	workflow clarity,
-	•	composition readability,
-	•	and deterministic operational behavior.
-Complexity should only be introduced when:
-	•	operational value clearly justifies it.
-Architecture should remain:
-	•	scalable internally,
-	•	while staying simple externally.
+# Human-Centered & Deterministic Principles
 
-Modularity Principle
-The MVP should preserve:
-	•	modular architecture,
-	•	future extensibility,
-	•	and progressive evolution capability.
-Even if advanced systems are excluded initially,  the architecture should already support future growth toward:
-	•	AI assistance,
-	•	production analytics,
-	•	flavor intelligence,
-	•	and advanced operational systems.
-The MVP should establish:
-	•	a stable operational core,
-	•	not temporary prototype logic.
+The MVP remains:
+- approachable and operationally understandable,
+- easy to adopt without ERP intimidation,
+- fully deterministic in ledger deductions, mass balances, and costing handoffs.
 
-Deterministic MVP Principle
-Critical operational behavior must remain deterministic.
-Examples:
-	•	composition ratio continuity,
-	•	roasted inventory deduction,
-	•	BlendInventory creation,
-	•	costing continuity,
-	•	and traceability relationships.
-The MVP should preserve:
-	•	predictable workflows,
-	•	auditability,
-	•	and operational integrity.
+---
 
-MVP Success Criteria
+# MVP Success Criteria
+
 The MVP is considered successful if operators can:
-Create reusable blend recipes
-Track blend production
-Understand composition structure
-Trace inventory evolution
-Calculate operational cost
-Manage BlendInventory
-without:
-	•	spreadsheets,
-	•	disconnected notes,
-	•	or operational confusion.
-The MVP should already provide:
-	•	meaningful production workflow relief.
+1. Create reusable blend recipes defined by material ratios,
+2. Execute physical blend production against actual inventory lots,
+3. Understand composition structure and mass yield,
+4. Trace multi-parent lot lineage,
+5. Obtain deterministic inventory valuation via the Costing Engine,
+6. Manage produced blend inventory stock,
 
-Architectural Notes
-The MVP is not:
-	•	a reduced architecture.
-The MVP is:
-	•	a focused operational slice of a much larger ecosystem architecture.
-The architectural foundation should already preserve:
-	•	modularity,
-	•	deterministic behavior,
-	•	composition continuity,
-	•	and production-oriented design.
-Future systems should extend:
-	•	the same operational philosophy,
-	•	without redesigning the blend foundation.
+without spreadsheets, disconnected notes, or operational confusion.
 
-Long-Term Direction
-The MVP is designed to evolve progressively toward:
-	•	AI-assisted blend formulation,
-	•	flavor intelligence systems,
-	•	advanced production analytics,
-	•	predictive operational optimization,
-	•	and ecosystem-wide production visibility.
-However, future complexity should always remain grounded in:
-	•	operational usefulness,
-	•	human readability,
-	•	and deterministic production integrity.
+---
 
-Philosophy Summary
-The MVP Blend Engine is not:
-	•	a miniature manufacturing ERP,
-	•	or an unfinished industrial production system.
-The MVP Blend Engine is:
-	•	a focused production foundation,
-	•	designed to solve real blend workflows,
-	•	while preserving long-term ecosystem scalability.
-The MVP should feel:
-	•	simple externally,
-	•	but architecturally powerful internally.
+# Architectural Summary
+
+The MVP Blend Engine is a focused, mathematically sound production foundation designed to solve real specialty coffee blend workflows while strictly conforming to the generic transformation ontology and costing contract of Roastery OS.
+

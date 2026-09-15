@@ -48,6 +48,7 @@ This module currently includes:
 
 - WholesaleCustomerPhilosophy.md
 - CustomerEntityStructure.md
+- WholesaleOrderLifecycle.md
 - RelationshipContinuity.md
 - CustomerOrderPatterns.md
 - DemandForecastRelationship.md
@@ -65,15 +66,16 @@ Additional customer-related documents may be added progressively as operational 
 
 # Module Relationships
 
-Customer Wholesale depends on:
+Customer Wholesale depends on and integrates with:
 
-- Inventory Engine
-- Production Engine
-- Costing Engine
-- Batch Traceability
-- Supplier System
-- Analytics
-- AI Layer
+- `01_MASTER_DATA` (Consumes `MaterialMaster`, `ProductMaster`, and `SKUMaster`)
+- `02_INVENTORY_ENGINE` (Requests reservations; triggers `COMMERCIAL_DISPATCH` and `RESTOCK` movements)
+- `05_PRODUCTION_ENGINE` (Emits demand signals and production requests; does not directly create inventory)
+- `06_POS_ENGINE` (Differentiates B2B commercial accounts and credit invoicing from retail register transactions)
+- `07_COSTING_ENGINE` (Receives unit costs $U_{\text{lot}}$ to determine realized COGS; does not calculate inventory valuation independently)
+- `08_BATCH_TRACEABILITY` (Maintains downstream fulfillment provenance: `WholesaleOrder` → `FulfillmentAllocation` → `InventoryLot`)
+- `09_SUPPLIER_SYSTEM` (Aligns inbound raw material supply with outbound wholesale customer demand)
+- Analytics & AI Layer (Advisory demand pattern recognition and preparedness recommendations)
 
 Customer Wholesale commonly interacts with:
 - Forecasting Systems

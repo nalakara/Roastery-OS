@@ -2,316 +2,126 @@
 
 ## Purpose
 
-This document defines the inventory movement system used across Roastery OS.
+This document defines the inventory movement ledger system used across Roastery OS.
 
 The purpose of the Inventory Movement system is to:
-- preserve inventory history,
-- track operational inventory changes,
-- maintain transformation traceability,
-- support deterministic inventory behavior,
-- and provide auditable operational records.
+- preserve immutable inventory transaction history,
+- track physical quantity changes ($\Delta Q$) across `InventoryLot` instances,
+- maintain transformation traceability and operational accountability,
+- support deterministic stock balancing,
+- and provide complete auditable records for operations, costing, and compliance.
 
-Inventory movements act as the operational event layer of the inventory system.
-
-Every meaningful inventory change should generate an inventory movement record.
+Inventory movements act as the **immutable operational event ledger** of the inventory system. Physical inventory quantities are modified strictly through `InventoryMovement` records.
 
 ---
 
 # Core Philosophy
 
-InventoryMovement is not merely:
-- stock in,
-- stock out,
-- or transactional logging.
-
 InventoryMovement represents:
 - operational events,
-- production transitions,
-- and inventory state evolution.
+- transformation inputs and outputs,
+- physical location transfers,
+- exceptional inventory adjustments,
+- and commercial sales fulfillments.
 
-The system should preserve:
-- what happened,
-- why it happened,
-- where it originated,
-- and what inventory state was affected.
+Every inventory movement record is **immutable**: it is appended to the ledger and never updated or deleted in place.
 
 ---
 
-# Movement Philosophy
+# Entity Relationships
 
-Every inventory change should be explainable.
-
-Example:
-
-```text id="u7m4tw"
-Green Beans
-↓ RoastBatch
-Roasted Coffee
-This transformation should generate inventory movement records such as:
-	•	green bean deduction,
-	•	roasted coffee creation,
-	•	yield calculation,
-	•	and costing updates.
-Inventory movements should preserve operational meaning rather than simple quantity updates.
-
-Inventory Movement as Operational Event
-InventoryMovement acts as:
-	•	operational history,
-	•	traceability layer,
-	•	and inventory event system.
-Example operational events:
-Procurement
-Roasting
-Blending
-Grinding
-Packaging
-Sales
-Adjustment
-Waste
-Return
-Each event may:
-	•	affect inventory quantity,
-	•	affect valuation,
-	•	create traceability relationships,
-	•	and generate operational history.
-
-Operational Event Structure
-Inventory movements should preserve:
-Source Entity
-↓
-Operational Action
-↓
-Affected Inventory
-↓
-Quantity Change
-↓
-Resulting Inventory State
-Example:
-RoastBatch
-↓
-Consumes GreenBeanInventory
-↓
-Creates RoastedCoffeeInventory
-↓
-Generates InventoryMovement
-
-InventoryMovement Entity
-Purpose
-Represents a traceable operational inventory event.
-This entity acts as:
-	•	inventory history record,
-	•	transformation event record,
-	•	and operational audit structure.
-
-Relationships
+```text
 InventoryMovement
-├── references → Inventory Entity
-├── references → Operational Event
-├── affects → Costing
-├── affects → Inventory State
-└── supports → Traceability
+ ├── mutates → InventoryLot (references inventoryLotId)
+ ├── references → Material (references materialId from MaterialMaster)
+ ├── references → Unit (references unitId from UnitMaster)
+ ├── triggeredBy → Operational Event (Transformation, PurchaseReceipt, SalesFulfillment, Adjustment)
+ └── providesDataTo → Costing Engine & Inventory Balancing
+```
 
-Core Fields
-Identity Fields
-inventoryMovementId
-movementCode
-movementType
-movementCategory
+---
 
-Source Reference Fields
-sourceEntityType
-sourceEntityId
-relatedBatchId
-relatedTransactionId
-Examples of sourceEntityType:
-RoastBatch
-BlendBatch
-ProductionBatch
-SalesTransaction
-PurchaseRecord
-InventoryAdjustment
+# Core Fields Specification
 
-Inventory Reference Fields
-inventoryEntityType
-inventoryEntityId
-Examples of inventoryEntityType:
-GreenBeanInventory
-RoastedCoffeeInventory
-BlendInventory
-FinishedGoodsInventory
+### Identity Fields
+- `inventoryMovementId`: Unique canonical movement identifier (UUID / string).
+- `movementCode`: Human-readable reference code (e.g. `MOV-2026-00421`).
+- `movementType`: Specific operational classification:
+  - `PURCHASE_RECEIPT`: Inbound receiving from supplier creating a new `InventoryLot`.
+  - `TRANSFORMATION_CONSUMPTION`: Consumption of quantity as `TransformationInput`.
+  - `TRANSFORMATION_OUTPUT`: Creation of new stock as `TransformationOutput`.
+  - `INTERNAL_TRANSFER`: Movement of a lot between warehouses/bins/tanks without material change.
+  - `COMMERCIAL_FULFILLMENT`: Depletion of lot quantity to fulfill a commercial `SKU` sale.
+  - `INVENTORY_ADJUSTMENT`: Explicit correction for damage, spoilage, shrinkage, or audit reconciliation.
+  - `LOT_SPLIT`: Administrative partition of one lot into multiple child lots.
 
-Quantity Fields
-movementDirection
-quantity
-unitId
-previousQuantity
-resultingQuantity
-Examples of movementDirection:
-IN
-OUT
-TRANSFORM
-ADJUSTMENT
+### Target Inventory References
+- `inventoryLotId`: Canonical identifier of the affected `InventoryLot`.
+- `lotCode`: Snapshot of human-readable lot code.
+- `materialId`: Reference to `MaterialMaster` for the physical item.
+- `locationId`: Reference to the physical warehouse/bin location involved.
 
-Costing Fields
-costPerUnit
-totalCostImpact
-valuationMethod
-Most advanced costing fields may remain optional during MVP stages.
+### Quantity & Direction Fields
+- `movementDirection`: Direction of physical change (`IN` | `OUT`).
+- `quantity`: Positive scalar magnitude of change ($\Delta Q > 0$).
+- `unitId`: Unit of Measure from `UnitMaster`, dimensionally matching the target `InventoryLot`.
+- `previousQuantity`: Snapshot of lot balance before movement ($Q_{\text{prev}}$).
+- `resultingQuantity`: Snapshot of lot balance after movement ($Q_{\text{prev}} \pm \Delta Q$).
 
-Operational Fields
-movementReason
-movementTimestamp
-performedBy
-approvalStatus
-inventoryStatus
+### Event & Source Reference Fields
+- `sourceEventType`: Originating business process (`PURCHASE_ORDER`, `TRANSFORMATION`, `SALES_ORDER`, `ADJUSTMENT_RECORD`).
+- `sourceEventId`: Identifier of originating transaction (e.g. `transformationId`, `purchaseOrderId`, `orderId`).
+- `relatedBatchId`: Optional batch reference for roastery operations.
+- `movementReason`: Human-readable explanation of movement trigger.
 
-General Fields
-notes
-createdAt
-updatedAt
+### Cost & Valuation Snapshots
+- `unitCostSnapshot`: Economic unit cost ($U_{\text{lot}}$) at the moment of movement.
+- `totalCostImpact`: Total economic value of the movement ($\Delta Q \times U_{\text{lot}}$).
 
-Movement Categories
-The system should support multiple operational movement categories.
-Examples:
-Procurement
-Production
-Transformation
-Packaging
-Sales
-Adjustment
-Waste
-Return
-Transfer
-The MVP should prioritize only essential operational categories.
+### Audit & Operational Metadata
+- `movementTimestamp`: ISO 8601 timestamp of operational event execution.
+- `performedBy`: User / operator identifier.
+- `notes`: Operational or quality remarks.
 
-Transformation Movement Principle
-Transformation movements should preserve lineage between inventory states.
-Example:
-100kg GreenBeanInventory
-↓ RoastBatch
-82kg RoastedCoffeeInventory
-This should generate:
-	•	inventory deduction movement,
-	•	inventory creation movement,
-	•	and transformation linkage.
-Transformation movements are among the most important inventory events in Roastery OS.
+---
 
-Deterministic Movement Principle
-Inventory movements must remain deterministic and auditable.
-The system should preserve:
-	•	explicit quantity changes,
-	•	operational source references,
-	•	traceable timestamps,
-	•	and explainable inventory state transitions.
-Inventory should never change silently.
-Every meaningful change should produce:
-	•	movement records,
-	•	operational references,
-	•	and traceable history.
+# Standard Operational Movement Patterns
 
-Traceability Principle
-Inventory movements are one of the primary foundations of traceability.
-Example:
-Green Bean Procurement
-↓
-Roast Batch
-↓
-Packaging Batch
-↓
-Retail Product
-↓
-Sales Transaction
-Movement history should preserve:
-	•	operational lineage,
-	•	transformation history,
-	•	and production relationships.
-Traceability should remain human-readable.
+### 1. Inbound Purchase Receipt
+```text
+Supplier Receipt ──► Creates InventoryLot #LOT-GB-001 (Q = 100 kg)
+                       └── Generates InventoryMovement [Type: PURCHASE_RECEIPT, Direction: IN, Quantity: +100 kg]
+```
 
-Inventory Adjustment Philosophy
-Inventory adjustments should be treated as exceptional operational events.
-Examples:
-Shrinkage
-Damage
-Manual Correction
-Expired Product
-Adjustments should:
-	•	remain explicit,
-	•	preserve operational reason,
-	•	and remain auditable.
-The system should discourage hidden inventory corrections.
+### 2. Transformation Execution (Roasting, Blending, Packaging, Extraction)
+```text
+Transformation Event (Roasting)
+ ├── Input Movement:  InventoryLot #LOT-GB-001 [Type: TRANSFORMATION_CONSUMPTION, Direction: OUT, Quantity: -100 kg]
+ └── Output Movement: InventoryLot #LOT-RB-001 [Type: TRANSFORMATION_OUTPUT, Direction: IN, Quantity: +84 kg]
+```
 
-Costing Relationship Principle
-Inventory movements may affect:
-	•	inventory valuation,
-	•	production costing,
-	•	and operational profitability.
-Costing relationships should remain:
-	•	deterministic,
-	•	traceable,
-	•	and auditable.
+### 3. Commercial SKU Fulfillment
+```text
+Sales Order Line Item (SKU: HB-250G-WB, Count: 2 Bags)
+ └── Fulfill from InventoryLot #LOT-PKG-HB-01
+      └── Generates InventoryMovement [Type: COMMERCIAL_FULFILLMENT, Direction: OUT, Quantity: -2 units]
+```
 
-Human-Centered Philosophy
-Inventory movement systems should remain understandable by operational users.
-Operators should be able to:
-	•	understand inventory changes,
-	•	trace production flow,
-	•	and identify operational causes  without needing enterprise ERP expertise.
-Operational clarity should take priority over theoretical accounting complexity.
+### 4. Exceptional Inventory Adjustment
+```text
+Inventory Audit / Damage Record
+ └── InventoryLot #LOT-RB-001
+      └── Generates InventoryMovement [Type: INVENTORY_ADJUSTMENT, Direction: OUT, Quantity: -0.5 kg, Reason: "Grinder Spillage"]
+```
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze inventory movement patterns,
-	•	identify operational anomalies,
-	•	and recommend optimization opportunities.
-However:  AI must not autonomously create or modify deterministic inventory movements.
-Critical inventory operations must remain:
-	•	explicit,
-	•	traceable,
-	•	and human-auditable.
+---
 
-MVP Scope
-The MVP Inventory Movement system should prioritize:
-	•	explicit inventory history,
-	•	transformation visibility,
-	•	operational traceability,
-	•	and deterministic inventory updates.
-The MVP intentionally excludes:
-	•	enterprise warehouse orchestration,
-	•	automated replenishment systems,
-	•	industrial logistics routing,
-	•	and advanced accounting automation.
+# Architectural Invariants
 
-Architectural Notes
-InventoryMovement is one of the most foundational operational entities within Roastery OS.
-Most operational workflows will:
-	•	create movements,
-	•	consume movements,
-	•	or analyze movement history.
-Inventory movements should remain:
-	•	modular,
-	•	traceable,
-	•	deterministic,
-	•	and operationally meaningful.
-Future systems should extend movement structures without redesigning the operational foundation.
+1. **Immutable Ledger:** Movement records cannot be updated or deleted. Corrections must be made by appending compensating movements.
+2. **Quantity Determinism:** The current physical quantity of any `InventoryLot` is mathematically equal to the algebraic sum of all its movements:
+   $$Q_{\text{lot}} = \sum \Delta Q_{\text{IN}} - \sum \Delta Q_{\text{OUT}}$$
+3. **Dimensional Integrity:** Movements must strictly match the dimensional category (`MASS`, `VOLUME`, `COUNT`) of the target `InventoryLot`.
+4. **Separation of Economic and Physical Concerns:** Inventory movements record physical quantities and snapshot unit costs; the Costing Engine evaluates cost pool accumulations and allocations.
 
-Long-Term Direction
-The Inventory Movement system is designed to support future evolution toward:
-	•	operational analytics,
-	•	forecasting systems,
-	•	anomaly detection,
-	•	AI-assisted inventory intelligence,
-	•	and ecosystem-wide operational visibility.
-However, movement history should always remain:
-	•	understandable,
-	•	explicit,
-	•	traceable,
-	•	and operationally auditable.
-
-Philosophy Summary
-Inventory movements are not merely stock logs.
-Inventory movements are:
-	•	operational events,
-	•	transformation records,
-	•	and traceable production history.
-Inventory movement is the language of operational change inside Roastery OS.
 

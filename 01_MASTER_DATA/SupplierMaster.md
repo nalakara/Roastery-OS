@@ -2,219 +2,126 @@
 
 ## Purpose
 
-Supplier Master defines the supplier reference structures used across Roastery OS.
+Supplier Master defines the external supplier and vendor reference structures used across Roastery OS.
 
-This entity standardizes supplier information to support:
-- sourcing workflows,
-- procurement tracking,
-- inventory traceability,
-- costing systems,
-- and operational analytics.
+This entity standardizes supplier identity to support:
+- procurement and purchasing workflows across all material categories,
+- supply chain and origin traceability,
+- receiving, inbound lot creation, and cost tracking,
+- vendor relationship and performance analytics.
 
-Supplier references are treated as reusable business entities shared across inventory, purchasing, roasting, and reporting systems.
+In the frozen ontology, a Supplier may supply **any physical Material** (`MaterialMaster`), including raw green coffee, packaging items, additives, consumables, merchandise, and equipment.
 
 ---
 
 # Core Philosophy
 
-Supplier structures should remain:
-- operationally practical,
-- relationship-oriented,
-- scalable,
-- and suitable for both artisan and production-scale roasting businesses.
+Suppliers represent **commercial sourcing and procurement relationships**. They are not restricted to green coffee sourcing.
 
-The system should support:
-- farmers,
-- cooperatives,
-- traders,
-- importers,
-- and distributors
-without forcing rigid enterprise procurement structures during MVP stages.
-
-Supplier data should support sourcing clarity rather than excessive administrative complexity.
+The system supports:
+- **Raw Coffee Suppliers**: Farmers, washing stations, cooperatives, traders, importers, exporters.
+- **Packaging Suppliers**: Bag manufacturers, box converters, label printers, tin/can suppliers.
+- **Additives & Ingredients Suppliers**: Milk/syrup distributors, beverage ingredient vendors.
+- **Consumables & Operations Suppliers**: Roaster gas providers, cleaning supply distributors, filter paper vendors.
+- **Merchandise & Equipment Suppliers**: Brewer manufacturers, merchandise printers, grinder vendors.
 
 ---
 
-# Operational Role
-
-Supplier Master functions as:
-- a sourcing reference,
-- a procurement relationship entity,
-- a traceability component,
-- and an operational analytics grouping structure.
-
-Supplier references are commonly used in:
-- GreenBean sourcing,
-- procurement workflows,
-- costing systems,
-- roasting traceability,
-- and sourcing analytics.
-
----
-
-# Relationships
+# Entity Relationships
 
 ```text
 Supplier
-├── supplies → GreenBean
-├── referencedBy → PurchaseRecord
-├── referencedBy → Inventory
-├── referencedBy → Costing
-└── referencedBy → Analytics
+ ├── supplies → Material (1:N across any Material classification)
+ ├── referencedBy → Inbound Receiving / Purchase Order Workflows
+ ├── referencedBy → InventoryLot (origin traceability on receipt)
+ ├── referencedBy → CostEvent (direct vendor freight/service invoices)
+ └── referencedBy → Sourcing Analytics & Vendor Performance
+```
 
-Core Fields
-Identity Fields
-supplierId
-name
-displayName
-internalCode
-supplierType
-Examples of supplierType:
-Farmer
-Cooperative
-Trader
-Importer
-Distributor
+### Boundary Distinctions
 
-Contact Fields
-contactPerson
-phoneNumber
-email
-website
-socialMedia
+| Entity | Domain Scope | Responsibility |
+| :--- | :--- | :--- |
+| **`Supplier`** | Business Partner Entity | Identity, contact, terms, sourcing origin, vendor classification |
+| **`Material`** | Physical Master Data | Material definition supplied by the vendor |
+| **`InventoryLot`** | Physical Stock Instance | Inbound lot received from supplier with lot code, quantity, and unit cost |
+| **`PurchaseOrder`** | Commercial Transaction | Purchasing contract and inbound receipt line items |
 
-Location Fields
-address
-region
-province
-country
-postalCode
+---
 
-Operational Fields
-preferredSupplier
-activeStatus
-paymentTerms
-deliveryPreference
-supplierRating
-Most advanced operational fields should remain optional during MVP implementation.
+# Core Fields Specification
 
-Traceability Fields
-farmRelationship
-cooperativeName
-importReference
-certificationReference
-These fields should remain optional in MVP stages.
+### Identity Fields
+- `supplierId`: Unique canonical identifier (UUID / string).
+- `name`: Legal or trade name of the supplier (e.g. *"IndoCafco Specialty Importers"*, *"PackPro Eco Packaging Solutions"*).
+- `displayName`: Short operational name for screens and receipts.
+- `internalCode`: Unique operational code (e.g. `SUP_INDO_001`).
+- `supplierCategory`: Primary vendor domain (`GREEN_COFFEE_PRODUCER`, `GREEN_COFFEE_IMPORTER`, `PACKAGING_MANUFACTURER`, `INGREDIENT_SUPPLIER`, `EQUIPMENT_VENDOR`, `GENERAL_CONSUMABLES`).
 
-General Fields
-notes
-createdAt
-updatedAt
+### Sourcing & Origin Fields (Specialty Coffee Context)
+- `supplierType`: Specific operational classification (`FARMER`, `COOPERATIVE`, `ESTATE`, `WASHING_STATION`, `EXPORTER`, `IMPORTER`, `DOMESTIC_DISTRIBUTOR`, `MANUFACTURER`).
+- `farmOrEstateName`: Name of farm, finca, or washing station (if applicable).
+- `cooperativeName`: Name of associated cooperative (if applicable).
+- `country`: Country of origin (e.g. *"Colombia"*, *"Ethiopia"*, *"Indonesia"*).
+- `region`: Specific growing province, state, or region (e.g. *"Huila"*, *"Yirgacheffe"*, *"Kintamani"*).
+- `certifications`: List of active sustainability/quality badges (e.g. `["Fair Trade", "Organic", "Rainforest Alliance"]`).
 
-Supplier Philosophy
-Suppliers should be treated as operational sourcing partners rather than simple vendor records.
-Supplier relationships may affect:
-	•	sourcing consistency,
-	•	coffee quality,
-	•	costing structures,
-	•	traceability,
-	•	and production planning.
-The architecture should support evolving sourcing relationships without introducing unnecessary procurement bureaucracy.
+### Contact & Location Fields
+- `contactPerson`: Primary representative or account manager name.
+- `email`: Sourcing / order contact email.
+- `phoneNumber`: Phone or messaging contact number.
+- `address`: Physical office, mill, or warehouse address.
+- `website`: Supplier website or catalog URL.
 
-Supplier Identity Principle
-Supplier represents business relationship identity only.
-Example:
-Supplier
-≠
-PurchaseRecord
+### Commercial & Operational Terms
+- `currencyCode`: Preferred trading currency (ISO 4217, e.g. `USD`, `IDR`, `EUR`).
+- `paymentTerms`: Standard terms (e.g. `NET_30`, `CAD`, `ADVANCE_DEPOSIT`, `COD`).
+- `leadTimeDays`: Typical delivery lead time in days.
+- `preferredSupplier`: Boolean flag indicating preferred vendor status for relevant materials.
+- `isActive`: Boolean flag indicating active procurement status.
 
-Supplier
-Represents:
-	•	sourcing relationship,
-	•	supplier identity,
-	•	and reusable procurement references.
+### Metadata Fields
+- `notes`: Relationship history, cupping notes from origin trips, or handling guidelines.
+- `createdAt`: ISO 8601 timestamp.
+- `updatedAt`: ISO 8601 timestamp.
 
-PurchaseRecord
-Represents:
-	•	actual procurement activity,
-	•	transactional purchasing,
-	•	costing events,
-	•	and inventory acquisition.
-This separation preserves:
-	•	modular consistency,
-	•	sourcing flexibility,
-	•	and operational scalability.
+---
 
-Sourcing Relationship Principle
-A single Supplier may supply:
-	•	multiple GreenBeans,
-	•	multiple harvests,
-	•	and multiple processing variations.
-Example:
-Supplier
-├── Bali Kintamani Natural
-├── Bali Kintamani Honey
-├── Toraja Full Wash
-└── Java Wet Hull
-The architecture should support reusable sourcing relationships across operational workflows.
+# Operational Architectural Principles
 
-Naming Convention
-Entity Name:
-Supplier
-Primary Identifier:
-supplierId
-Related References:
-supplierType
-contactPerson
-country
-Naming should follow standards defined in:
-	•	NamingConvention.md
-	•	DataModel.md
+### 1. Universal Material Supply Support
+A Supplier can supply multiple materials across diverse categories:
+```text
+Supplier: "PT Agro Nusantara"
+ ├── Supplies: Bali Kintamani Natural Green Coffee (Material: RAW_COFFEE)
+ ├── Supplies: Java Frinsa Estate Wet Hull Green Coffee (Material: RAW_COFFEE)
+ └── Supplies: Woven Burlap Storage Sacks (Material: CONSUMABLE)
+```
 
-Used By Modules
-Supplier Master is shared across:
-	•	GreenBean Master
-	•	Inventory Engine
-	•	Costing Engine
-	•	Procurement Workflows
-	•	Batch Traceability
-	•	Analytics Dashboard
-	•	Future AI Systems
+### 2. Inbound Lot Cost Attribution
+When an inbound purchase order is received:
+1. An `InventoryLot` is created referencing the purchased `Material` and the originating `Supplier`.
+2. The initial purchase price plus inbound freight/duties (invoiced directly or via `CostEvent`) form the opening unit valuation ($U_{\text{lot}}$) of the new stock lot.
 
-MVP Scope
-The MVP implementation should remain lightweight.
-Required MVP fields:
-supplierId
-name
-supplierType
-phoneNumber
-region
-country
-notes
-Basic MVP supplier types:
-Farmer
-Cooperative
-Trader
-Importer
-Advanced sourcing metadata may be added progressively in future operational stages.
+### 3. Traceability Lineage
+Tracing an end product back through its `Lineage` preserves the originating `Supplier` identifier across all upstream transformations (e.g. Retail Bag $\rightarrow$ Roasted Bean Lot $\rightarrow$ Green Coffee Lot $\rightarrow$ Supplier).
 
-Future Expansion Possibilities
-Future versions may support:
-	•	supplier performance scoring,
-	•	sourcing contracts,
-	•	procurement forecasting,
-	•	certification management,
-	•	sustainability tracking,
-	•	supplier analytics,
-	•	and AI-assisted sourcing recommendations.
-Future expansion should extend the structure without redesigning the operational foundation.
+---
 
-Architectural Notes
-Supplier Master is designed as a reusable business reference entity.
-Multiple GreenBean and procurement entities may reference the same Supplier structure.
-This entity should remain:
-	•	stable,
-	•	reusable,
-	•	operationally meaningful,
-	•	and loosely coupled from transactional workflows.
-Supplier structures should support operational clarity while remaining flexible enough for evolving sourcing relationships and specialty coffee supply chain models.
+# Module Reference Matrix
+
+| Module | Usage |
+| :--- | :--- |
+| **Material Master (`MaterialMaster`)** | Optional default supplier reference for reordering. |
+| **Inventory / Receiving Engine** | Records supplier reference on inbound `InventoryLot` receipts. |
+| **Costing Engine** | Attributes purchase invoice expenses to incoming raw lots. |
+| **Analytics Engine** | Analyzes vendor spend, lead time reliability, and sensory quality. |
+
+---
+
+# Summary & Architectural Guardrails
+
+- `Supplier` is a universal procurement partner entity, not restricted to green coffee.
+- It supplies any physical `Material` tracked in `MaterialMaster`.
+- It connects to `InventoryLot` during inbound receiving to establish origin traceability and opening acquisition valuation.
 

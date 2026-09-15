@@ -52,38 +52,35 @@ Batch Tracking
 
 Roastery OS uses a continuity-oriented genealogy model:
 Supplier
-↓
-Inventory
-↓
-Roasting
-↓
-Blending
-↓
-Production
-↓
-Finished Goods
-↓
-Customer
+↓ Procurement Intake
+InventoryLot (MaterialMaster)
+↓ Transformation(s)
+Execution Batch
+↓ Transformation(s)
+Downstream InventoryLot(s)
+↓ Commercial Dispatch
+Customer (POS / Wholesale)
 
 Traceability analytics should preserve:
-	•	operational ancestry explainability, not merely:
+	•	operational ancestry explainability,
+not merely:
 	•	tracking visibility.
 
 Core Traceability Principle
 Every operational lineage relationship should preserve:
 	•	continuity context.
 Example:
-Supplier
-↓
-GreenBeanInventory
-↓
-RoastBatch
-↓
-BlendBatch
-↓
-ProductionBatch
-↓
-FinishedGoodsInventory
+Supplier (09_SUPPLIER_SYSTEM)
+↓ Material Receipt
+InventoryLot (Green Coffee)
+↓ Transformation
+Roast Batch
+↓ Transformation
+Blend Batch
+↓ Transformation
+Packaging Batch
+↓ Output
+InventoryLot (Packaged Coffee SKU)
 
 Traceability continuity should remain:
 	•	operationally connected,
@@ -92,13 +89,13 @@ Traceability continuity should remain:
 
 Genealogy Visibility Principle
 Traceability analytics should preserve:
-	•	operational genealogy visibility.
-Examples:
-Inventory Genealogy
-Roast Lineage
-Blend Relationships
-Production Relationships
-Finished Goods Continuity
+	•	operational genealogy visibility across generic N:M transformations.
+Analytical Views:
+InventoryLot Genealogy
+Roasting Transformation Lineage
+Blend Input/Output Relationships
+Derivative Production Relationships
+Downstream Commercial Fulfillment Continuity
 
 Genealogy visibility supports:
 	•	operational awareness,
@@ -126,13 +123,11 @@ Transformation Continuity Principle
 Traceability analytics should preserve:
 	•	transformation continuity visibility.
 Example:
-Green Coffee
-↓ roasting
-Roasted Coffee
-↓ blending
-Blend Inventory
-↓ production
-Finished Goods
+Input Material (InventoryLot)
+↓ Transformation
+Intermediary Material (InventoryLot)
+↓ Transformation
+Finished Sellable Stock (InventoryLot)
 
 Transformation continuity preserves:
 	•	operational ancestry explainability.
@@ -145,9 +140,10 @@ Batch Relationship Principle
 Traceability analytics should preserve:
 	•	parent-child continuity visibility.
 Examples:
+Upstream InventoryLots → Transformation → Output InventoryLots
 RoastBatch → BlendBatch
-BlendBatch → ProductionBatch
-ProductionBatch → FinishedGoodsInventory
+BlendBatch → PackagingBatch
+PackagingBatch → InventoryLot fulfillment
 
 Relationship continuity supports:
 	•	operational genealogy explainability,

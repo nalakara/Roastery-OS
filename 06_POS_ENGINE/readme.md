@@ -76,12 +76,10 @@ Additional commerce-related documents may be added progressively as operational 
 
 POS Engine depends on:
 
-- Master Data
-- Inventory Engine
-- Production Engine
-- SKU Systems
-- FinishedGoodsInventory
-- Costing Systems
+- Master Data (MaterialMaster, SKUMaster, PriceMaster)
+- Inventory Engine (InventoryLot, Movements: COMMERCIAL_DISPATCH, RETURN_RESTORE, SCRAP)
+- Production Engine (Fulfillment lineage)
+- Costing Engine (Unit valuation & COGS realization)
 - Customer Systems
 
 POS Engine commonly interacts with:
@@ -96,22 +94,23 @@ POS Engine commonly interacts with:
 # Operational Role
 
 POS Engine is responsible for transforming:
-- commercially available inventory
+- commercially available inventory lots
 into:
 - operational sales events.
 
 Example operational flow:
 
 ```text id="x5m8tw"
-FinishedGoodsInventory
+InventoryLot (materialType = FINISHED_GOODS / INTERMEDIATE)
 ↓
-Sales Transaction
+Sales Transaction (COMMERCIAL_DISPATCH)
 ↓
-Inventory Deduction
+Inventory Lot Deduction
 ↓
-Revenue Event
+Revenue & Costing Event (COGS from 07_COSTING_ENGINE)
 ↓
 Customer Relationship
+```
 Sales workflows may include:
 	•	retail sales,
 	•	wholesale sales,
@@ -141,11 +140,11 @@ The system should preserve:
 
 Inventory Relationship Philosophy
 POS Engine directly affects:
-	•	FinishedGoodsInventory continuity.
+	•	InventoryLot continuity.
 Example:
-FinishedGoodsInventory
-↓ Sale
-Inventory Deduction
+InventoryLot
+↓ Sale (COMMERCIAL_DISPATCH)
+Inventory Lot Deduction
 Sales workflows should preserve:
 	•	inventory integrity,
 	•	quantity continuity,
@@ -182,7 +181,7 @@ SKU
 ↓
 Sales Transaction
 ↓
-FinishedGoodsInventory
+InventoryLot (Fulfillment Allocation)
 POS systems should preserve:
 	•	separation between:
 	•	commercial presentation
@@ -196,10 +195,8 @@ Sales workflows directly affect:
 	•	operational margin analysis,
 	•	and commercial intelligence.
 Example:
-FinishedGoodsInventory Cost
-↓ Sale
-Revenue
-↓
+InventoryLot Valuation (from 07_COSTING_ENGINE)
+↓ Sale (Revenue & Pricing from POS Engine)
 Gross Profit Visibility
 POS Engine should preserve:
 	•	costing continuity,

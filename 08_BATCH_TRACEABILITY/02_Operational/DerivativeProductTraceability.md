@@ -54,18 +54,16 @@ Derivative Product
 Commercial Continuity
 
 Derivative traceability should preserve:
-	•	operational transformation continuity, not merely:
-	•	product diversification.
-
-Core Derivative Principle
+	•	operational transformation continuity,not merely:
+	•	product diversifCore Derivative Principle
 Every derivative workflow should preserve:
 	•	upstream operational ancestry,
 	•	downstream transformation continuity,
 	•	and deterministic genealogy relationships.
 Example:
-RoastedCoffeeInventory
-↓ Grinding Workflow
-GroundCoffeeInventory
+InventoryLot (Roasted Whole Bean Coffee)
+↓ Grinding Transformation (ProductionBatch context)
+InventoryLot (Ground Coffee)
 
 Derivative transformations should remain:
 	•	operationally connected,
@@ -76,11 +74,11 @@ Derivative Workflow Principle
 Derivative products originate from:
 	•	workflow-specific transformations.
 Examples:
-Grinding Workflow
-Cold Brew Workflow
-RTD Workflow
-Drip Bag Workflow
-Extract Workflow
+- Grinding Workflow (Whole Bean $\rightarrow$ Ground Material)
+- Cold Brew Extraction Workflow (Ground Coffee + Water $\rightarrow$ Cold Brew Concentrate)
+- RTD Bottling & Formulation Workflow (Concentrate + Dairy/Oat/Water $\rightarrow$ RTD Beverage)
+- Drip Bag Packaging Workflow (Ground Coffee + Filter Sachets $\rightarrow$ Drip Bags)
+- Flavoring / Extract Workflow
 
 Each workflow creates:
 	•	distinct operational lineage branches.
@@ -89,13 +87,16 @@ The system should preserve:
 
 Parent Child Derivative Principle
 Derivative workflows create:
-	•	parent-child lineage continuity.
+	•	parent-child lineage continuity between input lots and derivative lots.
 Example:
 Parent:
-RoastBatch
+InventoryLot (Roasted Coffee Lot)
+
+Transformation (Batch execution context):
+Grinding / Processing Transformation (ProductionBatch)
 
 Child:
-GroundCoffeeBatch
+InventoryLot (Ground Coffee Lot)
 
 Derivative lineage preserves:
 	•	operational ancestry continuity.
@@ -106,10 +107,9 @@ Workflow-Specific Identity Principle
 Derivative products should preserve:
 	•	workflow-specific operational identity.
 Examples:
-GroundCoffeeBatch
-ColdBrewBatch
-RTDBatch
-DripBagBatch
+- Transformation Context (Batch ID: PB-GRIND-20260521-001)
+- Output InventoryLot: LOT-GRD-20260521-001
+- Cold Brew Output Lot: LOT-CB-20260521-002
 
 Identity continuity should remain:
 	•	operationally connected to upstream genealogy.
@@ -132,24 +132,25 @@ Derivative traceability should preserve:
 
 Yield Traceability Principle
 Derivative workflows naturally affect:
-	•	downstream yield continuity.
+	•	downstream yield continuity and physical mass balance.
 Example:
-10kg Roasted Coffee
-↓ Grinding Workflow
-9.7kg Ground Coffee
+10kg Roasted Coffee Lot
+↓ Grinding Transformation
+9.7kg Ground Coffee Lot + 0.3kg retention residue
 
 Yield continuity preserves:
 	•	how quantity evolved operationally.
 Yield visibility is treated as:
 	•	operational truth continuity.
+Cost absorption and valuation remain owned by Costing Engine.
 
 Packaging Relationship Principle
 Derivative workflows may later participate in:
 	•	packaging continuity workflows.
 Example:
-Cold Brew Batch
-↓ Bottle Packaging
-FinishedGoodsInventory
+Cold Brew Intermediate Lot + Glass Bottle Lot + Cap Lot
+↓ Bottle Packaging Transformation (ProductionBatch context)
+Packaged RTD Cold Brew SKU InventoryLot
 
 Derivative traceability should preserve:
 	•	operational-commercial continuity.
@@ -160,30 +161,34 @@ Cross-Engine Derivative Principle
 Derivative continuity spans across:
 	•	multiple operational engines.
 Example:
-Inventory Engine
+Supplier System (Inbound Green Coffee & Ingredients)
 ↓
-Production Engine
+Inventory Engine (Raw & Intermediate Lot Ledger)
 ↓
-Costing Engine
+Production Engine (Derivative Transformation Execution)
 ↓
-Sales Engine
+POS Engine (Derivative SKU Fulfillment & Order Dispatch)
+↓
+Costing Engine (Multi-Stage Processing Cost Allocation)
 
 Derivative traceability acts as:
-	•	workflow continuity infrastructure between systems.
+	•	workflow continuity infrastructure
+between systems.
 This creates:
 	•	ecosystem-wide derivative genealogy visibility.
 
 Commercial Continuity Principle
 Derivative workflows bridge:
-	•	operational inventory and:
+	•	operational inventory
+and:
 	•	specialized customer-facing products.
 Example:
-RoastedCoffeeInventory
-↓ Cold Brew Workflow
-ColdBrewInventory
-↓ Packaging
-FinishedGoodsInventory
-↓ Sales
+InventoryLot (Roasted Coffee)
+↓ Cold Brew Extraction Transformation
+InventoryLot (Cold Brew Liquid Bulk)
+↓ Packaging Transformation
+InventoryLot (Cold Brew 250ml Bottled SKU)
+↓ POS Fulfillment (Sales Order)
 Customer
 
 Derivative continuity preserves:
@@ -193,15 +198,21 @@ Sales Relationship Principle
 Sales workflows should preserve:
 	•	upstream derivative ancestry.
 Example:
-Customer Purchase
+Customer Order & POS Line Item
 ↓
-FinishedGoodsInventory
+Fulfilled Packaged Cold Brew SKU InventoryLot
 ↓
-ColdBrewBatch
+Packaging Transformation (ProductionBatch context)
 ↓
-RoastBatch
+Cold Brew Liquid Lot + Bottle Packaging Material Lot(s)
 ↓
-GreenBeanInventory
+Cold Brew Extraction Transformation (ProductionBatch context)
+↓
+Roasted Coffee Lot(s)
+↓
+Roasting Transformation (RoastBatch context)
+↓
+Green Coffee Inbound Lot (SupplierMaster origin)
 
 Sales continuity should preserve:
 	•	customer-to-origin genealogy visibility.
@@ -230,14 +241,14 @@ Operators should understand:
 	•	how transformations evolved,
 	•	and why downstream derivative states exist.
 Derivative systems should support:
-	•	operational trust, not merely:
+	•	operational trust,not merely:
 	•	compliance infrastructure.
 
 Operational Truth Principle
 Derivative traceability represents:
 	•	workflow-specific operational truth continuity.
 The system should preserve:
-	•	what operationally occurred, not merely:
+	•	what operationally occurred,not merely:
 	•	what was administratively recorded.
 This distinction is critical for:
 	•	operational trust,
@@ -283,7 +294,7 @@ Derivative traceability systems should remain understandable for:
 Operators should be able to:
 	•	follow derivative continuity,
 	•	understand workflow genealogy,
-	•	and trace operational-commercial evolution without enterprise ERP complexity.
+	•	and trace operational-commercial evolutionwithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Derivative Philosophy
@@ -299,7 +310,7 @@ Extract Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the derivative continuity foundation.
 
 AI Boundary Philosophy
@@ -308,7 +319,7 @@ AI systems may:
 	•	identify operational anomalies,
 	•	recommend workflow optimization,
 	•	and support recall analytics.
-However: AI must not autonomously manipulate deterministic derivative continuity.
+However:AI must not autonomously manipulate deterministic derivative continuity.
 Critical operational relationships must remain:
 	•	explicit,
 	•	traceable,
@@ -330,7 +341,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Derivative Product Traceability acts as:
-	•	the workflow branching continuity infrastructure inside Batch Traceability.
+	•	the workflow branching continuity infrastructureinside Batch Traceability.
 This system influences:
 	•	product genealogy,
 	•	operational auditability,

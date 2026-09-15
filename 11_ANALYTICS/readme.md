@@ -55,6 +55,7 @@ This module currently includes:
 - AnalyticsPhilosophy.md
 - OperationalVisibilityPrinciples.md
 - KPIAndMetricsPhilosophy.md
+- SalesAndCommercialAnalytics.md
 - YieldAnalytics.md
 - CostAnalytics.md
 - ProductionAnalytics.md
@@ -71,22 +72,23 @@ Additional analytics-related documents may be added progressively as ecosystem i
 
 # Module Relationships
 
-Analytics depends on:
+Analytics operates as a pure read-model consumer and depends on facts from:
 
-- Inventory Engine
-- Roasting Engine
-- Blend Engine
-- Production Engine
-- Costing Engine
-- Batch Traceability
-- Supplier System
+- `01_MASTER_DATA` (Dimensions: `MaterialMaster`, `ProductMaster`, `SKUMaster`)
+- `02_INVENTORY_ENGINE` (Inventory movements, physical lot availability, aging, and turnover)
+- `03_ROASTING_ENGINE` (Roasting transformation yields, batch execution parameters)
+- `04_BLEND_ENGINE` (Multi-lot blend execution and loss metrics)
+- `05_PRODUCTION_ENGINE` (Generic N:M transformations, packaging, assembly, and RTD yields)
+- `06_POS_ENGINE` (Retail sales, register shifts, tender breakdown, counter velocity)
+- `07_COSTING_ENGINE` (Authoritative economic source for lot unit values, HPP, and COGS)
+- `08_BATCH_TRACEABILITY` (Downstream and upstream genealogy traversal)
+- `09_SUPPLIER_SYSTEM` (Inbound vendor performance, procurement prices, and receipt quality)
+- `10_CUSTOMER_WHOLESALE` (B2B wholesale order volumes, pricing tiers, customer demand signals)
 
 Analytics commonly interacts with:
+- `12_AI_LAYER` (Provides analytical facts for advisory AI pattern analysis and preparedness insights)
 - Forecasting Systems
-- AI Systems
-- Procurement Systems
-- Operational Planning
-- Business Intelligence Workflows
+- Operational Planning Workflows
 
 ---
 

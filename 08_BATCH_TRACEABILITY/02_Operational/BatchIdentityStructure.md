@@ -58,16 +58,18 @@ Lineage Continuity
 Batch Identity
 
 Batch identity should preserve:
-	•	operational continuity, not merely:
+	•	operational continuity,not merely:
 	•	organizational labeling.
 
 Core Identity Principle
 Every operational transformation should generate:
 	•	uniquely identifiable operational lineage.
 Example:
-GreenBeanInventory
-↓ RoastBatch
-RB-20260521-001
+InventoryLot (Green Coffee)
+↓ Roasting Transformation (RoastBatch context)
+Transformation ID: TR-ROAST-20260521-001
+Batch ID: RB-20260521-001
+Output InventoryLot: LOT-ROAST-20260521-001
 
 Identity should remain:
 	•	deterministic,
@@ -76,30 +78,28 @@ Identity should remain:
 	•	and operationally meaningful.
 
 Batch Identity Categories
-Roastery OS currently recognizes several operational batch identity categories.
+Roastery OS recognizes that batch identifiers serve as the operational execution context (`Batch`) across various transformation workflows:
 Examples:
-Green Bean Lot
-Roast Batch
-Blend Batch
-Production Batch
-Packaging Batch
-Derivative Product Batch
+- Inbound Receiving Batch / Delivery Reference (Supplier Origin)
+- Roast Batch (Roasting Transformation)
+- Blend Batch (Blend Transformation)
+- Production / Packaging Batch (Assembly / Packaging Transformation)
+- Derivative Processing Batch (Grinding / Cold Brew / RTD Transformation)
 
 Each category represents:
-	•	distinct operational transformation behavior.
+	•	operational execution metadata supporting the underlying material transformation.
 
 Operational Identity Principle
-Batch identity should represent:
-	•	operational events.
+Batch identity represents execution context, while transformation identity represents the material conversion boundary:
 Example:
-RoastBatch
+RoastBatch (Batch ID)
 =
-specific roasting transformation event
+execution context (machine, operator, schedule, profile) executing a Roasting Transformation
 
-A batch identity should preserve:
+A batch identity preserves:
 	•	when transformation occurred,
-	•	what workflow created it,
-	•	and how downstream lineage evolved.
+	•	what workflow executed it,
+	•	and the operational context linking input and output `InventoryLot`s.
 Identity should not merely represent:
 	•	inventory grouping.
 
@@ -120,7 +120,7 @@ The system should preserve:
 
 Identity vs SKU Principle
 Roastery OS separates:
-	•	operational batch identity, from:
+	•	operational batch identity,from:
 	•	commercial SKU identity.
 Example:
 Batch Identity
@@ -141,7 +141,7 @@ This distinction preserves:
 
 Identity vs Inventory Principle
 Roastery OS distinguishes between:
-	•	inventory entity, and:
+	•	inventory entity,and:
 	•	batch identity.
 Example:
 Inventory
@@ -201,7 +201,7 @@ Blend Engine
 Production Engine
 
 Identity acts as:
-	•	continuity infrastructure between operational systems.
+	•	continuity infrastructurebetween operational systems.
 This creates:
 	•	ecosystem-wide operational lineage visibility.
 
@@ -267,7 +267,7 @@ Operators should understand:
 	•	when transformation occurred,
 	•	and how lineage evolved.
 Identity systems should support:
-	•	operational trust, not merely:
+	•	operational trust,not merely:
 	•	administrative organization.
 
 Identity Structure Philosophy
@@ -283,14 +283,14 @@ RB-20260521-001
 BL-20260521-003
 PB-20260521-002
 
-The exact implementation may evolve, but the philosophy should preserve:
+The exact implementation may evolve,but the philosophy should preserve:
 	•	deterministic lineage continuity.
 
 Operational Truth Principle
 Batch identity represents:
 	•	operational truth continuity.
 The system should preserve:
-	•	what operationally occurred, not merely:
+	•	what operationally occurred,not merely:
 	•	administrative labeling.
 This distinction is critical for:
 	•	operational trust,
@@ -306,7 +306,7 @@ Batch identity systems should remain understandable for:
 Operators should be able to:
 	•	follow operational lineage,
 	•	understand transformation continuity,
-	•	and trace inventory evolution without enterprise ERP complexity.
+	•	and trace inventory evolutionwithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Identity Philosophy
@@ -322,7 +322,7 @@ RTD Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the identity foundation.
 
 AI Boundary Philosophy
@@ -331,7 +331,7 @@ AI systems may:
 	•	identify operational anomalies,
 	•	recommend workflow optimization,
 	•	and support recall analytics.
-However: AI must not autonomously manipulate deterministic identity continuity.
+However:AI must not autonomously manipulate deterministic identity continuity.
 Critical operational relationships must remain:
 	•	explicit,
 	•	traceable,
@@ -353,7 +353,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Batch Identity Structure acts as:
-	•	the identity continuity layer inside Batch Traceability.
+	•	the identity continuity layerinside Batch Traceability.
 This structure influences:
 	•	lineage continuity,
 	•	inventory genealogy,

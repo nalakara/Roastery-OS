@@ -11,7 +11,7 @@ The purpose of Parent Child Batch Relationship is to:
 - and define how downstream batches inherit operational lineage.
 
 Parent-child relationships represent:
-- operational transformation inheritance continuity.
+- operational transformation inheritance continuity mediated by material `InventoryLot`s.
 
 Parent-child lineage is one of the foundational continuity systems inside Roastery OS.
 
@@ -20,17 +20,14 @@ Parent-child lineage is one of the foundational continuity systems inside Roaste
 # Core Philosophy
 
 Roastery OS treats every operational transformation as:
-- lineage-producing inheritance behavior,
-not merely:
-- production execution,
-- inventory movement,
-- or manufacturing activity.
+- lineage-producing material conversion,
+executed within:
+- an operational execution context (`Batch`).
 
 Operational transformations create:
-- ancestry,
-- descendants,
-- dependency chains,
-- and genealogy continuity.
+- material ancestry between input and output `InventoryLot`s,
+- transformation execution provenance (`batchId`, machine, operator, recipe),
+- and comprehensive genealogy continuity.
 
 The system should preserve:
 - deterministic lineage inheritance,
@@ -45,70 +42,75 @@ Traditional manufacturing systems commonly interpret production relationships as
 
 ```text id="x5m8tw"
 Production Dependency
+```
 
-Roastery OS uses a genealogy-oriented relationship model:
-Parent Batch
-↓ transformation
-Child Batch
-↓ transformation
-Next Generation Batch
+Roastery OS uses a transformation-mediated genealogy model:
+Parent InventoryLot(s)
+↓ Transformation (executed via Batch)
+Child InventoryLot(s)
+↓ Downstream Transformation (executed via Batch)
+Next Generation InventoryLot(s)
 
 Parent-child relationships should preserve:
-	•	operational ancestry continuity, not merely:
+	•	operational ancestry continuity,
+not merely:
 	•	production references.
 
 Core Relationship Principle
-Every downstream batch should preserve:
+Every downstream inventory lot should preserve:
 	•	explicit parent ancestry.
 Example:
-RoastBatch
-↓
-BlendBatch
-↓
-ProductionBatch
+InventoryLot (Green Coffee)
+↓ Roasting Transformation (RoastBatch context)
+InventoryLot (Roasted Coffee)
+↓ Blending Transformation (BlendBatch context)
+InventoryLot (Blend)
+↓ Packaging Transformation (ProductionBatch context)
+InventoryLot (Packaged Coffee SKU Lot)
 
 Each downstream entity should remain:
 	•	operationally connected,
 	•	traceable,
 	•	and genealogically explainable.
 
-Parent Batch Principle
-A parent batch represents:
+Parent Batch & Input Lot Principle
+Parent entities represent:
 	•	upstream operational origin.
 Examples:
-Green Bean Lot
-RoastBatch
-BlendBatch
+- Inbound Receiving / Supplier Lot Origin
+- Consumed Input InventoryLots
+- Upstream Execution Batches (RoastBatch, BlendBatch)
 
-Parent batches preserve:
+Parent inputs preserve:
 	•	operational ancestry continuity.
 Parent lineage should remain:
 	•	deterministic,
 	•	explicit,
 	•	and immutable.
 
-Child Batch Principle
-A child batch represents:
-	•	downstream operational transformation.
+Child Batch & Output Lot Principle
+A child lot represents:
+	•	downstream operational transformation output.
 Examples:
-BlendBatch
-ProductionBatch
-DerivativeProductBatch
+- Roasted Coffee InventoryLot (from Roasting Transformation)
+- Blend InventoryLot (from Blend Transformation)
+- Packaged Goods SKU InventoryLot (from Packaging Transformation)
+- Derivative Product InventoryLot (from Grinding / Extraction Transformation)
 
-Child batches inherit:
+Child lots inherit:
 	•	upstream lineage continuity,
 	•	operational history,
 	•	and genealogy relationships.
 
 Transformation Inheritance Principle
 Operational transformations create:
-	•	inheritance continuity.
+	•	inheritance continuity between materials.
 Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
+InventoryLot (Green Coffee)
+↓ Roasting Transformation (RoastBatch context)
+InventoryLot (Roasted Coffee)
+↓ Blending Transformation (BlendBatch context)
+InventoryLot (Blend)
 
 Each transformation stage inherits:
 	•	operational ancestry from upstream entities.
@@ -116,14 +118,13 @@ The system should preserve:
 	•	continuous genealogy evolution.
 
 Multi-Parent Relationship Principle
-Some downstream batches may inherit:
-	•	multiple operational ancestries.
+Some downstream batches consume multiple parent lots:
 Example:
-RoastBatch A
+InventoryLot (Roast A)
 +
-RoastBatch B
-↓
-BlendBatch
+InventoryLot (Roast B)
+↓ Blend Transformation (BlendBatch context)
+InventoryLot (House Blend)
 
 The system should preserve:
 	•	explicit multi-parent relationships.
@@ -136,17 +137,21 @@ Parent Child Continuity Principle
 Parent-child relationships should preserve:
 	•	uninterrupted operational continuity.
 Example:
-Farm Lot
+SupplierMaster (Inbound Receipt)
 ↓
-GreenBeanInventory
+InventoryLot (Green Coffee)
 ↓
-RoastBatch
+Roasting Transformation (RoastBatch context)
 ↓
-BlendBatch
+InventoryLot (Roasted Coffee)
 ↓
-ProductionBatch
+Blending Transformation (BlendBatch context)
 ↓
-FinishedGoodsInventory
+InventoryLot (Blend)
+↓
+Packaging Transformation (ProductionBatch context)
+↓
+InventoryLot (Packaged Coffee SKU Lot)
 
 Operational genealogy should remain:
 	•	connected,
@@ -157,43 +162,47 @@ Cross-Engine Relationship Principle
 Parent-child lineage spans across:
 	•	multiple operational engines.
 Example:
-Inventory Engine
+Supplier System (Inbound Procurement)
 ↓
-Roasting Engine
+Inventory Engine (Lot Ledger)
 ↓
-Blend Engine
+Roasting Engine (Roasting Transformation)
 ↓
-Production Engine
+Blend Engine (Blend Transformation)
 ↓
-Sales Engine
+Production Engine (Assembly & Packaging Transformation)
+↓
+POS Engine (Order Fulfillment Dispatch)
 
 Relationship continuity acts as:
-	•	operational genealogy infrastructure between systems.
+	•	operational genealogy infrastructure
+between systems.
 This creates:
 	•	ecosystem-wide lineage visibility.
 
 Yield Relationship Principle
 Operational yield affects:
-	•	parent-child quantity continuity.
+	•	parent-child quantity continuity and physical mass balance.
 Example:
-10kg Parent Batch
-↓ roasting shrinkage
-8.5kg Child Batch
+10kg Parent Input Lot
+↓ roasting shrinkage (Transformation)
+8.5kg Child Output Lot
 
 Yield continuity preserves:
 	•	where quantity evolved,
-	•	how operational transformation behaved,
+	•	how operational transformation behaved physically,
 	•	and why downstream inventory differs.
 Yield visibility is treated as:
 	•	operational truth continuity.
+Valuation and cost propagation remain owned by Costing Engine.
 
 Packaging Relationship Principle
 Packaging workflows create:
 	•	commercially transformed child lineage states.
 Example:
-BlendBatch
-↓ Packaging Workflow
-ProductionBatch
+Bulk Roasted/Blend Lot + Packaging Material Lot
+↓ Packaging Transformation (ProductionBatch context)
+Packaged Goods SKU InventoryLot
 
 Packaging relationships preserve:
 	•	operational-commercial continuity.
@@ -214,7 +223,7 @@ Each derivative workflow should preserve:
 	•	workflow-specific continuity,
 	•	and downstream genealogy relationships.
 The architecture should support:
-	•	lineage diversity, without redesigning:
+	•	lineage diversity,without redesigning:
 	•	the relationship foundation.
 
 Temporal Relationship Principle
@@ -269,14 +278,14 @@ Operators should understand:
 	•	how transformations evolved,
 	•	and why downstream states exist.
 Relationship systems should support:
-	•	operational trust, not merely:
+	•	operational trust,not merely:
 	•	compliance infrastructure.
 
 Operational Truth Principle
 Parent-child relationships represent:
 	•	operational truth continuity.
 The system should preserve:
-	•	what operationally occurred, not merely:
+	•	what operationally occurred,not merely:
 	•	what was administratively recorded.
 This distinction is critical for:
 	•	operational trust,
@@ -308,7 +317,7 @@ Parent-child relationship systems should remain understandable for:
 Operators should be able to:
 	•	follow ancestry continuity,
 	•	understand operational evolution,
-	•	and trace genealogy relationships without enterprise ERP complexity.
+	•	and trace genealogy relationshipswithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Relationship Philosophy
@@ -324,7 +333,7 @@ RTD Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the relationship foundation.
 
 AI Boundary Philosophy
@@ -333,7 +342,7 @@ AI systems may:
 	•	identify operational anomalies,
 	•	recommend workflow optimization,
 	•	and support recall analytics.
-However: AI must not autonomously manipulate deterministic lineage continuity.
+However:AI must not autonomously manipulate deterministic lineage continuity.
 Critical operational relationships must remain:
 	•	explicit,
 	•	traceable,
@@ -355,7 +364,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Parent Child Batch Relationship acts as:
-	•	the inheritance continuity infrastructure inside Batch Traceability.
+	•	the inheritance continuity infrastructureinside Batch Traceability.
 This system influences:
 	•	operational genealogy,
 	•	inventory ancestry,

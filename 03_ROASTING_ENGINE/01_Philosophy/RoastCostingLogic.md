@@ -2,285 +2,103 @@
 
 ## Purpose
 
-This document defines the roasting costing philosophy and operational costing behavior used across Roastery OS.
+This document defines the roasting costing principles and operational interface with `07_COSTING_ENGINE` used across Roastery OS.
 
 The purpose of Roast Costing Logic is to:
-- preserve transformation-aware costing continuity,
-- maintain yield-adjusted inventory valuation,
-- support operational profitability visibility,
-- and standardize roasting cost evolution workflows.
-
-Roasting directly affects:
-- inventory valuation,
-- production economics,
-- and operational profitability.
-
-Roasting is one of the first major costing transformation layers inside Roastery OS.
+- clarify the ownership boundary between Roasting (physical execution) and Costing (economic valuation),
+- preserve transformation-aware costing continuity across roasting batches,
+- support yield-adjusted inventory valuation,
+- and standardize the emission of roasting transformation events to `07_COSTING_ENGINE`.
 
 ---
 
-# Core Philosophy
+# Core Philosophy & Boundary Separation
 
-Roastery OS treats roasting costing as:
-- transformation-aware valuation,
-- operational cost evolution,
-- and yield-adjusted production economics.
+Roastery OS strictly separates physical execution from economic valuation:
 
-Roasting costing is not merely:
-- inventory price mutation,
-- or accounting calculation.
+- **Roasting Engine owns**:
+  - physical green coffee charged quantity ($Q_{\text{in}}$),
+  - physical roasted coffee output quantity ($Q_{\text{out}}$),
+  - physical weight loss and yield percentage measurements,
+  - roasting telemetry and batch execution status.
+- **Costing Engine (`07_COSTING_ENGINE`) owns**:
+  - valuation of consumed green coffee inventory lots ($V_{\text{consumed}}$),
+  - direct labor and machine cost absorption ($C_{\text{direct}}$),
+  - canonical output unit cost calculation ($U_{\text{out}}$),
+  - assigning monetary unit cost to newly created output `InventoryLot` instances.
 
-Roasting creates:
-- new inventory value,
-- new unit cost structure,
-- and new operational profitability behavior.
-
-The system should preserve:
-- costing continuity,
-- transformation lineage,
-- and deterministic operational calculations.
+Roasting Engine does **not** independently calculate or assign inventory unit cost. It provides physical metrics to `07_COSTING_ENGINE`.
 
 ---
 
-# Costing Philosophy
+# Transformation Valuation Model
 
-Traditional inventory systems commonly interpret roasting cost as:
+Roasting transforms lower unit-cost raw green coffee into higher unit-cost intermediate roasted coffee due to mass shrinkage and direct batch costs.
+
+In accordance with `07_COSTING_ENGINE` Canonical Equation 1 (Transformation Output Unit Cost):
+
+$$U_{\text{out}} = \frac{\sum (Q_{\text{in}, i} \times U_{\text{in}, i}) + \sum C_{\text{direct}}}{Q_{\text{out}}}$$
+
+Where:
+- $Q_{\text{in}, i}$: Quantity consumed from input `InventoryLot` $i$ (measured by Roasting Engine).
+- $U_{\text{in}, i}$: Unit cost of input `InventoryLot` $i$ (provided by Costing Engine / InventoryLot).
+- $C_{\text{direct}}$: Direct batch costs (e.g. direct machine gas/power or operator labor attached via `CostEvent`).
+- $Q_{\text{out}}$: Actual roasted weight output (measured by Roasting Engine).
+
+### Example Transformation Valuation:
+```text
+Green Input: 100 kg @ $10.00/kg  =>  $1,000.00 (Consumed Value)
+Direct Batch Cost:                   $   20.00 (CostEvent)
+Total Economic Pool:                 $1,020.00
+Roasted Output: 82 kg
+
+Output Unit Cost:
+U_out = $1,020.00 / 82 kg = $12.439 / kg
+```
+
+---
+
+## Yield & Shrinkage Economic Impact
+
+Roasting weight loss (typically 12%–20%) concentrates the consumed economic value into fewer output kilograms:
+- **Higher shrinkage (darker roast)**: Higher unit cost per kg.
+- **Lower shrinkage (lighter roast)**: Lower unit cost per kg.
+
+The physical yield loss is an inherent transformation effect, not an inventory discrepancy or loss adjustment.
+
+---
+
+## Direct Batch Costs (`CostEvent`)
+
+Roasting may absorb direct operational costs:
+- Roaster fuel / electrical energy.
+- Direct roasting operator labor.
+
+These costs are captured as direct `CostEvent` entries associated with the `transformationId` (`roastBatchId`) and absorbed into the batch pool by `07_COSTING_ENGINE`.
+
+---
+
+## Traceability & Lineage Continuity
+
+Economic valuation maintains unbroken provenance:
 
 ```text
-Raw Cost
-÷
-Remaining Quantity
-=
-New Cost
-Roastery OS uses a transformation-oriented costing philosophy:
-Green Bean Cost
-+
-Roasting Overhead
-↓ Yield Transformation
-Roasted Coffee Value
-Roasting valuation evolves together with:
-	•	inventory transformation,
-	•	yield behavior,
-	•	and operational production flow.
+Input InventoryLot (RAW_COFFEE) [Unit Cost: U_in]
+↓ RoastBatch (Physical Loss: 18%) + CostEvents
+Output InventoryLot (INTERMEDIATE Roasted) [Unit Cost: U_out]
+↓ Blending / Packaging
+Finished Goods InventoryLot (SKU) [Unit Cost: U_fg]
+```
 
-Core Costing Principle
-Every RoastBatch should preserve:
-	•	source inventory cost,
-	•	roasting transformation cost,
-	•	yield-adjusted valuation,
-	•	and resulting roasted inventory cost.
-Example:
-100kg Green Beans
-Cost: $1000
+---
 
-↓ roasting
+## AI Boundary Philosophy
 
-82kg Roasted Coffee
-The resulting roasted inventory:
-	•	contains lower quantity,
-	•	but higher operational value per unit.
+AI systems may analyze roast batch profitability trends and identify cost variance across origins. However, AI systems must **never** autonomously alter or override the deterministic mathematical valuation calculated by `07_COSTING_ENGINE`.
 
-Yield-Aware Costing Principle
-Yield behavior directly affects roasted inventory valuation.
-Yield percentage calculation:
-Yield Percentage=Output QuantityInput Quantity×100\text{Yield Percentage} = \frac{\text{Output Quantity}}{\text{Input Quantity}} \times 100Yield Percentage=Input QuantityOutput Quantity​×100
+---
 
-Cost Per Unit Formula
-Basic roasted inventory valuation:
-Cost Per Unit=Total Roasting CostOutput Quantity\text{Cost Per Unit} = \frac{\text{Total Roasting Cost}}{\text{Output Quantity}}Cost Per Unit=Output QuantityTotal Roasting Cost​
+## Philosophy Summary
 
-Example Costing Transformation
-Example:
-Green Bean Cost:
-$1000
+Roasting costing is **transformation-aware valuation, yield-adjusted production economics, and economic continuity**. Roasting changes not only physical inventory mass, but also economic value concentration.
 
-Input Quantity:
-100kg
-
-Output Quantity:
-82kg
-Resulting roasted cost:
-Cost Per Kg=100082≈12.20\text{Cost Per Kg} = \frac{1000}{82} \approx 12.20Cost Per Kg=821000​≈12.20
-This represents:
-	•	transformation-aware costing,
-	•	not accounting anomaly.
-
-Roasting Overhead Philosophy
-Roasting may introduce operational overhead.
-Examples:
-Gas Usage
-Electricity
-Operator Labor
-Machine Usage
-Packaging Preparation
-The MVP should keep roasting overhead:
-	•	lightweight,
-	•	operationally understandable,
-	•	and optionally configurable.
-The MVP should avoid:
-	•	enterprise manufacturing accounting complexity.
-
-Green Bean Cost Relationship
-Roasting valuation begins from:
-	•	GreenBeanInventory valuation.
-Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-Roasting workflows should preserve:
-	•	source cost continuity,
-	•	sourcing valuation lineage,
-	•	and transformation-aware profitability visibility.
-
-Roasted Inventory Valuation Philosophy
-RoastedCoffeeInventory represents:
-	•	transformed inventory value.
-Roasted inventory valuation should preserve:
-	•	roasting yield impact,
-	•	production overhead,
-	•	and operational transformation continuity.
-Example:
-RoastedCoffeeInventory
-→ higher value density
-Roasted inventory becomes:
-	•	production-ready inventory,
-	•	with new operational economics.
-
-Costing Continuity Principle
-Roasting costing should preserve continuity across operational workflows.
-Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ Production Workflow
-FinishedGoodsInventory
-Each transformation stage should preserve:
-	•	valuation lineage,
-	•	operational costing continuity,
-	•	and profitability visibility.
-
-Operational Profitability Philosophy
-Roasting costing should support:
-	•	pricing understanding,
-	•	profitability awareness,
-	•	and production intelligence.
-Operators should understand:
-	•	roasting cost evolution,
-	•	yield impact,
-	•	and operational margin behavior.
-Costing systems should support:
-	•	operational visibility,
-	•	not merely accounting reporting.
-
-Deterministic Costing Principle
-Critical roasting costing behavior must remain deterministic.
-Examples:
-	•	yield-adjusted valuation,
-	•	roasted inventory cost,
-	•	overhead allocation,
-	•	and operational profitability calculations.
-Costing workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden valuation mutation,
-	•	ambiguous costing behavior,
-	•	and non-traceable inventory value changes.
-
-Traceability Principle
-Roasting costing should preserve valuation lineage.
-Example:
-Green Bean Cost
-↓ RoastBatch
-Roasted Coffee Cost
-↓ Production Workflow
-Finished Goods Cost
-Valuation continuity should remain:
-	•	traceable,
-	•	deterministic,
-	•	and operationally understandable.
-
-Costing vs Accounting Principle
-Roastery OS distinguishes between:
-	•	operational roasting costing,
-	•	and formal accounting systems.
-Example:
-Operational Roast Costing
-≠
-Enterprise Accounting Ledger
-The MVP prioritizes:
-	•	operational profitability visibility,
-	•	not accounting compliance complexity.
-Formal accounting integration may evolve later without redesigning the roasting architecture.
-
-Human-Centered Philosophy
-Roasting costing should remain understandable for roasting operators.
-Operators should be able to:
-	•	understand roasting economics,
-	•	evaluate profitability impact,
-	•	and trace transformation valuation  without accounting-level complexity.
-Operational clarity should take priority over financial abstraction.
-
-AI Boundary Philosophy
-AI systems may:
-	•	analyze roasting profitability,
-	•	identify costing anomalies,
-	•	recommend optimization opportunities,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic roasting valuation behavior.
-Critical costing operations must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
-
-MVP Scope
-The MVP Roast Costing system should prioritize:
-	•	yield-aware valuation,
-	•	roasted inventory costing,
-	•	operational profitability visibility,
-	•	and deterministic costing continuity.
-The MVP intentionally excludes:
-	•	enterprise accounting systems,
-	•	industrial ERP finance modules,
-	•	tax orchestration,
-	•	and advanced manufacturing accounting.
-
-Architectural Notes
-Roast Costing Logic is one of the foundational operational intelligence layers inside the Roasting Engine.
-Costing systems influence:
-	•	pricing,
-	•	profitability,
-	•	inventory valuation,
-	•	production planning,
-	•	and operational analytics.
-Roasting costing should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend costing behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The Roast Costing system is designed to support future evolution toward:
-	•	profitability analytics,
-	•	production intelligence,
-	•	forecasting systems,
-	•	AI-assisted operational optimization,
-	•	and advanced roasting economics.
-However, roasting costing behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
-
-Philosophy Summary
-Roasting costing is not merely:
-	•	inventory repricing,
-	•	or accounting adjustment.
-Roasting costing is:
-	•	transformation-aware valuation,
-	•	yield-adjusted production economics,
-	•	and operational profitability evolution.
-Roasting changes not only inventory quantity,  but also inventory value.

@@ -2,345 +2,77 @@
 
 ## Purpose
 
-This document defines the inventory transformation system used across Roastery OS.
+This document defines the inventory transformation model used across Roastery OS.
 
 The purpose of Inventory Transformation is to:
-- represent production evolution,
-- preserve transformation lineage,
-- support yield-aware workflows,
-- maintain deterministic inventory behavior,
-- and model real-world coffee production processes.
+- represent physical material conversions as deterministic state transitions,
+- support $N:M$ multi-input and multi-output `InventoryLot` transformations,
+- preserve complete genealogical lineage ($L_{\text{in}} \rightarrow T \rightarrow L_{\text{out}}$),
+- support yield-aware mass and volume balance tracking,
+- and maintain continuous cost flow provenance across all roastery processes.
 
-Inventory transformation is one of the core architectural foundations of Roastery OS.
-
-The system treats inventory as evolving operational material rather than static stock.
+Inventory transformation is governed by the frozen **Transformation Contract**.
 
 ---
 
-# Core Philosophy
+# Core Philosophy: Generic N:M Material Transformation
 
-Roastery OS treats production workflows as:
-- inventory transformation,
-- operational evolution,
-- and traceable material conversion.
-
-Inventory transformation represents:
-- material change,
-- operational progression,
-- and production-state evolution.
-
-Every transformation should preserve:
-- operational meaning,
-- quantity lineage,
-- costing continuity,
-- and traceability visibility.
-
----
-
-# Transformation Philosophy
-
-Traditional POS inventory systems commonly interpret inventory as:
+Traditional inventory systems model production as stage-gated movements between rigid table silos. Roastery OS models all production activities under a unified, generic transformation paradigm:
 
 ```text
-Stock In
-↓
-Stock Out
-Roastery OS uses a transformation-oriented operational model:
-Raw Material
-↓
-Transformation Process
-↓
-New Inventory State
-↓
-Further Transformation
-↓
-Sellable Product
-Inventory does not disappear.
-Inventory evolves.
+[ Input InventoryLot(s) ] ──► [ Transformation Process ] ──► [ Output InventoryLot(s) ]
+```
 
-Transformation Workflow Principle
-Every meaningful production process should create:
-	•	a new inventory state,
-	•	a new operational identity,
-	•	and a new traceable production layer.
-Example:
-Green Beans
-↓ roasting
-Roasted Coffee
-↓ blending
-Blend Inventory
-↓ packaging
-Finished Goods
-Each stage represents:
-	•	different operational behavior,
-	•	different costing structure,
-	•	and different production readiness.
+### Cardinality Configurations Supported:
+- **$1 \rightarrow 1$**: Single-origin roast run (Green Coffee Lot $\rightarrow$ Roasted Coffee Lot).
+- **$1 \rightarrow N$**: Multi-profile splitting or portion bagging (Roasted Bulk Lot $\rightarrow$ Retail Bags + Bulk Wholesale Containers).
+- **$N \rightarrow 1$**: Pre-roast or post-roast blending (Brazil Lot + Ethiopia Lot $\rightarrow$ Blend Lot).
+- **$N \rightarrow M$**: Complex multi-product runs with co-products or byproduct recovery (Roasted Coffee Lot + Water + Nitrogen $\rightarrow$ Packaged Nitro Cold Brew Cans + Bottled Concentrate + Spent Grounds Lot).
 
-Transformation Entity Principle
-Transformations should preserve explicit relationships between:
-	•	source inventory,
-	•	transformation process,
-	•	and resulting inventory.
-Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-This relationship should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally readable.
+---
 
-Core Transformation Types
-Roastery OS currently recognizes several primary transformation categories.
-Examples:
-Roasting
-Blending
-Grinding
-Packaging
-Liquid Production
-Derivative Production
-Each transformation type may:
-	•	behave differently,
-	•	use different costing logic,
-	•	and generate different inventory structures.
+# Transformation Execution Mechanics
 
-Roasting Transformation
-Purpose
-Represents transformation from:
-	•	green coffee,
-	•	into roasted coffee inventory.
+When a `Transformation` executes:
+1. **Input Depletion:** Specified quantities ($\Delta Q_{\text{in}}$) are deducted from input `InventoryLot` instances via `InventoryMovement` records (`Type: TRANSFORMATION_CONSUMPTION`).
+2. **Process Execution:** Physical parameters (roast curve, brew temperature, blend ratios, labor time) are recorded.
+3. **Output Creation:** New `InventoryLot` instances are created with measured output quantities ($Q_{\text{out}}$) via `InventoryMovement` records (`Type: TRANSFORMATION_OUTPUT`).
+4. **Economic Valuation:** The Costing Engine pools consumed input values ($V_{\text{consumed}} = \sum \Delta Q_{\text{in}} \times U_{\text{in}}$) plus direct capitalized `CostEvent` expenses ($C_{\text{direct}}$), and assigns economic unit costs ($U_{\text{out}}$) to output lots via Costing Equation 1.
+5. **Yield Evaluation:** Physical yield ratio is calculated ($Y = Q_{\text{out}} / Q_{\text{in}}$) when input and output units share dimensional categories.
 
-Example
-100kg Green Beans
-↓ RoastBatch
-82kg Roasted Coffee
+---
 
-Operational Characteristics
-Roasting transformation should preserve:
-	•	yield percentage,
-	•	roast profile,
-	•	source green bean references,
-	•	and operational traceability.
-Roasting is considered:
-	•	a material transformation,
-	•	not a simple inventory deduction.
+# Common Roastery Transformation Patterns
 
-Blending Transformation
-Purpose
-Represents transformation from:
-	•	multiple roasted inventories,
-	•	into blend inventory.
+### 1. Roasting Transformation
+- **Inputs:** `InventoryLot` (`Material.category == RAW_COFFEE`).
+- **Process Template:** Guided by `RoastProfileMaster`.
+- **Outputs:** `InventoryLot` (`Material.category == INTERMEDIATE`, Roasted Whole Bean).
+- **Yield Behavior:** Natural moisture/mass shrinkage (e.g. $Y \approx 84\% - 87\%$). Output unit cost increases to absorb mass shrinkage.
 
-Example
-Roasted Coffee A
-+
-Roasted Coffee B
-↓ BlendBatch
-Blend Inventory
+### 2. Blending Transformation
+- **Inputs:** Multiple `InventoryLot` instances of roasted whole beans or green coffee.
+- **Outputs:** Single blended `InventoryLot`.
+- **Yield Behavior:** $Y \approx 100\%$ (mass balance conserved).
 
-Operational Characteristics
-Blend transformation should preserve:
-	•	recipe composition,
-	•	component ratios,
-	•	source inventory lineage,
-	•	and costing continuity.
-Blend inventory becomes:
-	•	a new operational inventory identity.
+### 3. Grinding & Portion Packaging Transformation
+- **Inputs:** 
+  - Roasted Whole Bean `InventoryLot` (Mass UOM: `kg`/`g`).
+  - Physical Bags / Pouches `InventoryLot` (Count UOM: `ea`).
+  - Degassing Valves / Labels `InventoryLot` (Count UOM: `ea`).
+- **Outputs:** Packaged portion-packed `InventoryLot` (Count UOM: `ea`).
+- **Commercial Context:** Output lot is commercially ready to fulfill matching `SKU` demand.
 
-Grinding Transformation
-Purpose
-Represents transformation from:
-	•	whole bean inventory,
-	•	into ground coffee inventory.
+### 4. Liquid Extraction & Bottling Transformation
+- **Inputs:** Ground Coffee `InventoryLot` (Mass: `kg`) + Water (Volume: `L`) + Bottles `InventoryLot` (Count: `ea`).
+- **Outputs:** Bottled Cold Brew `InventoryLot` (Count: `ea`) + Optional Spent Grounds `InventoryLot`.
 
-Example
-Whole Bean Inventory
-↓ Grinding
-Ground Coffee Inventory
+---
 
-Operational Characteristics
-Grinding transformation may affect:
-	•	inventory usability,
-	•	shelf life,
-	•	packaging workflow,
-	•	and sales readiness.
-Ground coffee inventory should remain traceable to:
-	•	roast batch,
-	•	blend source,
-	•	and production workflow.
+# Architectural Invariants
 
-Packaging Transformation
-Purpose
-Represents transformation from:
-	•	production inventory,
-	•	into sellable finished goods.
+1. **Conservation of Material Lineage:** Every output `InventoryLot` maintains an immutable lineage reference to the originating `Transformation` and its parent input lots.
+2. **Deterministic Ledger Updates:** Transformation consumption and output creation always generate linked `InventoryMovement` records.
+3. **Decoupling from Commercial SKUs:** Transformations produce physical `InventoryLot` instances referencing `MaterialMaster`. Commercial sales are fulfilled from these lots contextually.
+4. **Separation of Economic and Physical Ownership:** Inventory Engine owns physical lot balances and movement execution. Costing Engine owns cost pool aggregation and output unit cost calculations.
 
-Example
-5kg Roasted Coffee
-↓ Packaging
-20 x 250g Retail Bags
-
-Operational Characteristics
-Packaging transformation may affect:
-	•	SKU identity,
-	•	packaging cost,
-	•	inventory count,
-	•	and sales categorization.
-Packaging is treated as:
-	•	operational transformation,
-	•	not merely labeling activity.
-
-Liquid Production Transformation
-Purpose
-Represents transformation into:
-	•	cold brew,
-	•	RTD coffee,
-	•	concentrate,
-	•	or liquid derivative products.
-
-Example
-Roasted Coffee
-↓ Brewing Process
-Cold Brew Inventory
-
-Operational Characteristics
-Liquid production may introduce:
-	•	liquid volume logic,
-	•	expiration tracking,
-	•	production batch complexity,
-	•	and derivative costing behavior.
-The architecture should support future expansion of liquid production systems.
-
-Yield Awareness Principle
-Transformation workflows should preserve yield behavior.
-Example:
-100kg Green Beans
-↓ roasting
-82kg Roasted Coffee
-Yield loss should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally meaningful.
-Yield is considered:
-	•	production intelligence,
-	•	not inventory error.
-
-Deterministic Transformation Principle
-All inventory transformations must remain deterministic.
-Transformations should:
-	•	preserve quantity lineage,
-	•	generate movement records,
-	•	produce predictable outcomes,
-	•	and remain auditable.
-Inventory transformation should never produce ambiguous operational states.
-
-Traceability Principle
-Transformation workflows should preserve operational lineage.
-Example:
-Green Bean Lot
-↓ RoastBatch
-Roasted Coffee
-↓ BlendBatch
-Blend Inventory
-↓ Packaging Batch
-Retail Product
-Transformation history should remain:
-	•	human-readable,
-	•	operationally meaningful,
-	•	and traceable across all production stages.
-
-Costing Continuity Principle
-Transformation workflows should preserve costing continuity.
-Transformation processes may affect:
-	•	unit cost,
-	•	production overhead,
-	•	packaging cost,
-	•	and operational profitability.
-Costing relationships should remain:
-	•	deterministic,
-	•	traceable,
-	•	and auditable.
-
-Transformation vs Consumption Principle
-Roastery OS distinguishes between:
-	•	transformation,
-	•	and consumption.
-Example:
-Roasting
-→ transformation
-
-Office Coffee Usage
-→ consumption
-Transformation creates:
-	•	new inventory state.
-Consumption does not.
-This distinction preserves operational clarity.
-
-Human-Centered Philosophy
-Transformation workflows should feel natural for roasting operations.
-Operators should be able to:
-	•	understand inventory evolution,
-	•	trace production flow,
-	•	and identify operational relationships  without enterprise ERP complexity.
-Operational clarity should take priority over theoretical manufacturing perfection.
-
-AI Boundary Philosophy
-AI systems may:
-	•	analyze transformation efficiency,
-	•	recommend production optimization,
-	•	and identify yield anomalies.
-However:  AI must not autonomously manipulate deterministic inventory transformations.
-Critical transformation workflows must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
-
-MVP Scope
-The MVP Inventory Transformation system should prioritize:
-	•	roasting transformation,
-	•	blend transformation,
-	•	packaging transformation,
-	•	and operational traceability.
-The MVP intentionally excludes:
-	•	industrial manufacturing orchestration,
-	•	advanced factory routing,
-	•	automated production optimization,
-	•	and enterprise manufacturing complexity.
-
-Architectural Notes
-Inventory Transformation is one of the most defining architectural layers within Roastery OS.
-Most production workflows are fundamentally:
-	•	inventory transformations,
-	•	operational evolutions,
-	•	and traceable material conversions.
-Transformation systems should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend transformation behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The Inventory Transformation system is designed to support future evolution toward:
-	•	production orchestration,
-	•	manufacturing intelligence,
-	•	forecasting systems,
-	•	AI-assisted optimization,
-	•	and ecosystem-wide operational analytics.
-However, transformation workflows should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
-
-Philosophy Summary
-Inventory transformation is not:
-	•	stock deduction,
-	•	or inventory mutation.
-Inventory transformation is:
-	•	operational evolution,
-	•	production progression,
-	•	and traceable material change.
-Inventory does not simply move.
-Inventory transforms.

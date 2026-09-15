@@ -6,7 +6,7 @@ This document defines the roast profile application philosophy and operational r
 
 The purpose of Roast Profile Application is to:
 - standardize roasting intention,
-- support production consistency,
+- support production consistency as a `ProcessTemplate` / `TransformationTemplate`,
 - preserve roast identity references,
 - maintain roasting workflow continuity,
 - and separate roasting targets from actual roasting execution.
@@ -22,8 +22,8 @@ Roast profiles are not the roast itself.
 
 # Core Philosophy
 
-Roastery OS treats RoastProfile as:
-- reusable roasting reference,
+Roastery OS treats `RoastProfileMaster` as:
+- reusable roasting reference and process template,
 - operational roasting intention,
 - and production targeting structure.
 
@@ -34,7 +34,7 @@ Roast profiles are not:
 Roast profiles define:
 - how roasting is intended to behave.
 
-RoastBatch defines:
+`RoastBatch` defines:
 - how roasting actually happened.
 
 This separation is one of the foundational architectural principles inside the Roasting Engine.
@@ -49,284 +49,149 @@ Roasting workflows commonly require:
 - and reusable roasting targets.
 
 Example:
+```text
+Filter Roast Profile
+Espresso Roast Profile
+Omni Roast Profile
+```
 
-```text id="x7m4tw"
-Filter Roast
-Espresso Roast
-Omni Roast
 These are:
-	•	roast intentions,
-	•	not guaranteed roasting outcomes.
-The system should preserve:
-	•	profile reusability,
-	•	execution flexibility,
-	•	and operational traceability.
+- roast intentions,
+- not guaranteed roasting outcomes.
 
-Core Relationship Principle
-RoastProfile and RoastBatch are separate operational entities.
-Example:
-RoastProfile
+The system preserves:
+- profile reusability,
+- execution flexibility,
+- and operational traceability.
+
+---
+
+## Core Relationship Principle
+
+`RoastProfileMaster` and `RoastBatch` are separate operational entities:
+
+```text
+RoastProfileMaster (Template / Target)
 ↓ applied to
-RoastBatch
+RoastBatch (Transformation Execution)
+```
+
 This relationship preserves:
-	•	operational flexibility,
-	•	production continuity,
-	•	and future analytical capability.
+- operational flexibility,
+- production continuity,
+- and future analytical capability.
 
-RoastProfile vs RoastBatch Principle
-Example:
-RoastProfile
-≠
-RoastBatch
+---
 
-RoastProfile
-Represents:
-	•	roasting target,
-	•	intended roast behavior,
-	•	reusable roasting reference,
-	•	and production standardization.
+## RoastProfile vs RoastBatch Principle
 
-RoastBatch
-Represents:
-	•	actual roasting execution,
-	•	operational transformation event,
-	•	and real production outcome.
-This separation preserves:
-	•	analytical integrity,
-	•	operational realism,
-	•	and roasting flexibility.
+```text
+RoastProfileMaster ≠ RoastBatch
+```
 
-Roast Profile Purpose
-Roast profiles may define:
-	•	intended roast style,
-	•	target development,
-	•	operational roasting behavior,
-	•	and product-oriented roasting direction.
-Examples:
-Filter Roast
-Espresso Roast
-Omni Roast
-Blend Component Roast
-Profiles support:
-	•	roasting consistency,
-	•	operational repeatability,
-	•	and production standardization.
+**RoastProfileMaster** represents:
+- roasting target parameters (charge temp, target drop temp, expected development time ratio, expected loss percentage),
+- intended roast behavior,
+- reusable roasting reference,
+- and production standardization.
 
-Core Roast Profile Components
-Roast profiles may contain:
-Profile Name
-Roast Intent
-Target Roast Level
-Target Development
-Target Temperature
-Target Duration
-Operator Notes
-The MVP should preserve:
-	•	lightweight profile structures,
-	•	not industrial roasting automation systems.
+**RoastBatch** represents:
+- actual roasting execution,
+- operational transformation event,
+- and real production outcome (actual loss, actual duration, actual curves).
 
-Roast Intent Philosophy
-Roast intent represents:
-	•	the operational purpose of roasting.
-Examples:
-Filter
-Espresso
-Omni
-Blend Component
-Roast intent may influence:
-	•	roast approach,
-	•	yield behavior,
-	•	production workflow,
-	•	and product destination.
-The system should preserve:
-	•	roasting intention continuity,
-	•	not rigid roasting enforcement.
+This separation preserves analytical integrity, operational realism, and roasting flexibility.
 
-Profile Application Workflow
-Example operational flow:
-Select Green Bean
-↓
-Select RoastProfile
-↓
-Create RoastBatch
-↓
-Execute Roasting
-↓
-Generate RoastedCoffeeInventory
-Roast profiles should:
-	•	guide roasting,
-	•	not control roasting autonomously.
+---
 
-Flexibility Principle
-Roast profiles should remain:
-	•	adaptable,
-	•	operator-friendly,
-	•	and operationally flexible.
-Real roasting conditions may vary due to:
-	•	green bean condition,
-	•	environmental changes,
-	•	machine behavior,
-	•	and operator decisions.
-The system should preserve:
-	•	operational realism,
-	•	not theoretical roasting perfection.
+## Core Roast Profile Components
 
-Roast Observation Relationship Principle
-Actual roasting execution may differ from:
-	•	profile intention.
-Example:
-Target Development:
-18%
+A `RoastProfileMaster` defines:
+- `profileName`: Human-readable identifier.
+- `targetRoastLevel`: Light, Medium-Light, Medium, Medium-Dark, Dark.
+- `roastIntent`: Filter, Espresso, Omni, Blend Component.
+- `targetDevelopmentTimeRatio`: e.g., 14.5%–16.0%.
+- `targetDropTemperatureC`: e.g., 208°C.
+- `targetTotalDurationSeconds`: e.g., 630s.
+- `expectedWeightLossPercentage`: e.g., 14.2%.
+- `recommendedChargeTemperatureC`: e.g., 200°C.
+- `recommendedBatchSizeKg`: e.g., 12.0 kg.
 
-Actual Development:
-20%
-The system should preserve:
-	•	intended roasting behavior,
-	•	actual roasting behavior,
-	•	and execution history.
-This separation enables:
-	•	roasting analysis,
-	•	production learning,
-	•	and future roasting intelligence systems.
+---
 
-Inventory Relationship Principle
-RoastProfile influences:
-	•	resulting roasted inventory identity.
-Example:
-RoastProfile
-↓ RoastBatch
-RoastedCoffeeInventory
-Roasted inventory should preserve:
-	•	roasting intention,
-	•	execution history,
-	•	and transformation continuity.
-Roast profile relationships should remain:
-	•	traceable,
-	•	readable,
-	•	and operationally meaningful.
+## Profile Application Workflow
 
-Yield Relationship Principle
-Different roast profiles may influence:
-	•	roasting yield behavior,
-	•	shrinkage characteristics,
-	•	and production economics.
-Examples:
-Filter Roast
-→ potentially higher yield
+Operational flow:
+1. Select Green Coffee `MaterialMaster` (`RAW_COFFEE`) and input `InventoryLot`.
+2. Select target `RoastProfileMaster`.
+3. Create `RoastBatch` referencing `profileId`.
+4. Execute roasting with profile guidance.
+5. Record actual output weight and create intermediate roasted `InventoryLot`.
 
-Espresso Roast
-→ potentially lower yield
-The system should preserve:
-	•	profile relationship,
-	•	yield continuity,
-	•	and operational analytics capability.
+Roast profiles guide roasting; they do not control roasting autonomously.
 
-Costing Relationship Principle
-Roast profiles may indirectly affect:
-	•	roasting economics,
-	•	yield-adjusted valuation,
-	•	and profitability behavior.
-Example:
-Darker Roast
-→ higher shrinkage possibility
-→ higher cost per kg
-The system should preserve:
-	•	transformation-aware costing continuity,
-	•	not merely static inventory valuation.
+---
 
-Traceability Principle
-Roast profile application should remain traceable.
-Example:
-RoastProfile
-↓ applied to
-RoastBatch
-↓ creates
-RoastedCoffeeInventory
-The system should preserve:
-	•	roasting intention lineage,
-	•	production continuity,
-	•	and operational history visibility.
+## Roast Observation Relationship Principle
 
-Deterministic Workflow Principle
-Critical roast profile relationships must remain deterministic.
-Examples:
-	•	RoastProfile assignment,
-	•	RoastBatch relationship,
-	•	inventory lineage,
-	•	and production continuity.
-The system should avoid:
-	•	ambiguous profile relationships,
-	•	hidden roasting mutation,
-	•	and disconnected execution history.
+Actual roasting execution may differ from profile intention:
+- **Target Development Time Ratio**: 15.0%
+- **Actual Development Time Ratio**: 16.2%
+- **Expected Weight Loss**: 14.0%
+- **Actual Weight Loss**: 14.8%
 
-Human-Centered Philosophy
-Roast profile systems should remain understandable for roasting operators.
-Operators should be able to:
-	•	create roast profiles,
-	•	apply roasting intention,
-	•	and preserve operational roasting consistency  without industrial manufacturing complexity.
-Operational clarity should take priority over rigid roasting standardization.
+The system preserves both intended targets and actual execution telemetry, enabling:
+- roasting consistency analysis,
+- production quality control,
+- and profile refinement.
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze roast consistency,
-	•	recommend profile adjustments,
-	•	identify roasting trends,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic roast profile relationships.
-Critical roasting workflows must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+---
 
-MVP Scope
-The MVP Roast Profile system should prioritize:
-	•	reusable roasting references,
-	•	roast intent assignment,
-	•	RoastProfile to RoastBatch relationships,
-	•	and operational roasting consistency support.
-The MVP intentionally excludes:
-	•	automated roast curve control,
-	•	machine-learning roasting automation,
-	•	industrial roasting telemetry systems,
-	•	and autonomous roasting orchestration.
+## Inventory Relationship Principle
 
-Architectural Notes
-Roast Profile Application is one of the operational consistency layers inside the Roasting Engine.
-Profile systems influence:
-	•	roasting standardization,
-	•	production continuity,
-	•	inventory identity,
-	•	yield behavior,
-	•	and operational analytics.
-Roast profiles should remain:
-	•	modular,
-	•	flexible,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend profile behavior without redesigning the operational foundation.
+`RoastProfileMaster` influences the resulting roasted coffee's material definition and lot metadata:
 
-Long-Term Direction
-The Roast Profile system is designed to support future evolution toward:
-	•	roast consistency analytics,
-	•	AI-assisted roasting intelligence,
-	•	profile optimization systems,
-	•	roasting comparison analytics,
-	•	and production intelligence infrastructure.
-However, roast profile behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+```text
+Input InventoryLot (RAW_COFFEE)
+↓ RoastBatch (with RoastProfileMaster)
+Output InventoryLot (INTERMEDIATE Roasted Coffee)
+```
 
-Philosophy Summary
-Roast profiles are not:
-	•	roasting execution,
-	•	or guaranteed roast outcome.
-Roast profiles are:
-	•	roasting intention,
-	•	reusable roasting references,
-	•	and operational production targeting.
-Roast profiles define how roasting is intended to behave inside Roastery OS.
+Roasted inventory preserves:
+- roasting intention (`profileId`),
+- execution history (`roastBatchId`),
+- and transformation continuity.
+
+---
+
+## Yield & Costing Relationship
+
+Different roast profiles yield different physical weight losses:
+- **Filter Roast**: ~12%–14% loss (higher physical yield).
+- **Dark Espresso Roast**: ~16%–18% loss (lower physical yield).
+
+Roasting Engine records the physical yield and loss percentages. Economic valuation is strictly computed by `07_COSTING_ENGINE`:
+$$U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$$
+
+---
+
+## Deterministic Workflow Principle
+
+Critical roast profile relationships must remain deterministic:
+- `RoastProfileMaster` assignment to `RoastBatch`,
+- input lot consumption and output lot production,
+- and immutable batch telemetry logs.
+
+---
+
+## AI Boundary Philosophy
+
+AI systems may analyze profile adherence, suggest rate-of-rise adjustments, or detect profile drift across atmospheric seasons. However, AI systems must never autonomously alter frozen profile definitions or mutate active batch records without roaster approval.
+
+---
+
+## Philosophy Summary
+
+Roast profiles are not roasting executions or guaranteed outcomes. Roast profiles are **roasting intentions, reusable process templates, and operational production targets**. Roast profiles define how roasting is intended to behave inside Roastery OS.
+
 

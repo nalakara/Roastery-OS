@@ -67,15 +67,17 @@ Core Relationship Principle
 Every supplier relationship should preserve:
 	•	operational sourcing continuity.
 Example:
-Supplier
+Supplier (SupplierMaster)
 ↓
-Material Supply
+Supplied Material (MaterialMaster)
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Workflow
+InventoryLot (Initial acquisition cost basis & physical balance)
 ↓
-Finished Product
+Operational Workflow / Transformation
+↓
+Downstream InventoryLot(s)
 
 Supplier continuity should remain:
 	•	operationally connected,
@@ -90,6 +92,7 @@ Green Coffee Partnership
 Packaging Partnership
 Bottle Manufacturing Relationship
 Ingredient Sourcing Relationship
+Equipment / Consumables Sourcing
 
 Supplier relationships should preserve:
 	•	sourcing trust continuity.
@@ -114,7 +117,7 @@ Relationship lifecycle continuity preserves:
 
 Material Continuity Principle
 Supplier relationships connect to:
-	•	operational material continuity.
+	•	operational material continuity (MaterialMaster).
 Examples:
 Green Coffee
 Packaging Materials
@@ -136,11 +139,13 @@ Supplier relationships interact with:
 Example:
 Supplier
 ↓
-Purchase Order
+Purchase Order / Contract
 ↓
-Inventory Intake
+PURCHASE_RECEIPT Movement
 ↓
-Operational Workflow
+InventoryLot (AVAILABLE in 02_INVENTORY_ENGINE)
+↓
+Operational Workflow / Transformation
 
 Procurement continuity preserves:
 	•	sourcing explainability,
@@ -209,13 +214,13 @@ Pricing Continuity Principle
 Supplier relationships influence:
 	•	operational costing continuity.
 Example:
-Supplier Pricing
+Supplier Invoice Price
 ↓
-Inventory Valuation
+InventoryLot Acquisition Cost Basis (02_INVENTORY_ENGINE)
 ↓
-Operational Costing
+Lot Valuation & Cost Propagation (07_COSTING_ENGINE)
 ↓
-Profitability
+Profitability Visibility
 
 Pricing continuity preserves:
 	•	operational economic explainability.
@@ -257,9 +262,9 @@ Supplier System
 ↓
 Procurement Engine
 ↓
-Inventory Engine
+Inventory Engine (PURCHASE_RECEIPT → InventoryLot)
 ↓
-Costing Engine
+Costing Engine (Lot Valuation & COGS)
 ↓
 Traceability Engine
 
@@ -271,18 +276,14 @@ This creates:
 Upstream Traceability Principle
 Supplier relationships support:
 	•	upstream operational traceability.
-Example:
-Customer Product
+Generic Model:
+Downstream InventoryLot (e.g. Retail Bag / Bottled RTD)
+↓ Downstream Transformations
+Precursor InventoryLots
+↓ Originating Intake (PURCHASE_RECEIPT)
+Purchased InventoryLot
 ↓
-ProductionBatch
-↓
-BlendBatch
-↓
-RoastBatch
-↓
-GreenBeanInventory
-↓
-Supplier
+Supplier (SupplierMaster)
 
 Supplier continuity preserves:
 	•	sourcing ancestry visibility.

@@ -5,15 +5,11 @@
 This document defines the roasting traceability philosophy and operational traceability behavior used across Roastery OS.
 
 The purpose of Roast Traceability is to:
-- preserve roasting lineage,
-- maintain transformation visibility,
+- preserve roasting lineage across parent and child `InventoryLot` instances,
+- maintain transformation visibility from green procurement to roasted intermediate and finished goods,
 - support production continuity,
 - enable operational accountability,
 - and provide readable roasting history across inventory evolution workflows.
-
-Roasting is one of the most critical traceability layers inside Roastery OS.
-
-Roast traceability preserves the operational memory of how coffee evolves through roasting transformation.
 
 ---
 
@@ -24,289 +20,56 @@ Roastery OS treats roasting traceability as:
 - transformation continuity,
 - and roasting relationship visibility.
 
-Roast traceability is not merely:
-- roast history logging,
-- or batch numbering.
-
 Roast traceability represents:
-- where roasted inventory originated,
-- how roasting transformation occurred,
-- and how production relationships evolved.
-
-The system should preserve roasting history in:
-- a readable,
-- traceable,
-- and operationally meaningful way.
+- which input `InventoryLot` instances were consumed,
+- how roasting transformation occurred (`RoastBatch` execution, telemetry, profile adherence),
+- and which output `InventoryLot` instances were created.
 
 ---
 
-# Traceability Philosophy
+# Traceability Architecture
 
-Roasting is one of the first major transformation events inside Roastery OS.
+Roasting connects agricultural green coffee sourcing to downstream roasted products:
 
-Example:
+```text
+Supplier / Producer Harvest Lot
+↓ Purchase Order Receipt (PO)
+Input InventoryLot (Material: RAW_COFFEE)
+↓ RoastBatch (Transformation: Profile, Telemetry, Yield)
+Output InventoryLot (Material: INTERMEDIATE Roasted)
+↓ Packaging (SKU) or Blending (BlendBatch)
+Finished Goods InventoryLot (SKU)
+```
 
-```text id="v8m2qa"
-Supplier
-↓
-GreenBean
-↓
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-Roasting traceability should preserve:
-	•	sourcing continuity,
-	•	roasting execution history,
-	•	inventory evolution,
-	•	and operational lineage.
-Traceability should tell the operational story of roasted coffee.
+---
 
-RoastBatch Traceability Principle
-Every roasting execution should generate:
-	•	RoastBatch identity,
-	•	transformation references,
-	•	operational timestamps,
-	•	and lineage continuity.
-Example:
-RB-20260520-001
-RoastBatch acts as:
-	•	transformation anchor,
-	•	inventory lineage node,
-	•	and roasting operational reference.
-Batch systems should remain:
-	•	readable,
-	•	deterministic,
-	•	traceable,
-	•	and operationally meaningful.
+## Core Traceability Graph Properties
 
-Core Traceability Relationships
-Roasting traceability should preserve explicit operational relationships.
-Example:
-Supplier
-↓
-GreenBean
-↓
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ Further Production
-Every relationship should remain:
-	•	connected,
-	•	readable,
-	•	and operationally understandable.
+Every `RoastBatch` acts as an immutable transformation node recording:
+1. `roastBatchId`: Unique transformation execution identifier.
+2. `profileId`: Target process template applied (`RoastProfileMaster`).
+3. `consumedLots`: Array of input `InventoryLot` IDs, quantities consumed, and unit cost basis.
+4. `producedLots`: Array of output `InventoryLot` IDs, quantities yielded, and allocated unit cost basis ($U_{\text{out}}$).
+5. `roasterTelemetry`: Immutable record of charge temp, drop temp, duration, DTR%, and loss %.
 
-Source Continuity Principle
-Roasted inventory should preserve source continuity.
-Example:
-RoastedCoffeeInventory
-├── references → RoastBatch
-├── references → GreenBean
-├── references → Origin
-├── references → Processing Method
-└── references → Supplier
-Roasted inventory should remain traceable to:
-	•	its sourcing origin,
-	•	procurement lineage,
-	•	and roasting execution history.
+---
 
-Transformation Visibility Principle
-Roasting transformations should never become operational black boxes.
-The system should preserve:
-	•	what inventory transformed,
-	•	how transformation occurred,
-	•	when roasting happened,
-	•	and what operational process created the roasted inventory.
-Example:
-100kg Green Beans
-↓ RoastBatch
-82kg Roasted Coffee
-Transformation history should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally meaningful.
+## Forward & Backward Lineage
 
-Yield Traceability Principle
-Yield evolution should remain traceable across roasting workflows.
-Example:
-Input:
-100kg Green Beans
+- **Forward Traceability (Green $\rightarrow$ Roasted $\rightarrow$ Bagged $\rightarrow$ Order)**:
+  Starting from a green coffee `InventoryLot`, determine every `RoastBatch` that consumed it, every resulting roasted `InventoryLot`, and every packaged retail SKU or blend containing that lot.
+- **Backward Traceability (Customer Bag $\rightarrow$ Roast Batch $\rightarrow$ Green Lot $\rightarrow$ Farm)**:
+  Starting from a packaged `InventoryLot` barcode, trace back to the exact `RoastBatch`, roaster operator, thermal profile curve, green `InventoryLot`, and original agricultural origin.
 
-Output:
-82kg Roasted Coffee
-The system should preserve:
-	•	input quantity,
-	•	output quantity,
-	•	yield percentage,
-	•	and roasting shrinkage visibility.
-Yield behavior is considered:
-	•	operational intelligence,
-	•	not hidden inventory mutation.
+---
 
-Roast Profile Traceability Principle
-Roast execution should preserve roast profile relationships.
-Example:
-RoastProfile
-↓ applied to
-RoastBatch
-This relationship should preserve:
-	•	roasting intention,
-	•	production targeting,
-	•	and roast consistency history.
-Roast profiles represent:
-	•	roasting references.
-RoastBatch represents:
-	•	actual roasting execution.
-This distinction preserves:
-	•	operational clarity,
-	•	analytical flexibility,
-	•	and production continuity.
+## AI Boundary Philosophy
 
-Inventory Relationship Principle
-Roasting traceability should preserve inventory continuity.
-Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-This relationship should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally readable.
-Inventory evolution should remain connected throughout all transformation stages.
+AI systems may assist roasters in querying traceability graphs (e.g., "Find all customer bags roasted from green lot LOT-2026-04"). However, AI systems must **never** modify or overwrite the immutable lineage relationships established during batch execution.
 
-Costing Traceability Principle
-Roasting traceability should preserve valuation continuity.
-Example:
-Green Bean Cost
-↓ RoastBatch
-Roasted Coffee Cost
-The system should preserve:
-	•	yield-aware valuation,
-	•	transformation costing continuity,
-	•	and profitability lineage.
-Costing evolution should remain:
-	•	traceable,
-	•	deterministic,
-	•	and operationally understandable.
+---
 
-Production Continuity Principle
-Roasting traceability should support future production workflows.
-Example:
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ PackagingBatch
-FinishedGoodsInventory
-Roasting lineage should remain connected to:
-	•	future transformations,
-	•	packaging workflows,
-	•	and customer-facing products.
-Roast traceability is one of the foundations of end-to-end production visibility.
+## Philosophy Summary
 
-Sales Traceability Principle
-Finished products should remain traceable back to roasting execution.
-Example:
-Retail Product
-↓ PackagingBatch
-↓ RoastBatch
-↓ Green Bean Source
-This enables:
-	•	operational accountability,
-	•	quality investigation,
-	•	and production transparency.
-The MVP should preserve:
-	•	lightweight but meaningful roasting traceability.
+Roast traceability is not merely logging. Roast traceability is **roasting lineage, transformation visibility, and operational production storytelling**. Roast traceability preserves the complete operational memory of coffee evolution inside Roastery OS.
 
-Deterministic Traceability Principle
-Roast traceability relationships must remain deterministic.
-The system should preserve:
-	•	explicit operational lineage,
-	•	predictable transformation continuity,
-	•	and auditability.
-The architecture should avoid:
-	•	disconnected inventory relationships,
-	•	hidden roasting mutation,
-	•	and ambiguous production lineage.
-
-Human-Readable Traceability Principle
-Roast traceability should remain understandable by operational users.
-Operators should be able to answer questions such as:
-Which roast batch created this inventory?
-Which green bean was used?
-Which roast profile was applied?
-What was the roasting yield?
-Which products originated from this roast?
-Traceability should support:
-	•	operational understanding,
-	•	not merely technical system logging.
-
-Human-Centered Philosophy
-Roast traceability systems should support operational readability.
-Operators should:
-	•	understand inventory evolution,
-	•	follow roasting relationships,
-	•	and trace production history  without enterprise manufacturing complexity.
-Operational clarity should take priority over industrial traceability bureaucracy.
-
-AI Boundary Philosophy
-AI systems may:
-	•	analyze roasting consistency,
-	•	identify traceability anomalies,
-	•	support operational analytics,
-	•	and recommend production optimization.
-However:  AI must not autonomously alter deterministic roasting lineage relationships.
-Traceability integrity must remain:
-	•	explicit,
-	•	deterministic,
-	•	traceable,
-	•	and human-auditable.
-
-MVP Scope
-The MVP Roast Traceability system should prioritize:
-	•	RoastBatch lineage,
-	•	inventory continuity,
-	•	roasting transformation visibility,
-	•	yield traceability,
-	•	and production relationship preservation.
-The MVP intentionally excludes:
-	•	industrial manufacturing genealogy systems,
-	•	enterprise compliance orchestration,
-	•	automated forensic production tracing,
-	•	and advanced regulatory infrastructure.
-
-Architectural Notes
-Roast Traceability is one of the defining operational visibility layers inside the Roasting Engine.
-Traceability systems influence:
-	•	inventory continuity,
-	•	production visibility,
-	•	operational accountability,
-	•	quality investigation,
-	•	and transformation analytics.
-Roasting traceability should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend traceability behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The Roast Traceability system is designed to support future evolution toward:
-	•	production intelligence,
-	•	quality analytics,
-	•	AI-assisted operational insight,
-	•	ecosystem-wide production visibility,
-	•	and advanced transformation analytics.
-However, roasting traceability should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
-
-Philosophy Summary
-Roast traceability is not merely:
-	•	roast history,
-	•	or batch logging.
-Roast traceability is:
-	•	roasting lineage,
-	•	transformation visibility,
-	•	and operational production storytelling.
-Roast traceability preserves the operational memory of how coffee evolves through roasting inside Roastery OS.

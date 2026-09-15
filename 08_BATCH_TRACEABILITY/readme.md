@@ -92,54 +92,69 @@ across all production workflows.
 Example operational flow:
 
 ```text id="x5m8tw"
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-↓ Sales
+MaterialMaster (Green Coffee)
+↓ Inbound Receiving (PURCHASE_RECEIPT)
+InventoryLot (Green Coffee)
+↓ Transformation (Roasting / RoastBatch)
+InventoryLot (Roasted Coffee)
+↓ Transformation (Blending / BlendBatch)
+InventoryLot (Blend)
+↓ Transformation (Packaging / ProductionBatch)
+InventoryLot (Packaged Coffee SKU Lot)
+↓ POS Fulfillment (Sales Order)
 Customer
+```
 
 Traceability workflows preserve:
-	•	operational continuity, not merely:
+	•	operational continuity,
+not merely:
 	•	transaction history.
 
 Transformation Continuity Philosophy
-Roastery OS treats every operational workflow as:
-	•	lineage-producing transformation.
-Every transformation may create:
-	•	parent-child relationships,
-	•	inventory ancestry,
+Roastery OS treats every operational material conversion as:
+	•	a lineage-producing transformation (`Transformation`).
+Every transformation connects:
+	•	input `InventoryLot`(s),
+	•	transformation execution context (`Batch`),
+	•	and output `InventoryLot`(s).
+This supports:
+	•	$1 \rightarrow 1, N \rightarrow 1, 1 \rightarrow N, N \rightarrow M$ conversions,
+	•	parent-child material ancestry,
 	•	downstream genealogy,
 	•	and operational dependency chains.
 Examples:
-Roasting Transformation
-Blend Transformation
-Packaging Transformation
-Grinding Workflow
-Cold Brew Workflow
-RTD Workflow
+- Roasting Transformation
+- Blend Transformation
+- Packaging Transformation
+- Grinding Workflow
+- Cold Brew Extraction Workflow
+- RTD Formulation Workflow
+- Re-sorting / Reprocessing Workflow
 
 Batch Traceability preserves:
 	•	how operational reality evolves across workflows.
 
 Genealogy Philosophy
 Roastery OS treats inventory as:
-	•	operationally inheritable lineage.
+	•	operationally inheritable material lineage.
 Example:
-Green Bean Lot
+Supplier Origin (SupplierMaster)
 ↓
-Roast Batch
+Green Coffee InventoryLot
 ↓
-Blend Batch
+Roasting Transformation (RoastBatch context)
 ↓
-Production Batch
+Roasted Coffee InventoryLot
 ↓
-Finished Goods
+Blending Transformation (BlendBatch context)
+↓
+Blend InventoryLot
+↓
+Packaging Transformation (ProductionBatch context)
+↓
+Packaged InventoryLot (SKU fulfillment lot)
 
-Every downstream inventory state should preserve:
+Every downstream inventory lot preserves:
 	•	upstream operational ancestry.
 This allows operators to:
 	•	understand origin,
@@ -147,17 +162,20 @@ This allows operators to:
 	•	and preserve operational explainability.
 
 Parent-Child Relationship Philosophy
-Operational transformations create:
-	•	deterministic parent-child relationships.
+Operational transformations create deterministic lineage links between lots:
 Example:
-Parent:
-RoastBatch
+Inputs:
+- InventoryLot A (Roasted Ethiopia)
+- InventoryLot B (Roasted Colombia)
 
-Child:
-BlendBatch
+Transformation / Execution Context:
+- Blend Transformation (executed via BlendBatch)
 
-The system should preserve:
-	•	explicit lineage continuity,
+Outputs:
+- InventoryLot C (House Blend)
+
+The system preserves:
+	•	explicit material lineage continuity,
 	•	deterministic genealogy,
 	•	and traceable transformation relationships.
 
@@ -165,50 +183,55 @@ Cross-Engine Traceability Philosophy
 Batch Traceability spans across:
 	•	multiple operational engines.
 Example:
-Inventory Engine
+Supplier System (Inbound Receiving)
 ↓
-Roasting Engine
+Inventory Engine (Stock Ledger & Lot State)
 ↓
-Blend Engine
+Roasting Engine (Roast Transformation)
 ↓
-Production Engine
+Blend Engine (Blend Transformation)
 ↓
-Costing Engine
+Production Engine (Packaging & Assembly Transformation)
+↓
+POS Engine (Order Fulfillment & Lot Dispatch)
+↓
+Costing Engine (Valuation & COGS Reference)
 
 Traceability acts as:
-	•	the continuity bridge between operational domains.
+	•	the continuity bridge between operational domains.
 This creates:
 	•	ecosystem-wide operational lineage visibility.
 
 Yield Traceability Philosophy
 Operational yield directly affects:
 	•	inventory continuity,
-	•	economic continuity,
+	•	physical mass balance,
 	•	and downstream genealogy.
 Example:
-10kg Input
-↓ roasting shrinkage
-8.5kg Output
+10kg Green Coffee Input Lot
+↓ roasting shrinkage (Transformation)
+8.5kg Roasted Coffee Output Lot
 
 Yield traceability preserves:
 	•	where quantity changed,
 	•	why inventory evolved,
-	•	and how operational transformation behaved.
+	•	and how operational transformation behaved physically.
 Yield visibility is treated as:
 	•	operational truth infrastructure.
+Economic valuation and loss absorption policies remain owned by Costing Engine.
 
 Packaging Traceability Philosophy
 Packaging workflows create:
 	•	commercially transformed lineage states.
 Example:
-BlendInventory
-↓ Packaging Workflow
-FinishedGoodsInventory
+Roasted/Blend InventoryLot + Packaging Material InventoryLot
+↓ Packaging Transformation (ProductionBatch)
+Packaged Goods InventoryLot
 
 Packaging traceability preserves:
 	•	operational-commercial continuity.
-The system should preserve:
-	•	how products operationally became commercially usable.
+The system preserves:
+	•	how materials operationally became commercially usable SKUs.
 
 Derivative Product Philosophy
 Derivative products create:

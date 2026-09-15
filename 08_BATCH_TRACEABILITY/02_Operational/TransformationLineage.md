@@ -27,49 +27,54 @@ where every transformation creates:
 
 # Material Transformation Graph & Causal Lineage
 
-Traceability in Roastery OS is structured as a **Material Transformation Graph**:
+Traceability in Roastery OS is represented conceptually and analytically as a **Material Transformation Graph** (Directed Acyclic Graph read-model):
 
 ```text
 Input Inventory Lot(s) ──► [ Transformation Event ] ──► Output Inventory Lot(s)
                                   │
-                                  ├── Machine ID / Telemetry Logs
-                                  ├── Process Recipe & Parameters
-                                  ├── Operator Identity & Timestamps
-                                  └── Direct Cost Provenance Event
+                                  ├── Execution Context (Batch ID, Machine ID, Operator)
+                                  ├── Process Recipe, Parameters & Telemetry Logs
+                                  ├── Timestamps & Operational Metadata
+                                  └── Cost Provenance Link (07_COSTING_ENGINE reference)
 ```
+
+> [!NOTE]
+> **Representation vs. Domain Ontology:** Graph/DAG terminology describes the mathematical structure of the historical provenance read-model. The underlying domain ontology remains strictly grounded in `InventoryLot`, `Transformation`, `Batch`, and `MaterialMaster`.
 
 ### Temporal and Causal Ordering
 The material transformation graph is inherently acyclic in forward physical production because of physical entropy and time:
 1. **Temporal Ordering:** An output lot cannot physically be produced prior to the consumption of its input lots:
    $$\text{Timestamp}(L_{\text{out}}) \ge \text{Timestamp}(T) \ge \text{Timestamp}(L_{\text{in}})$$
-2. **Causal Immutability:** An output lot cannot be its own ancestor. Once recorded, the genealogical link connecting an input lot, the transformation batch, and the output lot is permanently immutable.
-3. **Recovery & Rework Modeling:** If scrap material, un-bagged beans, or rework is recycled into a later batch, it enters a *subsequent, chronologically distinct* transformation batch, forming a forward-progressing spiral rather than a closed cycle.
+2. **Causal Immutability:** An output lot cannot be its own ancestor. Once recorded, the genealogical link connecting an input lot, the transformation, and the output lot is permanently immutable.
+3. **Recovery & Rework Modeling:** If scrap material, un-bagged beans, or rework is recycled into a later batch, it enters a *subsequent, chronologically distinct* transformation, forming a forward-progressing spiral rather than a closed cycle.
 
 ---
 
 # Multi-Parent and Multi-Child Lineage Dynamics
 
-The lineage model natively supports all manufacturing topologies:
-- **Multi-Parent Lineage (Convergence / Blending):** When a batch consumes multiple lots (e.g., Post-roast blend of 70% Brazil + 30% Ethiopia), the child lot inherits explicit proportion-weighted ancestry links to both parent lots.
+The lineage model natively supports all manufacturing topologies across generic materials:
+- **Multi-Parent Lineage (Convergence / Blending / Assembly):** When a transformation consumes multiple lots (e.g., Post-roast blend of 70% Brazil + 30% Ethiopia, or coffee + cans + nitrogen in RTD packaging), the child lot inherits explicit proportion-weighted ancestry links to all input parent lots.
 - **Multi-Child Lineage (Branching / Fractional Usage):** When an intermediate lot (e.g., 50kg roasted bulk) is allocated across different runs (20kg retail bags + 15kg drip bags + 15kg cold brew), each downstream child lot inherits a direct fractional reference to the shared parent lot.
-- **Cross-Line Convergence:** When composite products (e.g., Holiday Gift Sets) combine products originating from different production lines (RTD Bottles + Drip Sachets), the final package maintains an unbroken genealogical graph back to all green bean origins.
+- **Cross-Line Convergence (Kitting):** When composite products (e.g., Gift Sets) combine products originating from different production lines (RTD Bottles + Drip Sachets), the final package maintains an unbroken genealogical graph back to all component origins.
 
 Cross-Engine Lineage Principle
 Transformation lineage spans across:
 	•	multiple operational systems.
 Example:
-Inventory Engine
+Supplier System (Inbound Receiving)
 ↓
-Roasting Engine
+Inventory Engine (Stock Ledger)
 ↓
-Blend Engine
+Roasting Engine (Roasting Transformation)
 ↓
-Production Engine
+Blend Engine (Blend Transformation)
 ↓
-Sales Engine
+Production Engine (Assembly & Packaging Transformation)
+↓
+POS Engine (Fulfillment Dispatch)
 
 Lineage acts as:
-	•	continuity infrastructure between operational domains.
+	•	continuity infrastructure between operational domains.
 This creates:
 	•	ecosystem-wide operational genealogy visibility.
 
@@ -77,37 +82,38 @@ Inventory Continuity Principle
 Transformations should preserve:
 	•	operational inventory continuity.
 Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
+InventoryLot (Green Coffee)
+↓ Roasting Transformation (RoastBatch context)
+InventoryLot (Roasted Coffee)
 
-Inventory may evolve operationally, but lineage continuity should remain:
+Inventory may evolve operationally, but lineage continuity should remain:
 	•	connected,
 	•	traceable,
 	•	and deterministic.
 
 Yield Lineage Principle
 Operational yield directly affects:
-	•	downstream lineage continuity.
+	•	downstream lineage continuity and physical mass balance.
 Example:
-10kg Input
-↓ roasting shrinkage
-8.5kg Output
+10kg Green Coffee Input Lot
+↓ roasting shrinkage (Transformation)
+8.5kg Roasted Coffee Output Lot
 
 Yield lineage preserves:
 	•	where quantity changed,
-	•	how transformation evolved,
+	•	how transformation evolved physically,
 	•	and why downstream inventory differs.
 Yield visibility is treated as:
-	•	operational truth continuity.
+	•	operational truth infrastructure.
+Economic valuation and cost propagation remain owned by Costing Engine.
 
 Packaging Lineage Principle
 Packaging workflows create:
 	•	commercially transformed lineage states.
 Example:
-BlendInventory
-↓ Packaging Workflow
-FinishedGoodsInventory
+Bulk Roasted/Blend InventoryLot + Packaging Material InventoryLot
+↓ Packaging Transformation (ProductionBatch context)
+Packaged Goods SKU InventoryLot
 
 Packaging lineage preserves:
 	•	operational-commercial continuity.
@@ -128,7 +134,7 @@ Each derivative workflow should preserve:
 	•	workflow-specific continuity,
 	•	and downstream genealogy relationships.
 The architecture should support:
-	•	lineage diversity, without redesigning:
+	•	lineage diversity,without redesigning:
 	•	the transformation foundation.
 
 Temporal Continuity Principle
@@ -169,14 +175,14 @@ Operators should understand:
 	•	how transformations evolved,
 	•	and why downstream states exist.
 Transformation systems should support:
-	•	operational trust, not merely:
+	•	operational trust,not merely:
 	•	compliance infrastructure.
 
 Operational Truth Principle
 Transformation lineage represents:
 	•	operational truth continuity.
 The system should preserve:
-	•	what operationally occurred, not merely:
+	•	what operationally occurred,not merely:
 	•	what was administratively recorded.
 This distinction is critical for:
 	•	operational trust,
@@ -222,7 +228,7 @@ Transformation lineage systems should remain understandable for:
 Operators should be able to:
 	•	follow inventory evolution,
 	•	understand operational continuity,
-	•	and trace transformation genealogy without enterprise ERP complexity.
+	•	and trace transformation genealogywithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Lineage Philosophy
@@ -238,7 +244,7 @@ RTD Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the lineage foundation.
 
 AI Boundary Philosophy
@@ -247,7 +253,7 @@ AI systems may:
 	•	identify operational anomalies,
 	•	recommend workflow optimization,
 	•	and support recall analytics.
-However: AI must not autonomously manipulate deterministic lineage continuity.
+However:AI must not autonomously manipulate deterministic lineage continuity.
 Critical operational relationships must remain:
 	•	explicit,
 	•	traceable,
@@ -269,7 +275,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Transformation Lineage acts as:
-	•	the operational continuity infrastructure inside Batch Traceability.
+	•	the operational continuity infrastructureinside Batch Traceability.
 This system influences:
 	•	inventory genealogy,
 	•	operational auditability,

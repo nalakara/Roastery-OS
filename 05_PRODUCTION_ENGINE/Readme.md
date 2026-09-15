@@ -91,119 +91,102 @@ Production Engine commonly interacts with:
 # Operational Role
 
 Production Engine is responsible for transforming:
-- production-ready inventory
+- intermediate roasted/blend coffee and physical packaging materials
 into:
-- finished commercial inventory.
+- commercially sellable packaged finished goods and derivative products.
 
 Example operational flow:
 
-```text id="x5m8tw"
-RoastedCoffeeInventory
-↓
-BlendInventory
-↓
-ProductionBatch
-↓
-FinishedGoodsInventory
-↓
-Sales
-Production workflows may include:
-	•	packaging,
-	•	grinding,
-	•	drip bag production,
-	•	cold brew production,
-	•	RTD preparation,
-	•	bulk espresso preparation,
-	•	and future derivative product workflows.
+```text
+InventoryLot (Intermediate Roasted/Blend Coffee)
++ InventoryLot (Packaging Materials: Pouches, Valves, Bottles, Boxes)
+       ↓ (ProductionBatch Execution)
+Transformation (TRANSFORMATION_CONSUME / PRODUCE)
+       ↓
+InventoryLot (Commercial Finished Goods / Derivative Product)
+       ↓ (COMMERCIAL_DISPATCH / FULFILLMENT)
+Sales & Customer Delivery
+```
 
-Production Philosophy
+Production workflows include:
+- Whole Bean packaging and bagging,
+- Precision grinding and retail bag packing,
+- Ultrasonic nitrogen-flushed drip bag production,
+- Cold brew extraction, filtration, and bottling,
+- Ready-To-Drink (RTD) beverage formulation and canning,
+- Kitting multi-item gift sets and retail bundles,
+- Bulk espresso decanting and kegging.
+
+---
+
+# Production Philosophy
+
 Production Engine treats production workflows as:
-	•	operational manufacturing systems.
-Production is not merely:
-	•	packaging activity,
-	•	or retail preparation.
+- operational manufacturing transformations governed by generic mass/unit balance conservation.
+
 Production creates:
-	•	new inventory identity,
-	•	new costing structures,
-	•	new operational lineage,
-	•	and commercial product states.
-The system should preserve:
-	•	deterministic workflow behavior,
-	•	operational continuity,
-	•	and production readability.
+- new physical `InventoryLot` identity,
+- explicit double-entry ledger transactions (`TRANSFORMATION_CONSUME`, `TRANSFORMATION_PRODUCE`, `SCRAP`),
+- unbroken genealogical lineage back to roast batches and green lots,
+- and commercial product availability.
 
-Finished Goods Philosophy
-Production Engine introduces:
-	•	FinishedGoodsInventory.
-Finished goods represent:
-	•	commercially sellable inventory states.
-Example:
-BlendInventory
-↓ Packaging
-FinishedGoodsInventory
-Finished goods may include:
-	•	roasted beans,
-	•	ground coffee,
-	•	drip bags,
-	•	cold brew bottles,
-	•	RTD products,
-	•	and future derivative product categories.
+---
 
-SKU Philosophy
-Production Engine separates:
-	•	production identity  from:
-	•	commercial SKU identity.
-Example:
-BlendInventory
-≠
-Retail SKU
-A single production inventory may generate:
-	•	multiple packaging formats,
-	•	multiple SKUs,
-	•	and multiple sales channels.
-This separation preserves:
-	•	modular architecture,
-	•	commercial flexibility,
-	•	and production scalability.
+# Commercial Readiness & Finished Goods
 
-Architectural Direction
+Roastery OS treats "Finished Goods" not as an immutable terminal storage silo, but as a **contextual commercial readiness role** of an `InventoryLot` whose `materialType = FINISHED_GOODS`.
+
+Commercially ready lots:
+- fulfill customer orders via `SKUMaster` mappings,
+- or remain eligible as inputs to further downstream transformations (e.g., kitting, beverage formulation).
+
+---
+
+# SKU Decoupling Principle
+
+Production Engine strictly separates:
+- **Physical Inventory Stock** (`InventoryLot`) from
+- **Commercial Sales Catalog** (`SKUMaster`).
+
+$$\text{InventoryLot} \neq \text{SKUMaster}$$
+
+A single physical inventory lot format can fulfill multiple commercial SKUs (Retail POS, E-Commerce, Wholesale Samples) across diverse sales channels without duplicating inventory records.
+
+---
+
+# Architectural Direction
+
 Production Engine is one of the major orchestration layers inside Roastery OS.
 This module connects:
-	•	production workflows,
-	•	inventory transformation,
-	•	commercial product generation,
-	•	and operational manufacturing continuity.
-The architecture should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend production workflows without redesigning the operational foundation.
+- production batch execution,
+- inventory transformation mechanics,
+- commercial product generation,
+- and operational manufacturing continuity.
 
-Human-Centered Philosophy
-Production workflows should remain understandable for:
-	•	home roasteries,
-	•	nano roasteries,
-	•	specialty coffee operations,
-	•	and growing production businesses.
-Operational clarity should take priority over:
-	•	industrial ERP abstraction,
-	•	and manufacturing bureaucracy.
-The MVP should feel:
-	•	practical,
-	•	lightweight,
-	•	and operationally useful.
+The architecture remains:
+- **Modular:** Built on generic `MaterialMaster` and `InventoryLot` primitives.
+- **Deterministic:** Backed by double-entry ledger conservation.
+- **Traceable:** Retaining complete genealogical lineage across all roast, blend, and packaging stages.
+- **Production-Oriented:** Optimized for specialty coffee operations.
 
-Long-Term Direction
-Production Engine is designed to support future evolution toward:
-	•	advanced production orchestration,
-	•	AI-assisted production intelligence,
-	•	operational forecasting,
-	•	automated workflow assistance,
-	•	and ecosystem-wide manufacturing visibility.
-However, production workflows should always remain:
-	•	understandable,
-	•	deterministic,
-	•	traceable,
-	•	and human-centered.
+---
+
+# Human-Centered Philosophy
+
+Production workflows remain intuitive and practical for operators, roasters, baristas, and fulfillment staff, avoiding enterprise ERP bureaucracy while enforcing airtight data integrity.
+
+---
+
+# Long-Term Direction
+
+Production Engine is designed to support progressive evolution toward:
+- AI-assisted demand forecasting and batch scheduling,
+- automated machine telemetry and yield anomaly detection,
+- dynamic cost optimization,
+- and omnichannel commercial visibility.
+
+However, all production workflows remain strictly grounded in:
+- human-centered usability,
+- deterministic ledger mechanics,
+- and traceable manufacturing physics.
 

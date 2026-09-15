@@ -2,374 +2,125 @@
 
 ## Purpose
 
-This document defines the costing philosophy and operational profitability behavior used inside the POS Engine of Roastery OS.
+This document defines the costing philosophy, COGS realization, and operational profitability visibility inside the POS Engine of Roastery OS.
 
 The purpose of Sales Costing Logic is to:
-- preserve deterministic profitability continuity,
-- maintain transaction-connected costing behavior,
-- support operational commerce intelligence,
-- standardize COGS relationships,
-- and provide real-time commercial profitability visibility.
-
-Sales workflows directly affect:
-- revenue continuity,
-- cost realization,
-- margin visibility,
-- and operational business intelligence.
-
-Sales costing is one of the operational intelligence layers inside the POS Engine.
+- preserve deterministic profitability continuity across commercial channels,
+- establish clear ownership boundaries between commercial sales and valuation mechanics,
+- integrate seamlessly with the frozen Costing Engine (`07_COSTING_ENGINE`),
+- standardize COGS realization from physical `InventoryLots`,
+- and provide real-time commercial margin visibility.
 
 ---
 
-# Core Philosophy
+# Core Philosophy & Engine Boundary
 
-Roastery OS treats sales costing as:
-- operational commerce valuation,
-- transaction-connected profitability continuity,
-- and real-world business economics.
+Roastery OS strictly defines the boundary between commercial sales execution and economic valuation:
 
-Sales costing is not merely:
-- sales reporting,
-- or accounting output.
+- **POS Engine Responsibility:**
+  - Owns commercial selling price ($P_{\text{unit}}$), item discounts, promotional rules, order subtotals, customer taxes, and gross realized revenue ($R$).
+  - Captures the exact quantity fulfilled per line item from specific `InventoryLots` ($Q_{\text{fulfilled}, i}$).
+  
+- **Costing Engine Responsibility (`07_COSTING_ENGINE`):**
+  - Owns the economic valuation of inventory lots and COGS derivation.
+  - Supplies the historical unit cost ($U_{\text{lot}}$) of the consumed `InventoryLots` at dispatch.
+  - Derives realized COGS via Canonical Equation 4:
+    $$\text{COGS} = \sum (Q_{\text{fulfilled}, i} \times U_{\text{lot}, i})$$
+  - Maintains the valuation ledger and double-entry COGS realization.
 
-Every sales transaction may create:
-- COGS realization,
-- margin visibility,
-- profitability events,
-- inventory valuation continuity,
-- and operational forecasting signals.
-
-The system should preserve:
-- deterministic profitability behavior,
-- costing traceability,
-- and operational readability.
+The POS Engine **never** computes or mutates inventory valuations independently.
 
 ---
 
-# Costing Philosophy
+# Operational Costing Model
 
-Traditional POS systems commonly interpret sales as:
+```text
+Commercial Sale (SKUMaster checkout at price P)
+       ↓
+Physical Fulfillment (Deduction of Q units from InventoryLot)
+       ↓
+Costing Engine Query (Retrieve U_lot from 07_COSTING_ENGINE)
+       ↓
+Realized COGS Event (COGS = Q × U_lot)
+       ↓
+Commercial Margin Visibility (Gross Profit = Revenue - Taxes - COGS)
+```
 
-```text id="x5m8tw"
-Sale Price
--
-Cost
-=
-Profit
+---
 
-Roastery OS uses an operational profitability continuity model:
-FinishedGoodsInventory Cost
-↓ Transaction
-COGS
-↓
-Revenue
-↓
-Operational Profitability
+# Profitability & Margin Formulas
 
-Sales costing represents:
-	•	operational business continuity, not merely:
-	•	accounting calculation.
+The POS Engine provides real-time commercial profitability visibility using standard accounting relationships based on inputs from the Costing Engine:
 
-Core Costing Principle
-Every completed transaction should preserve:
-	•	inventory valuation continuity,
-	•	COGS continuity,
-	•	profitability visibility,
-	•	and operational traceability.
-Example:
-FinishedGoodsInventory
-↓ Sale
-COGS
-↓
-Revenue
-↓
-Gross Profit Visibility
+### 1. Net Commercial Revenue
+$$\text{Net Revenue} = \text{Grand Total} - \text{Taxes}$$
 
-Costing relationships should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally understandable.
+### 2. Realized Cost of Goods Sold (from `07_COSTING_ENGINE`)
+$$\text{Total COGS} = \sum_{i=1}^{n} (Q_{\text{allocated}, i} \times U_{\text{lot}, i})$$
 
-COGS Philosophy
-Sales workflows realize:
-	•	Cost of Goods Sold (COGS).
-COGS originates from:
-	•	FinishedGoodsInventory valuation continuity.
-Example:
-Production Cost
-↓
-FinishedGoodsInventory Cost
-↓ Sale
-COGS
+### 3. Realized Gross Profit
+$$\text{Gross Profit} = \text{Net Revenue} - \text{Total COGS}$$
 
-The system should preserve:
-	•	operational costing lineage,
-	•	production continuity,
-	•	and valuation integrity.
+### 4. Realized Gross Margin Percentage
+$$\text{Gross Margin } (\%) = \left( \frac{\text{Gross Profit}}{\text{Net Revenue}} \right) \times 100$$
 
-Core Gross Profit Formula
-Basic operational gross profit calculation:
-\text{Gross Profit} = \text{Revenue} - \text{COGS}
+---
 
-Gross Margin Formula
-Operational gross margin percentage:
-\text{Gross Margin %} = \frac{\text{Gross Profit}}{\text{Revenue}} \times 100
+# Multi-Lot Fulfillment Costing
 
-Example Costing Workflow
-Example:
-FinishedGoodsInventory Cost:
-Rp 85.000
+When a commercial SKU line item is fulfilled from multiple physical `InventoryLots` with differing unit costs (e.g., fulfilling 10 units from Lot A [$U = \$8.00$] and Lot B [$U = \$8.50$]):
 
-Sale Price:
-Rp 125.000
+$$\text{Line Item COGS} = (Q_A \times U_A) + (Q_B \times U_B) = (4 \times \$8.00) + (6 \times \$8.50) = \$32.00 + \$51.00 = \$83.00$$
 
-Profit calculation:
-125000 - 85000 = 40000
-Margin calculation:
-\frac{40000}{125000} \times 100 = 32%
-Result:
-Gross Profit:
-Rp 40.000
+The POS Engine records the exact split allocations without creating artificial average lot records, preserving full auditability back to specific production batches.
 
-Gross Margin:
-32%
+---
 
-This represents:
-	•	operational profitability visibility, not:
-	•	formal accounting reporting.
+# Multi-Channel Costing Continuity
 
-Inventory Valuation Principle
-Sales costing should preserve:
-	•	inventory valuation continuity.
-Example:
-Production Engine
-↓
-FinishedGoodsInventory Valuation
-↓ Sale
-COGS Realization
+Sales costing remains unified across all commerce channels:
+- Retail counter POS
+- E-Commerce web store
+- Wholesale orders (volume discounted)
+- Recurring subscription shipments
+- Third-party marketplaces
 
-Inventory valuation should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally meaningful.
-Sales systems should never:
-	•	arbitrarily mutate inventory valuation.
+Different channels may apply distinct pricing tiers or discounts, but all channels resolve physical COGS against the exact `InventoryLots` fulfilled via `07_COSTING_ENGINE`.
 
-Multi-Channel Costing Principle
-Sales costing should remain unified across:
-	•	multiple commerce channels.
-Examples:
-Retail POS
-Wholesale
-Online Store
-Marketplace
-Subscription
+---
 
-The architecture should preserve:
-	•	centralized profitability continuity across:
-	•	multiple sales ecosystems.
+# Discounts, Promotions, and Margin Impact
 
-Discount Relationship Principle
-Discount workflows affect:
-	•	operational profitability behavior.
-Example:
-Normal Price
-↓ Discount
-Reduced Revenue
-↓
-Reduced Margin
+Discounts and promotional pricing directly reduce net commercial revenue ($R_{\text{net}}$) without altering the physical unit cost ($U_{\text{lot}}$) of the consumed goods:
+- **Normal Price:** $\text{Revenue} = \$15.00, \text{COGS} = \$8.00 \implies \text{Margin} = \$7.00\ (46.7\%)$
+- **20% Discounted:** $\text{Revenue} = \$12.00, \text{COGS} = \$8.00 \implies \text{Margin} = \$4.00\ (33.3\%)$
 
-Discount visibility should remain:
-	•	explicit,
-	•	measurable,
-	•	and operationally understandable.
-The system should preserve:
-	•	original pricing visibility,
-	•	and actual transaction profitability.
+This ensures operational transparency: promotions are recognized as commercial margin concessions, not inventory cost fluctuations.
 
-Promotion Relationship Principle
-Promotions may influence:
-	•	transaction economics,
-	•	customer acquisition,
-	•	and operational profitability.
-Examples:
-Bundle Promotion
-Member Discount
-Subscription Pricing
-Wholesale Pricing
-Campaign Pricing
+---
 
-Promotional workflows should preserve:
-	•	profitability visibility,
-	•	transaction continuity,
-	•	and operational traceability.
+# Refund & Reversal Costing
 
-Refund Costing Principle
-Refund workflows may affect:
-	•	profitability continuity,
-	•	revenue correction,
-	•	and inventory restoration.
-Example:
-Completed Sale
-↓ Refund
-Revenue Adjustment
-↓
-Inventory Restoration
+When a customer return occurs:
+- **Sellable Return (`RETURN_RESTORE`):** The inventory lot quantity is restored, and the original COGS is credited back via `07_COSTING_ENGINE`.
+- **Damaged / Unsellable Return (`SCRAP`):** Revenue is refunded to the customer, but the inventory write-off remains recognized as scrap/loss under `07_COSTING_ENGINE` scrap policies.
 
-Refund costing behavior should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally understandable.
+---
 
-Customer Profitability Principle
-Sales costing may later support:
-	•	customer-level profitability visibility.
-Examples:
-Customer Lifetime Value
-Purchase Frequency
-Margin Contribution
-Subscription Profitability
+# Deterministic Costing Principle
 
-The architecture should preserve:
-	•	future profitability intelligence scalability.
+Critical sales costing behavior remains strictly deterministic:
+- no manual or ad-hoc COGS overrides in POS,
+- immutable link to `07_COSTING_ENGINE` lot unit costs,
+- and fully auditable margin tracking per transaction.
 
-Real-Time Profitability Principle
-Sales costing should preserve:
-	•	real-time profitability visibility.
-Examples:
-Live Margin Visibility
-Best-Selling Products
-Low Margin Alerts
-Sales Velocity
+---
 
-Operational visibility should support:
-	•	real-world business decisions, not merely:
-	•	historical accounting reports.
+# Philosophy Summary
 
-Operational Intelligence Principle
-Sales costing is one of the major operational intelligence sources inside Roastery OS.
-Costing behavior may later support:
-	•	production forecasting,
-	•	pricing optimization,
-	•	margin analysis,
-	•	inventory planning,
-	•	and AI-assisted business intelligence.
-Example:
-Sales Profitability
-↓
-Inventory Consumption Pattern
-↓
-Future Production Strategy
-
-The architecture should preserve:
-	•	future intelligence scalability.
-
-Accounting Separation Principle
-Roastery OS distinguishes between:
-	•	operational profitability visibility, and:
-	•	enterprise accounting systems.
-Example:
-Operational Profitability
-≠
-Accounting Ledger
-
-The MVP prioritizes:
-	•	operational business visibility, not:
-	•	accounting compliance infrastructure.
-Formal accounting integration may evolve later without redesigning the commerce architecture.
-
-Deterministic Costing Principle
-Critical costing behavior must remain deterministic.
-Examples:
-	•	COGS continuity,
-	•	profitability calculation,
-	•	discount impact,
-	•	refund adjustment,
-	•	and inventory valuation continuity.
-Costing workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden valuation mutation,
-	•	ambiguous profitability behavior,
-	•	and disconnected commerce continuity.
-
-Human-Centered Philosophy
-Sales costing systems should remain understandable for:
-	•	café operators,
-	•	roastery owners,
-	•	cashiers,
-	•	and growing coffee businesses.
-Profitability visibility should feel:
-	•	practical,
-	•	readable,
-	•	and operationally useful.
-Operational clarity should take priority over:
-	•	enterprise accounting complexity.
-
-AI Boundary Philosophy
-AI systems may:
-	•	analyze profitability trends,
-	•	recommend pricing optimization,
-	•	identify low-margin products,
-	•	and support forecasting analytics.
-However: AI must not autonomously manipulate deterministic costing relationships.
-Critical profitability continuity must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
-
-MVP Scope
-The MVP Sales Costing system should prioritize:
-	•	COGS continuity,
-	•	real-time profitability visibility,
-	•	transaction-connected costing,
-	•	margin visibility,
-	•	and deterministic valuation continuity.
-The MVP intentionally excludes:
-	•	enterprise accounting ERP,
-	•	autonomous pricing AI,
-	•	industrial finance systems,
-	•	and advanced accounting automation.
-
-Architectural Notes
-Sales Costing Logic is one of the operational intelligence layers inside the POS Engine.
-Costing systems influence:
-	•	pricing visibility,
-	•	profitability analysis,
-	•	operational forecasting,
-	•	production planning,
-	•	and future commerce intelligence systems.
-Sales costing architecture should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and commerce-oriented.
-Future systems should extend costing behavior without redesigning the operational foundation.
-
-Long-Term Direction
-The Sales Costing system is designed to support future evolution toward:
-	•	AI-assisted pricing intelligence,
-	•	predictive profitability analytics,
-	•	automated forecasting systems,
-	•	customer profitability modeling,
-	•	and ecosystem-wide commercial intelligence.
-However, costing behavior should always remain:
-	•	understandable,
-	•	deterministic,
-	•	traceable,
-	•	and human-centered.
-
-Philosophy Summary
-Sales costing is not merely:
-	•	accounting output,
-	•	profit reporting,
-	•	or financial calculation.
+Sales costing is not an isolated spreadsheet calculation.
 Sales costing is:
-	•	operational profitability continuity,
-	•	transaction-connected business intelligence,
-	•	and real-world commercial economics.
-Sales costing defines how coffee operationally generates measurable business value inside Roastery OS.
+- **the commercial realization of production value**,
+- **the convergence of commercial selling prices and physical lot valuations**,
+- and **the foundation of real-time operational profitability in Roastery OS**.
 

@@ -45,311 +45,245 @@ The system should preserve:
 
 # Derivative Product Philosophy
 
-Traditional inventory systems commonly interpret products as:
+Traditional inventory systems commonly interpret products as rigid, hardcoded silos:
 
-```text id="x5m8tw"
-One Product
-=
-One Inventory Type
-Roastery OS uses a transformation-oriented derivative product model:
-Coffee Inventory
-↓ Production Workflow
-Derivative Product
+```text
+One Product = One Static Inventory Table
+```
+
+Roastery OS uses a generic, transformation-oriented material model:
+
+```text
+InventoryLot (Intermediate Roasted/Blend Lot)
+       ↓ (Production Transformation Archetype)
+InventoryLot (Derivative Finished Goods / Intermediate Lot)
+```
+
 Derivative products represent:
-	•	operational inventory evolution,  not:
-	•	cosmetic product variation.
+- operational material evolution, not cosmetic product variations.
 
-Core Derivative Product Principle
-Every derivative product should preserve:
-	•	source inventory continuity,
-	•	production transformation lineage,
-	•	workflow-specific operational behavior,
-	•	and finished goods continuity.
+---
+
+# Core Derivative Product Principle
+
+Every derivative product preserves:
+- source `InventoryLot` consumption continuity,
+- explicit `Transformation` lineage,
+- workflow-specific physical process parameters,
+- and unbroken cost provenance.
+
 Example:
-BlendInventory
-↓ Cold Brew Workflow
-Cold Brew Product
-Derivative product relationships should remain:
-	•	deterministic,
-	•	traceable,
-	•	and operationally meaningful.
+```text
+Roasted Blend Lot (InventoryLot, INTERMEDIATE)
++ Water & Nitrogen Consumables
++ Packaging Lots (Glass Bottles, Caps, Labels)
+       ↓ (COLD_BREW_EXTRACTION & BOTTLING Transformation)
+Cold Brew Product Lot (InventoryLot, FINISHED_GOODS)
+```
 
-Derivative Product Categories
-Roastery OS supports multiple derivative product categories.
-Examples:
-Whole Bean Coffee
-Ground Coffee
-Drip Bag Coffee
-Cold Brew
-RTD Coffee
-Bulk Espresso
-Coffee Concentrate
-Future derivative products may continue evolving without redesigning the architectural foundation.
+Derivative product relationships remain:
+- deterministic,
+- traceable,
+- and operationally auditable via the immutable inventory ledger.
 
-Workflow-Specific Philosophy
-Each derivative product may introduce:
-	•	unique production behavior,
-	•	unique costing behavior,
-	•	unique yield behavior,
-	•	and unique packaging relationships.
-Examples:
-Ground Coffee
-→ grinding workflow
+---
 
-Cold Brew
-→ brewing workflow
+# Derivative Product Categories
 
-RTD Coffee
-→ brewing + filling workflow
+Roastery OS supports diverse derivative product categories across standard transformation archetypes:
+- **Whole Bean Coffee:** Bulk roasted beans packaged into retail or wholesale containers.
+- **Ground Coffee:** Roasted beans transformed via calibrated particle reduction.
+- **Drip Bag Coffee:** Precisely portioned ground coffee sealed in ultrasonic nitrogen-flushed filter pouches.
+- **Cold Brew Concentrate / RTD:** Immersion or percolation liquid extraction packaged into kegs, bag-in-box, or bottles.
+- **Ready-To-Drink (RTD) Beverages:** Formulated coffee beverages with water, dairy, or botanical additions.
+- **Kitted / Gift Bundles:** Multi-item assemblies combining packaged coffee, drip bags, and merchandise.
 
-Drip Bag
-→ portioning workflow
-The architecture should support:
-	•	workflow diversity,
-	•	operational flexibility,
-	•	and future extensibility.
+Future derivative products evolve naturally by defining new `MaterialMaster` entries and `RecipeMaster` / `Transformation` definitions without schema migrations.
 
-Production Workflow Principle
-Derivative products are created through:
-	•	ProductionBatch workflows.
-Example:
-ProductionReadyInventory
-↓ ProductionBatch
-Derivative Product
-ProductionBatch acts as:
-	•	operational transformation anchor,
-	•	workflow execution entity,
-	•	and derivative product generation reference.
+---
 
-Transformation Continuity Principle
-Derivative products should preserve:
-	•	upstream inventory lineage.
-Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-Cold Brew Product
-Transformation continuity should remain:
-	•	explicit,
-	•	traceable,
-	•	and operationally understandable.
+# Workflow-Specific Philosophy
 
-Derivative Product Identity Principle
-Derivative products create:
-	•	new operational inventory identity.
-Example:
-BlendInventory
-≠
-Cold Brew Product
-Even when using the same coffee source, derivative products represent:
-	•	different operational meaning,
-	•	different manufacturing behavior,
-	•	different inventory lifecycle,
-	•	and different commercial usability.
-Derivative products become:
-	•	unique commercial inventory entities.
+Each derivative product introduces unique operational mechanics:
+- **Ground Coffee:** Particle distribution curve, grinder burr temperature, retention loss.
+- **Cold Brew:** Grind size, water-to-coffee brew ratio, extraction duration, brew temperature, filtration loss.
+- **RTD Coffee:** Pasteurization/sterilization telemetry, dissolved oxygen, automated filling variance.
+- **Drip Bag:** Nitrogen flush level ($<1.0\%\ \text{O}_2$), sachet seal integrity, tare weight accuracy.
 
-Packaging Relationship Principle
-Different derivative products may require:
-	•	different packaging relationships.
-Examples:
-Whole Bean
-→ coffee bag
+The architecture supports workflow diversity and operational flexibility across all derivative lines.
 
-Cold Brew
-→ bottle
+---
 
-RTD Coffee
-→ can
+# Production Workflow Principle
 
-Drip Bag
-→ sachet + box
-Packaging workflows should remain:
-	•	modular,
-	•	deterministic,
-	•	and operationally meaningful.
+Derivative products are created through explicit `ProductionBatch` execution contexts:
 
-Costing Relationship Principle
-Derivative products may introduce:
-	•	workflow-specific costing behavior.
-Examples:
-Ground Coffee
-→ grinding overhead
+```text
+Input InventoryLots
+       ↓ ProductionBatch (Transformation execution)
+Output InventoryLots + Scrap Records
+```
 
-Cold Brew
-→ extraction + storage cost
+`ProductionBatch` acts as:
+- operational execution anchor and scheduling unit,
+- container for physical process parameters and quality checkpoints,
+- and reference point for double-entry ledger transactions.
 
-RTD Coffee
-→ filling + packaging cost
-Derivative product costing should preserve:
-	•	operational profitability visibility,
-	•	transformation continuity,
-	•	and deterministic valuation behavior.
+---
 
-Yield Relationship Principle
-Different derivative workflows may introduce:
-	•	different yield behavior.
-Examples:
-Cold Brew
-→ extraction loss
+# Transformation Continuity Principle
 
-Drip Bag
-→ portioning residue
+Derivative products preserve complete upstream material genealogy:
 
-RTD
-→ filling loss
-Yield behavior should remain:
-	•	measurable,
-	•	traceable,
-	•	and operationally understandable.
-Yield visibility is considered:
-	•	operational manufacturing intelligence.
+```text
+Green Coffee Lot (GB-101)
+       ↓ (ROASTING)
+Roasted Coffee Lot (RC-202)
+       ↓ (BLENDING)
+Blend Lot (BL-303)
+       ↓ (COLD_BREW_EXTRACTION)
+Cold Brew Bulk Intermediate Lot (CB-404)
+       ↓ (BOTTLING)
+Packaged Cold Brew Lot (FG-505)
+```
 
-Shelf Life Philosophy
-Some derivative products may introduce:
-	•	shelf-life behavior.
-Examples:
-Cold Brew
-→ refrigeration lifecycle
+Every derivative lot traces back to the exact roast profiles, blending ratios, and green coffee harvest lots that created it.
 
-RTD Coffee
-→ expiration lifecycle
-The MVP may preserve:
-	•	lightweight expiration visibility,  without:
-	•	enterprise food manufacturing complexity.
-Future systems may evolve toward:
-	•	advanced freshness orchestration.
+---
 
-Commercial Relationship Principle
-Derivative products may participate in:
-	•	retail workflows,
-	•	wholesale workflows,
-	•	subscription systems,
-	•	and marketplace ecosystems.
-Example:
-Derivative Product
-↓ Sales
-Customer
-Commercial continuity should remain:
-	•	traceable,
-	•	deterministic,
-	•	and operationally understandable.
+# Derivative Product Identity Principle
 
-SKU Relationship Principle
-Derivative products may later generate:
-	•	multiple SKU structures.
-Example:
-Cold Brew Product
-↓
-250ml SKU
-1L SKU
-Wholesale SKU
-Derivative product identity should remain:
-	•	operationally independent from SKU abstraction.
-This preserves:
-	•	modular commercial architecture.
+Derivative products generate new physical inventory lots:
 
-Modular Product Principle
-Derivative products should remain:
-	•	modular,
-	•	reusable,
-	•	and extensible.
-The architecture should support:
-	•	future derivative product evolution  without redesigning:
-	•	inventory systems,
-	•	production systems,
-	•	or costing systems.
-This is one of the major scalability principles inside Roastery OS.
+$$\text{Input Roasted Coffee Lot} \neq \text{Derivative Product Lot}$$
 
-Deterministic Workflow Principle
-Critical derivative product behavior must remain deterministic.
-Examples:
-	•	inventory transformation,
-	•	costing continuity,
-	•	yield calculation,
-	•	packaging relationships,
-	•	and traceability continuity.
-Derivative workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden workflow mutation,
-	•	ambiguous product evolution,
-	•	and disconnected transformation lineage.
+Even when using the same source coffee, derivative products represent:
+- distinct physical material properties and shelf-life constraints,
+- distinct packaging and labor costs,
+- and distinct commercial usability.
 
-Human-Centered Philosophy
-Derivative product systems should remain understandable for operational users.
-Operators should be able to:
-	•	manage multiple production workflows,
-	•	understand product evolution,
-	•	and trace commercial continuity  without industrial manufacturing ERP complexity.
-Operational clarity should take priority over manufacturing abstraction.
+---
 
-AI Boundary Philosophy
-AI systems may:
-	•	recommend derivative product opportunities,
-	•	analyze profitability behavior,
-	•	identify workflow optimization,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic production relationships.
-Critical operational continuity must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+# Packaging Relationship Principle
 
-MVP Scope
-The MVP Derivative Product system should prioritize:
-	•	workflow-specific product transformation,
-	•	operational product continuity,
-	•	packaging relationships,
-	•	costing continuity,
-	•	and production traceability.
-The MVP intentionally excludes:
-	•	industrial food manufacturing systems,
-	•	autonomous product generation,
-	•	enterprise recipe orchestration,
-	•	and advanced manufacturing AI.
+Different derivative products consume distinct packaging bills of materials:
+- **Whole Bean:** Gusseted foil bags, degassing valves, tin ties.
+- **Cold Brew:** Amber glass bottles, crown caps, tamper-evident neck bands.
+- **Drip Bags:** Non-woven filter sachets, foil outer pouches, 10-count retail boxes.
 
-Architectural Notes
-Derivative Product Logic is one of the scalability layers inside the Production Engine.
-Derivative product systems influence:
-	•	production extensibility,
-	•	commercial flexibility,
-	•	operational scalability,
-	•	workflow diversity,
-	•	and future ecosystem expansion.
-Derivative product architecture should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend product behavior without redesigning the operational foundation.
+All packaging materials are physical `InventoryLots` (`materialType = PACKAGING`) consumed via `TRANSFORMATION_CONSUME` entries.
 
-Long-Term Direction
-The Derivative Product system is designed to support future evolution toward:
-	•	advanced beverage ecosystems,
-	•	AI-assisted product innovation,
-	•	predictive commercial analytics,
-	•	automated production assistance,
-	•	and ecosystem-wide product intelligence.
-However, derivative product behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+---
 
-Philosophy Summary
-Derivative products are not merely:
-	•	product variations,
-	•	packaging options,
-	•	or marketing categories.
+# Costing Relationship Principle
+
+Derivative product costing preserves operational valuation continuity governed by `07_COSTING_ENGINE`:
+
+$$U_{\text{derivative}} = \frac{\sum V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$$
+
+- **Production Engine:** Records exact physical input quantities consumed ($Q_{\text{coffee}}, Q_{\text{pkg}}, Q_{\text{water}}$), scrap generated, and direct process labor/machine energy costs.
+- **Costing Engine:** Calculates unit valuations, absorbs overhead, and updates the double-entry valuation ledger.
+
+---
+
+# Yield Relationship Principle
+
+Different derivative workflows experience distinct physical yield behaviors:
+- **Cold Brew Extraction:** $65\% - 85\%$ liquid recovery depending on coffee grind absorption.
+- **Drip Bag Portioning:** Grinding fines loss and volumetric dosing tare variance ($<1.5\%$).
+- **Bottling / Canning:** Transfer line purge and foaming spillage ($<2.0\%$).
+
+All material losses are explicitly recorded as `SCRAP` ledger transactions, preserving exact mass balance accounting.
+
+---
+
+# Shelf Life Philosophy
+
+Derivative products introduce workflow-specific shelf-life behavior:
+- **Whole Bean:** 6–12 months (nitrogen-flushed valve bag).
+- **Ground Coffee:** 3–6 months.
+- **Cold Brew (Kegged/Refrigerated):** 30–90 days ($4^\circ\text{C}$).
+- **Cold Brew (Aseptic/Pasteurized RTD):** 6–12 months ambient.
+
+`InventoryLot` preserves manufactured date, expiration date, and storage condition metadata to prevent obsolete inventory fulfillment.
+
+---
+
+# Commercial Relationship Principle
+
+Derivative products fulfill diverse commercial channels:
+- direct retail café bar consumption,
+- wholesale café supply,
+- grocery retail distribution,
+- and subscription home delivery.
+
+---
+
+# SKU Relationship Principle
+
+Derivative product lots map to commercial `SKUMaster` catalog items:
+
+```text
+InventoryLot (Packaged Cold Brew #CB-404)
+       ├── 250ml Single Bottle POS SKU (SKU-CB-250)
+       ├── 6-Pack E-Commerce SKU (SKU-CB-6PK)
+       └── 24-Case Wholesale SKU (SKU-CB-CASE)
+```
+
+The physical derivative lot remains decoupled from commercial catalog presentation.
+
+---
+
+# Modular Product Principle
+
+The generic `MaterialMaster` + `Transformation` model allows roasteries to introduce new derivative product lines (e.g., cascara sparkling tea, coffee concentrate, freeze-dried instant specialty coffee) with zero database migrations or code modifications.
+
+---
+
+# Deterministic Workflow Principle
+
+Critical derivative product behavior remains strictly deterministic:
+- mass balance conservation,
+- immutable double-entry ledger transactions,
+- cost absorption rules governed by `07_COSTING_ENGINE`,
+- and end-to-end genealogical traceability.
+
+---
+
+# Human-Centered Philosophy
+
+Derivative production workflows provide clear operational instructions and quality checkpoints for roasters, packaging operators, and QC technicians.
+
+---
+
+# AI Boundary Philosophy
+
+AI systems may forecast derivative product demand, analyze extraction yields, and suggest optimal batch schedules. AI systems must **never** mutate ledger balances, alter physical lot records, or override costing equations.
+
+---
+
+# MVP Scope
+
+The MVP Derivative Product system prioritizes:
+- generic `InventoryLot` tracking across all 6 conversion archetypes,
+- explicit packaging material consumption,
+- physical yield and scrap recording,
+- and end-to-end genealogical traceability back to roast batches.
+
+---
+
+# Architectural Notes
+
+Derivative Product Logic establishes the operational bridge between bulk roasted coffee and diverse commercial products.
+
+---
+
+# Philosophy Summary
+
+Derivative products are not superficial marketing variants.
 Derivative products are:
-	•	operational manufacturing evolutions,
-	•	workflow-specific commercial entities,
-	•	and transformation-based product systems.
-Derivative products define how coffee operationally evolves into diverse commercial experiences inside Roastery OS.
+- **operational manufacturing evolutions**,
+- **outputs of deterministic physical transformations**,
+- and **high-value commercial inventory entities**.
+
+Derivative products define how roasted coffee expands into diverse commercial experiences inside Roastery OS.

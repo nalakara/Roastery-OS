@@ -55,22 +55,22 @@ Genealogical Continuity
 Downstream Inventory Evolution
 
 Inventory genealogy should preserve:
-	•	operational ancestry, not merely:
+	•	operational ancestry,not merely:
 	•	stock movement history.
 
 Core Genealogy Principle
 Every downstream inventory state should preserve:
 	•	upstream operational ancestry.
 Example:
-Farm Lot
+SupplierMaster (Inbound Receipt)
 ↓
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
+InventoryLot (Green Coffee)
+↓ Roasting Transformation (RoastBatch context)
+InventoryLot (Roasted Coffee)
+↓ Blending Transformation (BlendBatch context)
+InventoryLot (Blend)
+↓ Packaging Transformation (ProductionBatch context)
+InventoryLot (Packaged Coffee SKU Lot)
 
 Each inventory layer should remain:
 	•	operationally connected,
@@ -81,12 +81,13 @@ Inventory Ancestry Principle
 Inventory should preserve:
 	•	lineage inheritance continuity.
 Example:
-FinishedGoodsInventory
+Packaged SKU InventoryLot
 inherits ancestry from:
-- ProductionBatch
-- BlendBatch
-- RoastBatch
-- GreenBeanInventory
+- Packaging Transformation (ProductionBatch context)
+- Packaging Material InventoryLot(s)
+- Blend Transformation (BlendBatch context)
+- Roasting Transformation (RoastBatch context)
+- Green Coffee InventoryLot (Supplier Receipt)
 
 Inventory ancestry should remain:
 	•	deterministic,
@@ -95,28 +96,32 @@ Inventory ancestry should remain:
 
 Operational Inheritance Principle
 Inventory evolves through:
-	•	operational inheritance.
+	•	operational transformation inheritance.
 Examples:
-GreenBeanInventory
-↓ inherited by
-RoastedCoffeeInventory
+InventoryLot (Green Coffee)
+↓ transformed to
+InventoryLot (Roasted Coffee)
 
-RoastedCoffeeInventory
-↓ inherited by
-BlendInventory
+InventoryLot (Roasted Coffee)
+↓ transformed to
+InventoryLot (Blend)
 
 Each inventory state should preserve:
 	•	upstream operational truth continuity.
 
 Parent-Child Genealogy Principle
 Operational transformations create:
-	•	parent-child genealogy relationships.
+	•	parent-child genealogy relationships between lots.
 Example:
-Parent:
-RoastBatch
+Parent Lots:
+- InventoryLot A (Roasted Ethiopia)
+- InventoryLot B (Roasted Colombia)
 
-Child:
-BlendBatch
+Transformation (Batch execution context):
+- Blend Transformation (BlendBatch)
+
+Child Lot:
+- InventoryLot C (Post-Roast Blend)
 
 Parent-child genealogy preserves:
 	•	operational ancestry continuity.
@@ -129,13 +134,11 @@ Multi-Ancestry Principle
 Some downstream inventory may inherit:
 	•	multiple operational ancestries.
 Example:
-RoastBatch A
+InventoryLot (Roast A)
 +
-RoastBatch B
-↓
-BlendBatch
-↓
-BlendInventory
+InventoryLot (Roast B)
+↓ Blend Transformation (BlendBatch context)
+InventoryLot (House Blend)
 
 Inventory genealogy should preserve:
 	•	explicit multi-parent ancestry continuity.
@@ -146,18 +149,21 @@ Cross-Engine Genealogy Principle
 Inventory genealogy spans across:
 	•	multiple operational engines.
 Example:
-Inventory Engine
+Supplier System (Procurement Origin)
 ↓
-Roasting Engine
+Inventory Engine (Lot Ledger)
 ↓
-Blend Engine
+Roasting Engine (Roasting Transformation)
 ↓
-Production Engine
+Blend Engine (Blend Transformation)
 ↓
-Sales Engine
+Production Engine (Assembly & Packaging Transformation)
+↓
+POS Engine (Order Fulfillment Dispatch)
 
 Genealogy acts as:
-	•	continuity infrastructure between operational domains.
+	•	continuity infrastructure
+between operational domains.
 This creates:
 	•	ecosystem-wide inventory ancestry visibility.
 
@@ -165,13 +171,13 @@ Inventory Evolution Principle
 Inventory should be treated as:
 	•	continuously evolving operational entities.
 Example:
-Green Bean
-↓ roasting
-Roasted Coffee
-↓ blending
-Blend Inventory
-↓ packaging
-Finished Goods
+Green Coffee Lot
+↓ roasting transformation
+Roasted Coffee Lot
+↓ blending transformation
+Blend Lot
+↓ packaging transformation
+Packaged Goods SKU Lot
 
 Inventory genealogy preserves:
 	•	how operational reality evolved over time.
@@ -180,24 +186,25 @@ Yield Genealogy Principle
 Operational yield affects:
 	•	downstream inventory ancestry.
 Example:
-10kg Input
-↓ roasting shrinkage
-8.5kg Output
+10kg Green Coffee Input Lot
+↓ roasting shrinkage (Transformation)
+8.5kg Roasted Coffee Output Lot
 
 Yield genealogy preserves:
 	•	where quantity evolved,
-	•	how operational transformation behaved,
+	•	how operational transformation behaved physically,
 	•	and why downstream inventory differs.
 Yield visibility is treated as:
-	•	operational truth continuity.
+	•	operational truth infrastructure.
+Economic valuation and loss absorption policies remain owned by Costing Engine.
 
 Packaging Genealogy Principle
 Packaging workflows create:
 	•	commercially transformed genealogy states.
 Example:
-BlendInventory
-↓ Packaging Workflow
-FinishedGoodsInventory
+Bulk Roasted/Blend InventoryLot + Packaging Material InventoryLot
+↓ Packaging Transformation (ProductionBatch context)
+Packaged Goods SKU InventoryLot
 
 Packaging genealogy preserves:
 	•	operational-commercial continuity.
@@ -218,7 +225,7 @@ Each derivative workflow should preserve:
 	•	workflow-specific continuity,
 	•	and downstream genealogy relationships.
 The architecture should support:
-	•	genealogy diversity, without redesigning:
+	•	genealogy diversity,without redesigning:
 	•	the ancestry foundation.
 
 Temporal Genealogy Principle
@@ -259,7 +266,7 @@ Operators should understand:
 	•	how transformations evolved,
 	•	and why downstream inventory exists.
 Genealogy systems should support:
-	•	operational trust, not merely:
+	•	operational trust,not merely:
 	•	compliance infrastructure.
 
 Inventory State Principle
@@ -273,7 +280,7 @@ Sold
 Returned
 Adjusted
 
-However: inventory genealogy continuity should remain:
+However:inventory genealogy continuity should remain:
 	•	connected,
 	•	traceable,
 	•	and deterministic.
@@ -282,7 +289,7 @@ Operational Truth Principle
 Inventory genealogy represents:
 	•	operational truth continuity.
 The system should preserve:
-	•	what operationally occurred, not merely:
+	•	what operationally occurred,not merely:
 	•	what was administratively recorded.
 This distinction is critical for:
 	•	operational trust,
@@ -293,7 +300,7 @@ Genealogy Persistence Principle
 Inventory genealogy should remain:
 	•	permanent once established.
 Example:
-FinishedGoodsInventory
+Packaged SKU InventoryLot
 → permanently linked to upstream ancestry
 
 The system should avoid:
@@ -328,7 +335,7 @@ Inventory genealogy systems should remain understandable for:
 Operators should be able to:
 	•	follow inventory ancestry,
 	•	understand operational continuity,
-	•	and trace transformation evolution without enterprise ERP complexity.
+	•	and trace transformation evolutionwithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Genealogy Philosophy
@@ -344,7 +351,7 @@ RTD Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the genealogy foundation.
 
 AI Boundary Philosophy
@@ -353,7 +360,7 @@ AI systems may:
 	•	identify operational anomalies,
 	•	recommend workflow optimization,
 	•	and support recall analytics.
-However: AI must not autonomously manipulate deterministic genealogy continuity.
+However:AI must not autonomously manipulate deterministic genealogy continuity.
 Critical operational relationships must remain:
 	•	explicit,
 	•	traceable,
@@ -375,7 +382,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Inventory Genealogy acts as:
-	•	the ancestry continuity infrastructure inside Batch Traceability.
+	•	the ancestry continuity infrastructureinside Batch Traceability.
 This system influences:
 	•	operational lineage,
 	•	inventory ancestry,

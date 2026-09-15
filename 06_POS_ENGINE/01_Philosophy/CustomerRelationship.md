@@ -77,7 +77,7 @@ Customer
 ↓
 Transaction
 ↓
-FinishedGoodsInventory
+InventoryLot (dispatched stock)
 ↓
 Operational Commerce History
 
@@ -183,13 +183,13 @@ Purchase continuity should remain:
 
 Inventory Relationship Principle
 Customer relationships indirectly connect to:
-	•	FinishedGoodsInventory continuity.
+	•	InventoryLot continuity.
 Example:
 Customer
 ↓ Purchase
-FinishedGoodsInventory
+InventoryLot
 ↓
-Production Lineage
+Production / Transformation Lineage
 
 This relationship preserves:
 	•	end-to-end operational continuity.
@@ -204,7 +204,7 @@ Customer
 ↓
 SKU
 ↓
-FinishedGoodsInventory
+InventoryLot (Fulfillment Allocation)
 
 SKU systems preserve:
 	•	commercial presentation.

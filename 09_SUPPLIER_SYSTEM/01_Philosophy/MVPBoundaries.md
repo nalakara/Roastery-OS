@@ -111,7 +111,7 @@ Operational Procurement Continuity
 Procurement Relationships
 Included:
 Procurement Workflow Continuity
-Inventory Intake Relationships
+Inbound Receiving (PURCHASE_RECEIPT) Relationships
 Operational Procurement Visibility
 Sourcing Explainability
 

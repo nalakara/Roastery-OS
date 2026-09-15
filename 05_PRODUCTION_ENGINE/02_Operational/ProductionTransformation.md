@@ -12,9 +12,9 @@ The purpose of Production Transformation is to:
 - and provide operational transformation visibility.
 
 Production workflows convert:
-- input `InventoryLots`,
+- input `InventoryLot` instances,
 into:
-- output `InventoryLots`.
+- output `InventoryLot` instances.
 
 ---
 
@@ -27,7 +27,7 @@ Roastery OS treats production as:
 
 Production transformation creates:
 - new physical inventory lots in defined states,
-- newly calculated unit asset valuations based on cost provenance and measured yield,
+- newly calculated unit asset valuations based on cost provenance and measured yield via `07_COSTING_ENGINE`,
 - and permanent genealogical lineage links.
 
 ---
@@ -40,13 +40,13 @@ $$\text{Inventory} + \text{Packaging} = \text{Fixed Retail Item}$$
 Roastery OS uses a generalized material state conversion model:
 
 ```text
-Transformation Inputs (N Inventory Lots)
+Transformation Inputs (N InventoryLot instances)
        ↓
-[ Transformation Boundary ] (Guided by Process Recipe, Executed in Batch)
-       ├── Direct Added Costs (Labor, Machine Usage, Auxiliary Materials)
-       └── Measured Physical Yield (Mass/Volume/Portion Yield)
+[ Transformation Boundary ] (Guided by Process Recipe / BOM, Executed in ProductionBatch)
+       ├── Direct Added Costs (Contract Labor, Outsource Fees, Machine Capitalizable Costs)
+       └── Measured Physical Yield (Mass / Volume / Unit Count Yield)
        ↓
-Transformation Outputs (M Inventory Lots)
+Transformation Outputs (M InventoryLot instances)
 ```
 
 ### Supported Production Transformation Archetypes
@@ -62,241 +62,118 @@ Transformation Outputs (M Inventory Lots)
 # Input and Output Inventory Dynamics
 
 ### Input Inventory Dynamics
-- Consumes quantities from one or more existing `InventoryLots`.
+- Consumes physical quantities from one or more existing `InventoryLot` instances (`TRANSFORMATION_CONSUME`).
 - Deductions are recorded on the immutable `InventoryMovement` ledger.
 - Carries historical cost provenance forward into the transformation event.
 
 ### Output Inventory Dynamics
-- Creates one or more new `InventoryLots` (or augments existing intermediate holdings).
-- Allocates accumulated input costs and direct conversion costs across output lots.
+- Creates one or more new `InventoryLot` instances via `TRANSFORMATION_PRODUCE` (or augments existing intermediate holdings).
+- Costing Engine allocates accumulated input costs and direct conversion costs across output lots via Canonical Equation 1.
 - Generates immutable parent-child lineage connections.
-- Output lots are immediately available for downstream transformations or direct commercial fulfillment.wholesale workflows,
-	•	subscription systems,
-	•	or multi-channel commercial distribution.
+- Output lots are immediately available for downstream transformations, wholesale distribution, e-commerce, or retail POS fulfillment.
 
-Derivative Product Principle
-Production workflows may create:
-	•	derivative commercial products.
-Examples:
-Whole Bean
-Ground Coffee
-Drip Bag
-Cold Brew
-RTD Coffee
-Bulk Espresso
-Each derivative product represents:
-	•	a unique operational transformation workflow.
-The architecture should support:
-	•	workflow diversity,
-	•	operational flexibility,
-	•	and future extensibility.
+---
 
-Packaging Transformation Principle
-Packaging is treated as:
-	•	operational inventory transformation.
-Packaging workflows may introduce:
-	•	new inventory identity,
-	•	new SKU relationships,
-	•	and new commercial lifecycle states.
-Example:
-BlendInventory
-↓ Packaging
-Retail Product
-Packaging is not merely:
-	•	visual presentation,
-	•	or commercial labeling.
-Packaging creates:
-	•	operationally distinct inventory states.
+# Derivative Product Principle
 
-Yield Transformation Principle
+Production workflows create derivative commercial products across diverse physical formats:
+- Whole Bean Coffee (`INTERMEDIATE` or `FINISHED_GOODS`)
+- Ground Coffee (`DERIVATIVE` or `FINISHED_GOODS`)
+- Drip Bag Coffee (`FINISHED_GOODS`)
+- Cold Brew Liquid / Concentrate (`DERIVATIVE`)
+- RTD Bottled Beverages (`FINISHED_GOODS`)
+- Bulk Espresso Totes (`INTERMEDIATE`)
+
+Each derivative product represents a unique operational transformation workflow. The architecture supports workflow diversity, operational flexibility, and future extensibility without changing the underlying `InventoryLot` model.
+
+---
+
+# Packaging Transformation Principle
+
+Packaging is treated as physical material transformation, not cosmetic presentation.
+- Packaging items (bags, valves, tins, bottles, caps, filter sachets) are defined in `MaterialMaster` (`materialType = PACKAGING`).
+- Packaging materials exist as physical stock in `InventoryLot` instances.
+- During packaging execution, packaging lots are consumed via `TRANSFORMATION_CONSUME` as physical transformation inputs.
+- The output lot represents the combined packaged unit.
+
+```text
+Source Coffee Lot (INTERMEDIATE) + Packaging Lot (PACKAGING)
+       ↓ ProductionBatch (Packaging Transformation)
+Output Coffee Lot (FINISHED_GOODS)
+```
+
+---
+
+# Yield & Mass Balance Principle
+
 Production workflows may introduce:
-	•	handling loss,
-	•	packaging loss,
-	•	purge,
-	•	residue,
-	•	and operational shrinkage.
+- handling loss,
+- packaging scrap,
+- machine retention / purge,
+- brewing absorption residue.
+
 Example:
-10kg BlendInventory
-↓ Production
-9.7kg FinishedGoodsInventory
-Yield behavior should remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and operationally meaningful.
-The MVP should preserve:
-	•	lightweight yield visibility,
-	•	without industrial manufacturing complexity.
+```text
+10.0 kg Roasted Coffee Lot + 40 Units Packaging Bags
+       ↓ ProductionBatch
+39 Units Packaged 250g Coffee Lot (9.75 kg Coffee Mass + 0.25 kg Purge/Loss)
+```
 
-Transformation Event Principle
-Production transformation should generate operational events.
-Examples:
-Source Inventory Deduction
-FinishedGoodsInventory Creation
-Packaging Transformation
-InventoryMovement Generation
-Valuation Update
-Traceability Update
-Every transformation event should preserve:
-	•	operational visibility,
-	•	deterministic workflow continuity,
-	•	and production traceability.
+Yield behavior remains:
+- explicit and physically measured,
+- traceable on the batch record,
+- and transparently reflected in the output quantity ($Q_{\text{out}}$).
 
-Inventory State Transition Principle
-Production transformation may affect inventory states.
-Example:
-BlendInventory
-Available
-↓ ProductionBatch
-Consumed
+---
 
-FinishedGoodsInventory
-Created
-↓
-Available
-State transitions should remain:
-	•	explicit,
-	•	deterministic,
-	•	and operationally understandable.
+# Inventory State Transitions
 
-Costing Transformation Principle
-Production transformation directly affects:
-	•	inventory valuation,
-	•	operational profitability,
-	•	and commercial costing continuity.
-Example:
-BlendInventory Cost
-+
-Packaging Cost
-+
-Production Overhead
-↓
-FinishedGoodsInventory Cost
-Production transformation should preserve:
-	•	valuation continuity,
-	•	operational profitability visibility,
-	•	and deterministic costing evolution.
+Production transformation coordinates explicit state transitions on the `InventoryMovement` ledger:
+1. Source `InventoryLot` instances transition quantity via `TRANSFORMATION_CONSUME` (state updates to `DEPLETED` when quantity reaches 0).
+2. Output `InventoryLot` instances are instantiated via `TRANSFORMATION_PRODUCE` in state `AVAILABLE`.
+3. All ledger postings are atomic, non-destructive, and auditable.
 
-Traceability Principle
-Production transformation should preserve:
-	•	upstream production lineage.
-Example:
-GreenBean
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
-Transformation history should remain:
-	•	readable,
-	•	traceable,
-	•	operationally meaningful,
-	•	and production-oriented.
+---
 
-Transformation vs Labeling Principle
-Roastery OS distinguishes between:
-	•	operational transformation,
-	•	and commercial labeling.
-Example:
-ProductionBatch
-→ transformation
+# Costing Engine Relationship Principle
 
-Retail Label
-→ presentation
-Production workflows create:
-	•	new operational inventory identity.
-Labeling alone does not.
-This distinction preserves:
-	•	operational clarity,
-	•	inventory integrity,
-	•	and transformation continuity.
+Production transformation alters physical asset valuation, but valuation arithmetic is owned exclusively by `07_COSTING_ENGINE`.
 
-Deterministic Transformation Principle
-Critical production transformations must remain deterministic.
-Examples:
-	•	inventory deduction,
-	•	finished goods creation,
-	•	yield continuity,
-	•	costing evolution,
-	•	and traceability relationships.
-Transformation workflows should:
-	•	produce predictable outcomes,
-	•	preserve operational integrity,
-	•	and remain auditable.
-The system should avoid:
-	•	hidden inventory mutation,
-	•	ambiguous workflow behavior,
-	•	and disconnected production lineage.
+Production Engine owns:
+- physical recipe formulation and consumption quantities ($Q_{\text{consumed}, i}$),
+- physical output quantity and packaging counts ($Q_{\text{out}}$),
+- and physical handling loss / scrap measurements.
 
-Human-Centered Philosophy
-Production transformations should remain understandable for operational users.
-Operators should be able to:
-	•	understand inventory evolution,
-	•	trace production lineage,
-	•	and follow commercial inventory continuity  without manufacturing ERP complexity.
-Operational clarity should take priority over industrial production abstraction.
+Costing Engine owns:
+- input valuation aggregation ($V_{\text{consumed}} = \sum Q_{\text{consumed}, i} \times U_{\text{consumed}, i}$),
+- direct cost capitalization ($C_{\text{direct}}$),
+- unit cost derivation via Canonical Equation 1 ($U_{\text{out}} = \frac{V_{\text{consumed}} + C_{\text{direct}}}{Q_{\text{out}}}$),
+- and provenance decomposition via Canonical Equation 7.
 
-AI Boundary Philosophy
-AI systems may:
-	•	analyze production efficiency,
-	•	recommend workflow optimization,
-	•	identify transformation anomalies,
-	•	and support operational analytics.
-However:  AI must not autonomously manipulate deterministic production transformations.
-Critical transformation behavior must remain:
-	•	explicit,
-	•	traceable,
-	•	deterministic,
-	•	and human-auditable.
+---
 
-MVP Scope
-The MVP Production Transformation system should prioritize:
-	•	production-ready inventory consumption,
-	•	FinishedGoodsInventory creation,
-	•	deterministic transformation continuity,
-	•	production traceability,
-	•	and operational visibility.
-The MVP intentionally excludes:
-	•	industrial manufacturing orchestration,
-	•	autonomous production routing,
-	•	enterprise factory systems,
-	•	and predictive manufacturing AI.
+# Multi-Parent Traceability (DAG)
 
-Architectural Notes
-Production Transformation is one of the foundational operational layers inside the Production Engine.
-Transformation systems influence:
-	•	inventory continuity,
-	•	commercial product generation,
-	•	operational profitability,
-	•	production visibility,
-	•	and downstream sales workflows.
-Transformation structures should remain:
-	•	modular,
-	•	deterministic,
-	•	traceable,
-	•	and production-oriented.
-Future systems should extend transformation behavior without redesigning the operational foundation.
+Production transformation creates explicit lineage links connecting all consumed parent lots to all produced child lots:
 
-Long-Term Direction
-The Production Transformation system is designed to support future evolution toward:
-	•	advanced manufacturing orchestration,
-	•	AI-assisted production intelligence,
-	•	predictive operational analytics,
-	•	automated workflow assistance,
-	•	and ecosystem-wide production visibility.
-However, transformation behavior should always remain:
-	•	understandable,
-	•	traceable,
-	•	deterministic,
-	•	and human-centered.
+```text
+Green Coffee Lot A ──► RoastBatch A ──► Roasted Coffee Lot A ──┐
+                                                               ├──► BlendBatch ──► Blend Lot AB ──┐
+Green Coffee Lot B ──► RoastBatch B ──► Roasted Coffee Lot B ──┘                                 │
+                                                                                                 ├──► ProductionBatch ──► Packaged SKU Lot
+Bag Packaging Lot C ─────────────────────────────────────────────────────────────────────────────┘
+```
 
-Philosophy Summary
-Production transformation is not:
-	•	packaging activity,
-	•	or commercial relabeling.
+The system preserves full end-to-end traceability from farm origin and green sourcing to customer retail fulfillment.
+
+---
+
+# Summary
+
 Production transformation is:
-	•	operational manufacturing evolution,
-	•	commercial inventory generation,
-	•	and finished goods identity creation.
-Production transformation is where coffee operationally evolves into sellable commercial inventory inside Roastery OS.
+- operational manufacturing evolution,
+- multi-dimensional physical material conversion,
+- and commercial inventory creation.
+
+Production transformation defines how coffee and packaging materials physically evolve into commercially sellable `InventoryLot` instances inside Roastery OS.
+

@@ -56,22 +56,20 @@ Downstream Lineage
 Commercial Product Continuity
 
 Traceability should preserve:
-	•	operational genealogy, not merely:
-	•	movement records.
-
-Core Traceability Principle
+	•	operational genealogy,not merely:
+	•	movemenCore Traceability Principle
 Every operational transformation should preserve:
 	•	upstream ancestry,
 	•	downstream continuity,
 	•	and deterministic lineage relationships.
 Example:
-GreenBeanInventory
-↓ RoastBatch
-RoastedCoffeeInventory
-↓ BlendBatch
-BlendInventory
-↓ ProductionBatch
-FinishedGoodsInventory
+InventoryLot (Green Coffee)
+↓ Transformation (Roasting / RoastBatch)
+InventoryLot (Roasted Coffee)
+↓ Transformation (Blending / BlendBatch)
+InventoryLot (Blend)
+↓ Transformation (Packaging / ProductionBatch)
+InventoryLot (Packaged Coffee SKU Lot)
 
 Each transformation stage should remain:
 	•	operationally connected,
@@ -82,17 +80,15 @@ Lineage Philosophy
 Roastery OS treats inventory as:
 	•	inheritable operational lineage.
 Example:
-Farm Lot
-↓
-Green Bean Lot
-↓
-Roast Batch
-↓
-Blend Batch
-↓
-Production Batch
-↓
-Finished Goods
+SupplierMaster (Origin)
+↓ Purchase Receipt (PURCHASE_RECEIPT)
+InventoryLot (Green Coffee)
+↓ Transformation (Roasting / RoastBatch context)
+InventoryLot (Roasted Coffee)
+↓ Transformation (Blending / BlendBatch context)
+InventoryLot (Blend)
+↓ Transformation (Packaging / ProductionBatch context)
+InventoryLot (Packaged Goods / SKU Lot)
 
 Every downstream entity should preserve:
 	•	upstream operational ancestry.
@@ -102,14 +98,17 @@ Lineage continuity should remain:
 	•	and operationally meaningful.
 
 Parent-Child Philosophy
-Operational transformations create:
-	•	parent-child relationships.
+Operational transformations create material parent-child lineage:
 Example:
-Parent:
-RoastBatch
+Parent Lots:
+- InventoryLot A (Roasted Single Origin 1)
+- InventoryLot B (Roasted Single Origin 2)
 
-Child:
-BlendBatch
+Transformation (Batch execution context):
+- Blend Transformation (BlendBatch)
+
+Child Lot:
+- InventoryLot C (Post-Roast Blend)
 
 This relationship preserves:
 	•	transformation continuity,
@@ -120,19 +119,21 @@ The system should avoid:
 
 Transformation Continuity Principle
 Operational workflows are:
-	•	lineage-producing events.
+	•	lineage-producing material transformations (`Transformation`).
 Examples:
-Roasting
-Blending
-Packaging
-Grinding
-Cold Brew Workflow
-RTD Workflow
+- Roasting
+- Blending
+- Packaging & Assembly
+- Grinding
+- Cold Brew Extraction
+- RTD Formulation
+- Reprocessing & Re-sorting
 
-Every workflow may generate:
-	•	new lineage branches,
-	•	downstream inventory relationships,
-	•	and operational dependency chains.
+Every workflow connects:
+	•	input `InventoryLot`(s),
+	•	transformation execution context (`Batch`),
+	•	and output `InventoryLot`(s),
+supporting arbitrary $1 \rightarrow 1, N \rightarrow 1, 1 \rightarrow N, N \rightarrow M$ conversions.
 Traceability should preserve:
 	•	transformation continuity across workflows.
 
@@ -140,6 +141,8 @@ Cross-Workflow Continuity Principle
 Traceability spans across:
 	•	multiple operational domains.
 Example:
+Supplier System
+↓
 Inventory Engine
 ↓
 Roasting Engine
@@ -148,37 +151,39 @@ Blend Engine
 ↓
 Production Engine
 ↓
-Sales Engine
+POS Engine
 
 Traceability acts as:
-	•	continuity infrastructure between operational systems.
+	•	continuity infrastructure
+between operational systems.
 This creates:
 	•	ecosystem-wide operational visibility.
 
 Yield Traceability Principle
 Operational yield affects:
 	•	inventory continuity,
-	•	production lineage,
+	•	physical mass balance,
 	•	and downstream genealogy.
 Example:
-10kg Input
-↓ roasting shrinkage
-8.5kg Output
+10kg Green Coffee Input Lot
+↓ roasting shrinkage (Transformation)
+8.5kg Roasted Coffee Output Lot
 
 Yield traceability preserves:
 	•	where quantity evolved,
-	•	how transformation behaved,
+	•	how transformation behaved physically,
 	•	and why downstream inventory changed.
 Yield visibility is treated as:
 	•	operational truth infrastructure.
+Valuation and cost propagation remain owned by Costing Engine.
 
 Packaging Traceability Principle
 Packaging workflows create:
 	•	commercially transformed lineage states.
 Example:
-BlendInventory
-↓ Packaging Workflow
-FinishedGoodsInventory
+Roasted/Blend InventoryLot + Packaging Material InventoryLot
+↓ Packaging Transformation (ProductionBatch)
+Packaged Goods InventoryLot
 
 Packaging traceability preserves:
 	•	operational-commercial continuity.
@@ -199,18 +204,20 @@ Each derivative workflow should preserve:
 	•	downstream continuity,
 	•	and workflow-specific lineage relationships.
 The architecture should support:
-	•	lineage diversity, without redesigning:
+	•	lineage diversity,
+without redesigning:
 	•	the traceability foundation.
 
 Inventory Genealogy Principle
 Inventory should remain:
 	•	genealogically connected.
 Example:
-FinishedGoodsInventory
-├── references → ProductionBatch
-├── references → BlendBatch
-├── references → RoastBatch
-├── references → GreenBeanInventory
+Packaged Goods InventoryLot
+├── references → Packaging Transformation (ProductionBatch context)
+├── references → Packaging Material InventoryLot(s)
+├── references → Blend Transformation (BlendBatch context)
+├── references → Roasting Transformation (RoastBatch context)
+└── references → Green Coffee InventoryLot (Supplier Receipt)
 
 Operators should be able to:
 	•	trace ancestry,
@@ -241,14 +248,14 @@ Operators should understand:
 	•	how transformations evolved,
 	•	and why downstream states exist.
 Traceability systems should support:
-	•	operational trust, not merely:
+	•	operational trust,not merely:
 	•	compliance infrastructure.
 
 Operational Truth Principle
 Traceability represents:
 	•	operational truth continuity.
 The system should preserve:
-	•	what actually happened operationally, not merely:
+	•	what actually happened operationally,not merely:
 	•	what was administratively recorded.
 This distinction is critical for:
 	•	operational trust,
@@ -280,7 +287,7 @@ Traceability systems should remain understandable for:
 Operators should be able to:
 	•	follow inventory genealogy,
 	•	understand transformation continuity,
-	•	and trace operational evolution without enterprise ERP complexity.
+	•	and trace operational evolutionwithout enterprise ERP complexity.
 Operational clarity should take priority over manufacturing abstraction.
 
 Modular Traceability Philosophy
@@ -296,7 +303,7 @@ RTD Workflow
 The architecture should support:
 	•	workflow diversity,
 	•	operational flexibility,
-	•	and future ecosystem extensibility without redesigning:
+	•	and future ecosystem extensibilitywithout redesigning:
 	•	the traceability foundation.
 
 AI Boundary Philosophy
@@ -305,7 +312,7 @@ AI systems may:
 	•	identify operational anomalies,
 	•	recommend workflow optimization,
 	•	and support recall analytics.
-However: AI must not autonomously manipulate deterministic lineage continuity.
+However:AI must not autonomously manipulate deterministic lineage continuity.
 Critical operational relationships must remain:
 	•	explicit,
 	•	traceable,
@@ -327,7 +334,7 @@ The MVP intentionally excludes:
 
 Architectural Notes
 Traceability Philosophy acts as:
-	•	the continuity philosophy layer inside Roastery OS.
+	•	the continuity philosophy layerinside Roastery OS.
 This philosophy influences:
 	•	inventory genealogy,
 	•	production lineage,
