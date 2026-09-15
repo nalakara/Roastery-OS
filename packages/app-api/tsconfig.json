@@ -6,6 +6,8 @@
   },
   "references": [
     { "path": "../contracts" },
+    { "path": "../domain-core" },
+    { "path": "../infrastructure-postgres" },
     { "path": "../application-services" }
   ],
   "include": ["src/**/*"]
