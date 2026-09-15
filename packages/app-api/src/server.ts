@@ -9,7 +9,10 @@ import {
   MaterialId, 
   SupplierId, 
   PurchaseReceiptId, 
-  MovementId 
+  MovementId,
+  InventoryLotId,
+  ProductId,
+  SkuId
 } from '@roastery-os/contracts';
 import { Money, Quantity, DecimalValue } from '@roastery-os/domain-core';
 import { 
