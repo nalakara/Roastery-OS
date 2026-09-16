@@ -6,6 +6,7 @@ import { seedDatabase } from './seed-data.js';
 
 export * from './server.js';
 export * from './seed-data.js';
+export * from './vercel-handler.js';
 
 async function bootstrap() {
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;

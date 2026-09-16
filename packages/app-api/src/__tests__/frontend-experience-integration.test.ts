@@ -983,7 +983,48 @@ describe('Phase 15: Frontend Shell & Vertical Slice Integration Tests', () => {
     }
     assert.ok(checkedMethods.size >= 15, 'Should have verified at least 15 distinct HTML onclick handlers');
   });
+
+  // 24. Vercel Serverless Function Adapter Validation
+  it('24. Vercel Serverless Adapter: Dispatches requests without calling server.listen()', async () => {
+    const { getVercelApiHandler } = await import('../vercel-handler.js');
+    const handler = await getVercelApiHandler();
+    assert.equal(typeof handler, 'function', 'getVercelApiHandler must return a request handler function');
+
+    // Test simulated request via http.createServer wrapping the serverless handler
+    const serverlessServer = http.createServer((req, res) => {
+      handler(req, res).catch(err => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      });
+    });
+
+    await new Promise<void>((resolve) => serverlessServer.listen(0, () => resolve()));
+    const serverlessAddr = serverlessServer.address() as any;
+    const serverlessUrl = `http://localhost:${serverlessAddr.port}`;
+
+    try {
+      const signalsRes = await fetch(`${serverlessUrl}/api/intelligence/signals`);
+      assert.equal(signalsRes.status, 200);
+      const signalsData = await signalsRes.json() as any;
+      assert.ok(signalsData.data, 'Should return data wrapper');
+      assert.ok(Array.isArray(signalsData.data), 'Should contain signals array');
+
+      const lotsRes = await fetch(`${serverlessUrl}/api/inventory-lots`);
+      assert.equal(lotsRes.status, 200);
+      const lotsData = await lotsRes.json() as any;
+      assert.ok(Array.isArray(lotsData.data), 'Should contain lots array');
+
+      // Test static fallback
+      const staticRes = await fetch(`${serverlessUrl}/`);
+      assert.equal(staticRes.status, 200);
+      const staticHtml = await staticRes.text();
+      assert.ok(staticHtml.includes('app-sidebar'), 'Should serve index.html statically');
+    } finally {
+      await new Promise<void>((resolve) => serverlessServer.close(() => resolve()));
+    }
+  });
 });
+
 
 
 

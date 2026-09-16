@@ -58,7 +58,9 @@ export interface ApiServerOptions {
   defaultOrgId?: OrganizationId;
 }
 
-export function createApiServer(options: ApiServerOptions): http.Server {
+export type ApiRequestHandler = (req: http.IncomingMessage, res: http.ServerResponse) => Promise<void>;
+
+export function createApiHandler(options: ApiServerOptions): ApiRequestHandler {
   const { pool } = options;
   const defaultOrgId = (options.defaultOrgId ?? '018f3a00-0000-7000-8000-000000000001') as OrganizationId;
 
@@ -107,7 +109,7 @@ export function createApiServer(options: ApiServerOptions): http.Server {
     costingRepo
   );
 
-  const server = http.createServer(async (req, res) => {
+  const handler: ApiRequestHandler = async (req, res) => {
     try {
       const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
       const pathname = url.pathname;
@@ -1939,7 +1941,20 @@ export function createApiServer(options: ApiServerOptions): http.Server {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Internal server error: ' + err.message }));
     }
-  });
+  };
 
-  return server;
+  return handler;
+}
+
+export function createApiServer(options: ApiServerOptions): http.Server {
+  const handler = createApiHandler(options);
+  return http.createServer((req, res) => {
+    handler(req, res).catch(err => {
+      console.error('Unhandled API handler exception:', err);
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unhandled server error: ' + err.message }));
+      }
+    });
+  });
 }

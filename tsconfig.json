@@ -3,8 +3,8 @@
   "references": [
     { "path": "./packages/contracts" },
     { "path": "./packages/domain-core" },
-    { "path": "./packages/application-services" },
     { "path": "./packages/infrastructure-postgres" },
+    { "path": "./packages/application-services" },
     { "path": "./packages/app-api" }
   ]
 }
